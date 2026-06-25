@@ -1,0 +1,6 @@
+{
+  "name": "CivicHero",
+  "description": "A transparent civic operating system where citizens, communities and local administrations collaborate to identify, verify, prioritize and resolve hyperlocal civic issues.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

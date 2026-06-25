@@ -1,0 +1,110 @@
+import { CivicReport } from '../components/EvidenceCard';
+
+export const mockReports: CivicReport[] = [
+  {
+    id: 'report-1',
+    title: 'Downtown High-Rise: Smoke Detected',
+    description: 'Fire units responding to multiple reports of smoke on 12th floor. Citizens are advised to bypass Broadway. No injuries reported.',
+    location: '5th Ave & Broadway',
+    distance: '1.2 miles away',
+    imageUrl: 'https://picsum.photos/seed/smoke/640/400',
+    timeAgo: '2 mins ago',
+    category: 'Safety',
+    priority: 'Critical',
+    status: 'Live',
+    watchingCount: 184
+  },
+  {
+    id: 'report-2',
+    title: 'Tree blocking Southbound Lane',
+    description: 'Cloverdale Rd. Expect heavy delays near the suspension bridge. Municipal maintenance crews notified and dispatched.',
+    location: 'Cloverdale Rd.',
+    distance: '0.5 miles away',
+    imageUrl: 'https://picsum.photos/seed/roadtree/640/400',
+    timeAgo: '15 mins ago',
+    category: 'Roads',
+    priority: 'High',
+    status: 'Reported',
+    watchingCount: 42
+  },
+  {
+    id: 'report-3',
+    title: 'Gas Leak Investigation Complete',
+    description: 'Upper West Side. Commercial buildings cleared for safe citizen re-entry. All safety protocols successfully completed by regional utility engineers.',
+    location: 'Upper West Side',
+    distance: '3.1 miles away',
+    imageUrl: 'https://picsum.photos/seed/gasleak/640/400',
+    timeAgo: '34 mins ago',
+    category: 'Utilities',
+    priority: 'Critical',
+    status: 'Resolved',
+    watchingCount: 96,
+    verifiedCount: 48
+  },
+  {
+    id: 'report-4',
+    title: 'Large pothole near school entrance',
+    description: 'Major tire hazard directly in front of Oakwood Primary main pickup gate. Temporary sandbags placed; paving team scheduled for 2 PM.',
+    location: 'Oakwood Ave.',
+    distance: '0.8 miles away',
+    imageUrl: 'https://picsum.photos/seed/pothole/640/400',
+    timeAgo: '1 hr ago',
+    category: 'Roads',
+    priority: 'High',
+    status: 'In Progress',
+    watchingCount: 29
+  },
+  {
+    id: 'report-5',
+    title: 'Water main rupture affecting footpath',
+    description: 'High-pressure stream spraying onto the main walkway, creating erosion and slippery hazards. Water valves being shut off by city teams.',
+    location: 'Pine Crest Dr.',
+    distance: '1.5 miles away',
+    imageUrl: 'https://picsum.photos/seed/waterleak/640/400',
+    timeAgo: '2 hrs ago',
+    category: 'Water',
+    priority: 'Medium',
+    status: 'Reported',
+    watchingCount: 15
+  },
+  {
+    id: 'report-6',
+    title: 'Broken high-mast streetlight',
+    description: 'Sub-station circuit breaker failure left segment of Elm street completely dark. Maintenance crews swapped the smart LED controller.',
+    location: 'Elm St & 4th',
+    distance: '0.2 miles away',
+    imageUrl: 'https://picsum.photos/seed/streetlight/640/400',
+    timeAgo: '4 hrs ago',
+    category: 'Utilities',
+    priority: 'Low',
+    status: 'Resolved',
+    watchingCount: 8,
+    verifiedCount: 14
+  },
+  {
+    id: 'report-7',
+    title: 'Overflowing garbage collection point',
+    description: 'Multiple bins at capacity, waste spilling onto pedestrian boulevard. Route collector notified for expedited pickup.',
+    location: 'Civic Plaza Boulevard',
+    distance: '2.2 miles away',
+    imageUrl: 'https://picsum.photos/seed/garbage/640/400',
+    timeAgo: '6 hrs ago',
+    category: 'Environment',
+    priority: 'Medium',
+    status: 'Reported',
+    watchingCount: 19
+  },
+  {
+    id: 'report-8',
+    title: 'Damaged school pedestrian crossing',
+    description: 'Reflective crossing lights and paint significantly faded. Thermal painting machine in operation on-site to restore high-visibility borders.',
+    location: 'Maple Expressway',
+    distance: '1.9 miles away',
+    imageUrl: 'https://picsum.photos/seed/crosswalk/640/400',
+    timeAgo: '12 hrs ago',
+    category: 'Roads',
+    priority: 'High',
+    status: 'In Progress',
+    watchingCount: 33
+  }
+];
