@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Landmark, Globe, Twitter, Github, Cpu } from 'lucide-react';
+import { Landmark, Globe, Twitter, Github } from 'lucide-react';
 
 export default function Footer() {
   return (

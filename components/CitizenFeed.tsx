@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, MapPin, Sparkles, SlidersHorizontal, Plus, ArrowRight, ShieldCheck, X, Smile, Star, ArrowUpRight } from 'lucide-react';
+import { Search, MapPin, Sparkles, SlidersHorizontal, ArrowRight, X, Smile } from 'lucide-react';
 import EvidenceCard, { CivicReport } from './EvidenceCard';
 import { mockReports } from '../lib/mockReports';
 
@@ -132,11 +134,14 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
           className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-[28px] overflow-hidden bg-slate-950 border border-slate-900 group"
         >
           {/* Hero background image */}
-          <img
+          <Image
             src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80"
             alt="Safety Area Broadcast"
-            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+            className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
             referrerPolicy="no-referrer"
+            priority
           />
           {/* Smooth color wash overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
@@ -195,7 +200,9 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
               >
-                <EvidenceCard report={report} />
+                <Link href={`/citizen/issues/${report.id}`} className="block h-full">
+                  <EvidenceCard report={report} />
+                </Link>
               </motion.div>
             ))}
           </div>

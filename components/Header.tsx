@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, Globe, ArrowUpRight, Menu, X, Landmark, User, ShieldAlert } from 'lucide-react';
+import { Bell, Globe, Menu, X, Landmark, User } from 'lucide-react';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);

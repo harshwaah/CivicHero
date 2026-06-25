@@ -2,27 +2,25 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Compass, 
   ShieldAlert, 
   Bell, 
-  MapPin, 
   ArrowLeft, 
   CheckCircle, 
   Sparkles, 
   X, 
-  Layers, 
-  Camera, 
   Map, 
-  Activity, 
-  Smile 
+  Activity 
 } from 'lucide-react';
 import CitizenNav from '../../components/CitizenNav';
 import CitizenFeed from '../../components/CitizenFeed';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
 
 export default function CitizenPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('home');
   const [selectedMilestone, setSelectedMilestone] = useState<{
     title: string;
@@ -30,15 +28,13 @@ export default function CitizenPage() {
     desc: string;
   } | null>(null);
 
-  const [isReportingOpen, setIsReportingOpen] = useState(false);
-
   // Quick milestone activation helper
   const handleOpenMilestone = (title: string, phase: string, desc: string) => {
     setSelectedMilestone({ title, phase, desc });
   };
 
   const handleOpenReportPlaceholder = () => {
-    setIsReportingOpen(true);
+    router.push('/citizen/report');
   };
 
   // Content rendering based on active tab
@@ -328,114 +324,6 @@ export default function CitizenPage() {
               >
                 Acknowledge Protocol
               </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* 2. "REPORT INCIDENT" FAB DOCK PANEL MODAL */}
-      <AnimatePresence>
-        {isReportingOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop with 12px blur */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsReportingOpen(false)}
-              className="absolute inset-0 bg-slate-950/45 backdrop-blur-md"
-            />
-
-            {/* Modal Body */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 16 }}
-              className="bg-white rounded-[28px] border border-slate-100 max-w-lg w-full p-6 shadow-2xl relative overflow-hidden z-10"
-            >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <span className="font-mono text-[9px] font-extrabold text-brand-secondary bg-emerald-50 px-2.5 py-1 rounded-md uppercase tracking-wider">
-                  PHASE 1.2 PREVIEW
-                </span>
-                <button
-                  onClick={() => setIsReportingOpen(false)}
-                  className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors text-slate-400"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100">
-                    <Camera className="w-5 h-5 text-brand-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-sans font-extrabold text-lg text-brand-primary tracking-tight">
-                      Unified Report Canvas
-                    </h3>
-                    <p className="font-body text-xs text-brand-muted mt-0.5">Capture, Geoproof & Co-sign Issues</p>
-                  </div>
-                </div>
-
-                {/* Simulated reporting wizard layout to look extremely real and premium */}
-                <div className="space-y-3 mt-2">
-                  <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50/50">
-                    <label className="block text-[10px] font-mono text-slate-400 font-bold uppercase mb-1">Incident Category</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['Roads', 'Utilities', 'Water', 'Safety', 'Environment'].map((cat, i) => (
-                        <span key={cat} className={`px-3 py-1.5 rounded-full border text-[10px] font-mono font-bold uppercase ${i === 0 ? 'bg-brand-primary text-white border-brand-primary' : 'bg-white text-slate-400 border-slate-100'}`}>
-                          {cat}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50/50">
-                    <label className="block text-[10px] font-mono text-slate-400 font-bold uppercase mb-1">Narrative Description</label>
-                    <textarea 
-                      disabled
-                      placeholder="e.g., Unsafe pothole expanding near the high school entrance..." 
-                      className="w-full bg-white border border-slate-100 rounded-xl p-3 text-xs font-sans text-slate-400 h-20 resize-none outline-none cursor-not-allowed"
-                    />
-                  </div>
-
-                  <div className="border border-slate-100 rounded-2xl p-4 bg-slate-50/50 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Camera className="w-4 h-4 text-slate-400" />
-                      <span className="font-sans text-xs text-slate-400">Attach verification image</span>
-                    </div>
-                    <span className="font-mono text-[9px] text-brand-secondary bg-emerald-50 px-2 py-0.5 rounded-full">RECOMMENDED</span>
-                  </div>
-                </div>
-
-                <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100/60 flex items-start gap-3 mt-1">
-                  <div className="w-8 h-8 rounded-lg bg-amber-100/40 flex items-center justify-center text-brand-accent shrink-0 mt-0.5">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h5 className="font-sans font-bold text-xs text-brand-primary">Immutable Timeline Integration</h5>
-                    <p className="font-body text-[10px] text-brand-muted leading-relaxed mt-0.5">
-                      Submitting issues will automatically run metadata sanitization and anchor a geoproof token on Firestore during Phase 1.2.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 mt-6">
-                <button
-                  onClick={() => setIsReportingOpen(false)}
-                  className="flex-1 py-3.5 border border-slate-200 hover:bg-slate-50 text-slate-500 font-mono text-xs font-bold rounded-2xl transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  disabled
-                  className="flex-1 py-3.5 bg-brand-primary/45 text-white/80 font-mono text-xs font-bold rounded-2xl cursor-not-allowed flex items-center justify-center gap-1.5"
-                >
-                  <span>Submit Active Log</span>
-                </button>
-              </div>
             </motion.div>
           </div>
         )}

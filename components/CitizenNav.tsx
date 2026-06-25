@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { Home, Compass, ShieldCheck, Bell, User, MapPin, Search, ChevronRight, Sparkles } from 'lucide-react';
+import { Home, Compass, ShieldCheck, Bell, Sparkles } from 'lucide-react';
 
 interface CitizenNavProps {
   activeTab: string;

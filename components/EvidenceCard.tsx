@@ -1,8 +1,34 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { motion } from 'motion/react';
-import { MapPin, Clock, Eye, CheckCircle2, AlertTriangle, HelpCircle, ArrowRight, Check } from 'lucide-react';
+import { MapPin, ArrowRight, Check } from 'lucide-react';
+
+export interface TimelineEvent {
+  id: string;
+  type: 'reported' | 'ai_categorized' | 'community_verified' | 'assigned' | 'work_started' | 'repair_completed' | 'community_confirmation' | 'closed';
+  title: string;
+  time: string;
+  actor: string;
+  description: string;
+  imageUrl?: string;
+  status: string;
+}
+
+export interface DiscussionComment {
+  id: string;
+  user: {
+    name: string;
+    avatar: string;
+    isOfficial?: boolean;
+    badge?: string;
+  };
+  timeAgo: string;
+  text: string;
+  likesCount: number;
+  replies?: DiscussionComment[];
+}
 
 export interface CivicReport {
   id: string;
@@ -17,6 +43,27 @@ export interface CivicReport {
   status: 'Live' | 'Reported' | 'In Progress' | 'Resolved';
   watchingCount: number;
   verifiedCount?: number;
+  timeline?: TimelineEvent[];
+  reporter?: {
+    name: string;
+    avatar: string;
+    badge?: string;
+  };
+  discussion?: DiscussionComment[];
+  verificationStats?: {
+    confirmCount: number;
+    alreadyFixedCount: number;
+    notFoundCount: number;
+    spamCount: number;
+  };
+  aiSummary?: {
+    summary: string;
+    confidence: number;
+    categoryMatch: string;
+    severityMatch: string;
+    routingTo: string;
+  };
+  relatedIssues?: string[];
 }
 
 interface EvidenceCardProps {
@@ -76,10 +123,12 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
     >
       {/* Visual Top Image Stage */}
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
-        <img
+        <Image
           src={report.imageUrl}
           alt={report.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           referrerPolicy="no-referrer"
         />
         {/* Soft dark vignette gradient on bottom of image to protect overlay text */}
@@ -158,7 +207,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
           </div>
 
           {/* Contextual primary action trigger */}
-          <motion.button 
+          <motion.div 
             className={`p-2.5 rounded-xl border flex items-center justify-center transition-all duration-300 ${
               report.status === 'Resolved'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100'
@@ -174,7 +223,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
             ) : (
               <ArrowRight className="w-4 h-4" />
             )}
-          </motion.button>
+          </motion.div>
         </div>
       </div>
     </motion.div>
