@@ -2,6 +2,14 @@ import { IssueRepository } from '../repositories/issueRepository';
 import { Issue, Comment } from '../models';
 
 export const IssueService = {
+  subscribe(callback: (issues: Issue[]) => void) {
+    return IssueRepository.subscribe(callback);
+  },
+
+  subscribeToIssue(id: string, callback: (issue: Issue | null) => void) {
+    return IssueRepository.subscribeToIssue(id, callback);
+  },
+
   /**
    * List all reports with optional categories and search keywords
    */

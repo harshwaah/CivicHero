@@ -31,14 +31,36 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
   const [reports, setReports] = useState<Issue[]>([]);
 
   useEffect(() => {
-    async function fetchIssues() {
-      const data = await IssueService.getIssues(
-        activeCategory === 'All Activity' ? undefined : activeCategory, 
-        searchQuery
-      );
-      setReports(data);
+    let unsubscribe = () => {};
+
+    async function setupSubscription() {
+      // Create a wrapper that handles both filtering and state updates
+      const handleIssuesUpdate = (issues: Issue[]) => {
+        let list = issues;
+        if (activeCategory && activeCategory !== 'All Activity') {
+          list = list.filter((item) => item.category.toLowerCase() === activeCategory.toLowerCase());
+        }
+        if (searchQuery) {
+          const lower = searchQuery.toLowerCase();
+          list = list.filter(
+            (item) =>
+              item.title.toLowerCase().includes(lower) ||
+              item.description.toLowerCase().includes(lower) ||
+              item.location.toLowerCase().includes(lower)
+          );
+        }
+        setReports(list);
+      };
+
+      // Subscribe and store the unsubscribe function
+      unsubscribe = IssueService.subscribe(handleIssuesUpdate);
     }
-    fetchIssues();
+    
+    setupSubscription();
+
+    return () => {
+      unsubscribe();
+    };
   }, [activeCategory, searchQuery]);
 
   return (

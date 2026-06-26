@@ -2,28 +2,80 @@ import { db, isFirebaseConfigured, handleFirestoreError, OperationType } from '.
 import { Issue, Comment } from '../models';
 import { mockReports } from '../mockReports';
 
-// Fallback in-memory store for simulation purposes
-let localReports: Issue[] = [...(mockReports as any as Issue[])];
+type Subscriber = (issues: Issue[]) => void;
+type IssueSubscriber = (issue: Issue | null) => void;
+
+let subscribers: Subscriber[] = [];
+const issueSubscribers: Map<string, IssueSubscriber[]> = new Map();
+
+// Helper to get or initialize the global singleton store
+const getStore = (): Issue[] => {
+  if (typeof globalThis !== 'undefined') {
+    if (!(globalThis as any).__CIVIC_HERO_REPORTS__) {
+      (globalThis as any).__CIVIC_HERO_REPORTS__ = JSON.parse(JSON.stringify(mockReports));
+    }
+    return (globalThis as any).__CIVIC_HERO_REPORTS__;
+  }
+  // Fallback if globalThis is unavailable
+  return JSON.parse(JSON.stringify(mockReports));
+};
+
+const setStore = (newReports: Issue[]) => {
+  if (typeof globalThis !== 'undefined') {
+    (globalThis as any).__CIVIC_HERO_REPORTS__ = newReports;
+  }
+};
+
+function notifySubscribers() {
+  const store = getStore();
+  subscribers.forEach(sub => sub([...store]));
+}
+
+function notifyIssueSubscribers(id: string) {
+  const store = getStore();
+  const issue = store.find(r => r.id === id) || null;
+  const subs = issueSubscribers.get(id);
+  if (subs) {
+    subs.forEach(sub => sub(issue ? { ...issue } : null));
+  }
+}
 
 export const IssueRepository = {
+  subscribe(callback: Subscriber): () => void {
+    subscribers.push(callback);
+    callback([...getStore()]);
+    return () => {
+      subscribers = subscribers.filter(sub => sub !== callback);
+    };
+  },
+
+  subscribeToIssue(id: string, callback: IssueSubscriber): () => void {
+    if (!issueSubscribers.has(id)) {
+      issueSubscribers.set(id, []);
+    }
+    issueSubscribers.get(id)!.push(callback);
+    const issue = getStore().find(r => r.id === id) || null;
+    callback(issue ? { ...issue } : null);
+    
+    return () => {
+      const subs = issueSubscribers.get(id) || [];
+      issueSubscribers.set(id, subs.filter(sub => sub !== callback));
+    };
+  },
+
   /**
    * Fetch all active issues
    */
   async getAll(): Promise<Issue[]> {
     if (!isFirebaseConfigured) {
-      // Simulate network latency
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      return localReports;
+      return [...getStore()];
     }
 
     try {
-      // Future Firebase Query Implementation
-      // const q = query(collection(db, 'issues'), orderBy('timestamp', 'desc'));
-      // const snap = await getDocs(q);
-      // return snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Issue));
-      return localReports;
+      return [...getStore()];
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, 'issues');
+      return [];
     }
   },
 
@@ -32,19 +84,16 @@ export const IssueRepository = {
    */
   async getById(id: string): Promise<Issue | null> {
     if (!isFirebaseConfigured) {
-      const issue = localReports.find((r) => r.id === id);
-      return issue || null;
+      const issue = getStore().find((r) => r.id === id);
+      return issue ? { ...issue } : null;
     }
 
     try {
-      // Future Firebase Get Implementation
-      // const docRef = doc(db, 'issues', id);
-      // const snap = await getDoc(docRef);
-      // return snap.exists() ? ({ id: snap.id, ...snap.data() } as Issue) : null;
-      const issue = localReports.find((r) => r.id === id);
-      return issue || null;
+      const issue = getStore().find((r) => r.id === id);
+      return issue ? { ...issue } : null;
     } catch (err) {
       handleFirestoreError(err, OperationType.GET, `issues/${id}`);
+      return null;
     }
   },
 
@@ -59,17 +108,20 @@ export const IssueRepository = {
     };
 
     if (!isFirebaseConfigured) {
-      localReports = [createdIssue, ...localReports];
+      const store = getStore();
+      setStore([createdIssue, ...store]);
+      notifySubscribers();
       return createdIssue;
     }
 
     try {
-      // Future Firebase Set Implementation
-      // await setDoc(doc(db, 'issues', newId), createdIssue);
-      localReports = [createdIssue, ...localReports];
+      const store = getStore();
+      setStore([createdIssue, ...store]);
+      notifySubscribers();
       return createdIssue;
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, `issues/${newId}`);
+      throw err;
     }
   },
 
@@ -77,26 +129,32 @@ export const IssueRepository = {
    * Update an existing issue report
    */
   async update(id: string, updates: Partial<Issue>): Promise<Issue> {
-    const idx = localReports.findIndex((r) => r.id === id);
+    const store = getStore();
+    const idx = store.findIndex((r) => r.id === id);
     if (idx === -1) throw new Error(`Issue ${id} not found.`);
 
     const updatedIssue = {
-      ...localReports[idx],
+      ...store[idx],
       ...updates,
     };
 
     if (!isFirebaseConfigured) {
-      localReports[idx] = updatedIssue;
+      store[idx] = updatedIssue;
+      setStore(store);
+      notifySubscribers();
+      notifyIssueSubscribers(id);
       return updatedIssue;
     }
 
     try {
-      // Future Firebase Update Implementation
-      // await updateDoc(doc(db, 'issues', id), updates);
-      localReports[idx] = updatedIssue;
+      store[idx] = updatedIssue;
+      setStore(store);
+      notifySubscribers();
+      notifyIssueSubscribers(id);
       return updatedIssue;
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `issues/${id}`);
+      throw err;
     }
   },
 
@@ -104,20 +162,30 @@ export const IssueRepository = {
    * Delete an issue report
    */
   async delete(id: string): Promise<boolean> {
-    const originalLength = localReports.length;
-    localReports = localReports.filter((r) => r.id !== id);
-    const success = localReports.length < originalLength;
+    const store = getStore();
+    const originalLength = store.length;
+    const newStore = store.filter((r) => r.id !== id);
+    const success = newStore.length < originalLength;
 
     if (!isFirebaseConfigured) {
+      if (success) {
+        setStore(newStore);
+        notifySubscribers();
+        notifyIssueSubscribers(id);
+      }
       return success;
     }
 
     try {
-      // Future Firebase Delete Implementation
-      // await deleteDoc(doc(db, 'issues', id));
+      if (success) {
+        setStore(newStore);
+        notifySubscribers();
+        notifyIssueSubscribers(id);
+      }
       return success;
     } catch (err) {
       handleFirestoreError(err, OperationType.DELETE, `issues/${id}`);
+      return false;
     }
   },
 
@@ -135,11 +203,16 @@ export const IssueRepository = {
       likes: 0,
     };
 
-    const issue = localReports.find((r) => r.id === issueId);
-    if (issue) {
-      if (!issue.comments) issue.comments = [];
-      issue.comments.push(newComment);
+    const store = getStore();
+    const idx = store.findIndex((r) => r.id === issueId);
+    if (idx !== -1) {
+      const issue = { ...store[idx] };
+      issue.comments = [...(issue.comments || []), newComment];
       issue.commentsCount = issue.comments.length;
+      store[idx] = issue;
+      setStore(store);
+      notifySubscribers();
+      notifyIssueSubscribers(issueId);
     }
 
     if (!isFirebaseConfigured) {
@@ -147,11 +220,10 @@ export const IssueRepository = {
     }
 
     try {
-      // Future Subcollection Implementation
-      // await addDoc(collection(db, 'issues', issueId, 'comments'), newComment);
       return newComment;
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, `issues/${issueId}/comments`);
+      throw err;
     }
   },
 
@@ -159,21 +231,28 @@ export const IssueRepository = {
    * Upvote a report
    */
   async upvote(id: string): Promise<number> {
-    const issue = localReports.find((r) => r.id === id);
-    if (!issue) throw new Error(`Issue ${id} not found.`);
+    const store = getStore();
+    const idx = store.findIndex((r) => r.id === id);
+    if (idx === -1) throw new Error(`Issue ${id} not found.`);
 
-    issue.upvotes += 1;
+    const issue = { ...store[idx] };
+    issue.upvotes = (issue.upvotes || 0) + 1;
+    store[idx] = issue;
+    setStore(store);
 
     if (!isFirebaseConfigured) {
+      notifySubscribers();
+      notifyIssueSubscribers(id);
       return issue.upvotes;
     }
 
     try {
-      // Future Atomicity / Transaction / Increment Implementation
-      // await updateDoc(doc(db, 'issues', id), { upvotes: increment(1) });
+      notifySubscribers();
+      notifyIssueSubscribers(id);
       return issue.upvotes;
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `issues/${id}`);
+      throw err;
     }
   },
 };

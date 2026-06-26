@@ -46,18 +46,27 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    let unsubscribe = () => {};
+
     const fetchData = async () => {
       setLoading(true);
-      const fetchedIssues = await IssueService.getIssues();
+      
+      unsubscribe = IssueService.subscribe(fetchedIssues => {
+        setIssues(fetchedIssues);
+      });
+
       const fetchedAnalytics = await AnalyticsService.getCityScorecard();
       const fetchedHotspots = await CommunityIntelligenceAgent.detectHotspots();
       
-      setIssues(fetchedIssues);
       setAnalytics(fetchedAnalytics);
       setHotspots(fetchedHotspots);
       setLoading(false);
     };
     fetchData();
+
+    return () => {
+      unsubscribe();
+    };
   }, [activeTab]);
 
   const getPriorityColor = (urgency: string) => {

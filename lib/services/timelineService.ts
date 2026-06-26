@@ -2,6 +2,10 @@ import { TimelineRepository } from '../repositories/timelineRepository';
 import { TimelineEvent } from '../models';
 
 export const TimelineService = {
+  subscribe(issueId: string, callback: (events: TimelineEvent[]) => void) {
+    return TimelineRepository.subscribe(issueId, callback);
+  },
+
   /**
    * Retrieves chronological checkpoints for a specific issue ID
    */

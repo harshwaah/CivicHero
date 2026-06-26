@@ -44,15 +44,28 @@ export default function IssueDetailPage() {
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   useEffect(() => {
-    async function loadIssue() {
-      const data = await IssueService.getIssueDetails(id);
-      if (data) {
-        setReport(data);
-        setCommentsList(data.comments || data.discussion || []);
+    let unsubscribeIssue = () => {};
+    let unsubscribeTimeline = () => {};
+
+    unsubscribeIssue = IssueService.subscribeToIssue(id, (updatedIssue) => {
+      if (updatedIssue) {
+        setReport(prev => ({ ...updatedIssue, timeline: prev?.timeline || updatedIssue.timeline || [] }));
+        setCommentsList(updatedIssue.comments || updatedIssue.discussion || []);
+        setLoading(false);
+      } else {
+        setReport(null);
+        setLoading(false);
       }
-      setLoading(false);
-    }
-    loadIssue();
+    });
+
+    unsubscribeTimeline = TimelineService.subscribe(id, (events) => {
+      setReport(prev => prev ? { ...prev, timeline: events } : null);
+    });
+
+    return () => {
+      unsubscribeIssue();
+      unsubscribeTimeline();
+    };
   }, [id]);
 
   if (loading) {

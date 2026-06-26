@@ -148,7 +148,8 @@ While currently operating on client-side state, user authentication will be laye
 
 ### Mission Control Repository Synchronization
 The Administrator Portal relies entirely on the exact same `IssueRepository` and `TimelineRepository` as the Citizen Portal. 
-*   **Write Operations**: The `IssueService` implements administrative functions such as `updateIssueStatus` and `assignDepartment`. These methods trigger immediate writes to the underlying data layer.
+*   **Reactive Subscriptions**: Both repositories implement a lightweight `subscribe(callback)` pattern, pushing real-time updates directly to React components. This mirrors how Firestore `onSnapshot()` listeners will work, ensuring UI state remains flawlessly synchronized across all active sessions.
+*   **Write Operations**: The `IssueService` implements administrative functions such as `updateIssueStatus` and `assignDepartment`. These methods trigger immediate writes to the underlying data layer, which subsequently notifies all active subscribers.
 *   **Audit Logging**: Every administrative action utilizes `TimelineService.appendMilestone()` to write directly to the `/issues/{issueId}/timeline` subcollection, ensuring an immutable ledger.
 *   **AI Integration**: The `AdministratorCopilot` and `CommunityIntelligenceAgent` provide data-driven insights by reading the aggregated issues collection, keeping operational intelligence tightly coupled to real-time citizen reporting.
 

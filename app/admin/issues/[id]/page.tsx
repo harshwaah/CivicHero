@@ -28,20 +28,28 @@ export default function AdminIssueDetailPage() {
   const [assigning, setAssigning] = useState(false);
   const [selectedDept, setSelectedDept] = useState('');
   
-  const loadIssue = async () => {
-    setLoading(true);
-    const data = await IssueService.getIssueDetails(id);
-    if (data) {
-      const timeline = await TimelineService.getTimeline(id);
-      setIssue({ ...data, timeline });
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadIssue();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    let unsubscribeIssue = () => {};
+    let unsubscribeTimeline = () => {};
+
+    unsubscribeIssue = IssueService.subscribeToIssue(id, (updatedIssue) => {
+      if (updatedIssue) {
+        setIssue(prev => ({ ...updatedIssue, timeline: prev?.timeline || updatedIssue.timeline || [] }));
+        setLoading(false);
+      } else {
+        setIssue(null);
+        setLoading(false);
+      }
+    });
+
+    unsubscribeTimeline = TimelineService.subscribe(id, (events) => {
+      setIssue(prev => prev ? { ...prev, timeline: events } : null);
+    });
+
+    return () => {
+      unsubscribeIssue();
+      unsubscribeTimeline();
+    };
   }, [id]);
 
   const handleUpdateStatus = async (status: 'Live' | 'Reported' | 'In Progress' | 'Resolved') => {
@@ -49,7 +57,6 @@ export default function AdminIssueDetailPage() {
     await IssueService.updateIssueStatus(issue.id, status, 'Admin User');
     setToastMessage(`Status updated to ${status}`);
     setTimeout(() => setToastMessage(null), 3000);
-    loadIssue();
   };
 
   const handleAssignDepartment = async (e: React.FormEvent) => {
@@ -61,7 +68,6 @@ export default function AdminIssueDetailPage() {
     setSelectedDept('');
     setToastMessage(`Issue assigned to ${selectedDept}`);
     setTimeout(() => setToastMessage(null), 3000);
-    loadIssue();
   };
 
   const handleManualTimelineEvent = async () => {
@@ -69,7 +75,6 @@ export default function AdminIssueDetailPage() {
     await TimelineService.appendMilestone(issue.id, 'admin_note', 'Administrative Review', 'An administrator has manually reviewed this issue.');
     setToastMessage(`Timeline updated`);
     setTimeout(() => setToastMessage(null), 3000);
-    loadIssue();
   };
 
   if (loading) {
