@@ -4,6 +4,9 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
 import { MapPin, ArrowRight, Check } from 'lucide-react';
+import { DESIGN_TOKENS } from '@/lib/designTokens';
+import { getPriorityClasses, getStatusClasses } from '@/lib/helpers';
+
 
 export interface TimelineEvent {
   id: string;
@@ -102,23 +105,14 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
   };
 
   const getPriorityBadge = () => {
-    switch (report.priority) {
-      case 'Critical':
-        return 'bg-red-50 text-red-700 border-red-100';
-      case 'High':
-        return 'bg-orange-50 text-orange-700 border-orange-100';
-      case 'Medium':
-        return 'bg-amber-50 text-amber-700 border-amber-100';
-      default:
-        return 'bg-blue-50 text-blue-700 border-blue-100';
-    }
+    return getPriorityClasses(report.priority);
   };
 
   const badge = getStatusBadge();
 
   return (
     <motion.div
-      className="bg-white rounded-[28px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col h-full group"
+      className={`bg-white ${DESIGN_TOKENS.radius.xl} overflow-hidden border border-slate-100 ${DESIGN_TOKENS.shadows.sm} hover:${DESIGN_TOKENS.shadows.md} ${DESIGN_TOKENS.transitions.default} flex flex-col h-full group`}
       whileHover={{ y: -4 }}
     >
       {/* Visual Top Image Stage */}

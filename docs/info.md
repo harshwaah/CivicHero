@@ -1,6 +1,6 @@
 # CivicHero Technical Architecture & Design Document
 
-This document details the frontend architecture, system flows, and future expansion paths of the **CivicHero Citizen Application**.
+This document details the frontend architecture, system flows, design tokens, reusable component inventory, and future expansion paths of the **CivicHero Citizen Application**.
 
 ---
 
@@ -13,96 +13,137 @@ This document details the frontend architecture, system flows, and future expans
 │   │   ├── issues/           # Browse & inspection dynamic subroutes
 │   │   │   └── [id]/         # Dynamic Issue view
 │   │   │       ├── page.tsx  # Interactive Issue Detail (AISummary, map point, verification)
-│   │   │       └── timeline/ # Progressive stage verification ledger
+│   │   │       └── timeline/ # Progressive stage verification ledger (8 Stages)
 │   │   ├── report/           # Step-by-step incident reporting flow
-│   │   │   └── page.tsx      # Multi-step state-preserving wizard (Latest addition)
+│   │   │   └── page.tsx      # Multi-step state-preserving wizard (autofills, scanner)
 │   │   ├── globals.css       # Core Tailwind CSS variables & glassmorphic styles
 │   │   ├── layout.tsx        # HTML wrapper / font injection (Inter, Space Grotesk, JetBrains Mono)
 │   │   └── page.tsx          # Citizen Portal Feed entrypoint (spotlights, category filter)
 │   └── page.tsx              # CivicHero Platform Hero Landing page
 ├── components/               # Shareable UI atomic React components
-│   ├── AISummaryCard.tsx     # Computer-vision diagnostic results block
+│   ├── AISummaryCard.tsx     # Computer-vision diagnostic results block (Shared)
 │   ├── CitizenFeed.tsx       # Scrolling incident feeds with expandable search
 │   ├── CitizenNav.tsx        # Mobile (Bottom-glass) & Desktop (Left-rail) navigation
-│   ├── EvidenceCard.tsx      # Feed list element summarizing category & status
+│   ├── EvidenceCard.tsx      # Feed list element summarizing category & status (Shared)
 │   ├── IncidentsMapPreview.tsx # Desktop sidebar georef dashboard preview
-│   └── VerificationBar.tsx   # Co-signing incrementer enabling crowd certification
+│   ├── VerificationBar.tsx   # Co-signing incrementer enabling crowd certification
+│   ├── Header.tsx            # Global application navigation bar
+│   ├── Footer.tsx            # Standardized institutional footer layout
+│   └── MapPlaceholder.tsx    # Shared static SVG responsive map canvas
 ├── lib/                      # Core utility packages and mock database collections
+│   ├── designTokens.ts       # Centralized design constants (radii, colors, shadows)
+│   ├── animations.ts         # Centralized Framer Motion transition variants
+│   ├── helpers.ts            # Centralized reusable formatters & mapping rules
+│   ├── mockData.ts           # Centralized mock lists, categories, presets, and constants
 │   ├── mockReports.ts        # Fully structured mock JSON records for dynamic routes
 │   └── utils.ts              # Tailwind merging configuration helpers
 └── docs/                     # Architectural design document manuals
-    └── info.md               # [THIS FILE] Technical system manual
+    ├── info.md               # [THIS FILE] Technical system manual
+    └── conventions.md        # Institutional Engineering Handbook
 ```
 
 ---
 
-## 2. Core Frontend Flows
+## 2. Reusable Component Inventory
 
-### The Citizen Incident Report Workflow
+CivicHero is built with atomic, reusable building blocks designed to be shared directly between Citizen and upcoming Administrator workspaces:
 
-The Reporting flow resides at `/app/citizen/report/page.tsx` and guides users through an incremental five-stage state engine that simulates real deep diagnostics while keeping browser back-navigation alive:
-
-```
-[Citizen Feed] ➔ click Floating Action button
-       ▼
-[Step 1: Initiate Case] ── Upload/Capture ➔ Presets auto-populate narrative details
-       ▼
-[Step 2: Review Raw]    ── Co-sign inputs before matching classifiers
-       ▼
-[Step 3: AI Diagnostic] ── Visual neural scan bar + real-time diagnostic telemetry log reveal
-       ▼
-[Step 4: Docket Review] ── Unified panel linking citizen details with auto-detected department routing
-       ▼
-[Step 5: Success Anchor]── Lock report on local ledger (renders unique case ticket ID)
-```
+*   **AISummaryCard** (`components/AISummaryCard.tsx`): A card presenting computer-vision analysis results, including a dynamic confidence score, structured category matching labels, severity analysis, and routing departments.
+*   **EvidenceCard** (`components/EvidenceCard.tsx`): Highly scalable card summarizing issue titles, geographic locations, category badges, dynamic timestamps, priority indicators, and status chips.
+*   **MapPlaceholder** (`components/MapPlaceholder.tsx`): A responsive, custom-styled SVG canvas with styled pins representing real geofenced coordinates. Perfect for high-fidelity offline layouts.
+*   **VerificationBar** (`components/VerificationBar.tsx`): A community co-signing tool with state managers allowing local residents to upvote report accuracy, flag resolved issues, and register reports.
+*   **CitizenNav** (`components/CitizenNav.tsx`): Polymorphic navigation that dynamically switches between a glass bottom-bar on mobile viewports and a clean, responsive left-side rail on desktop screens.
 
 ---
 
-## 3. Key Technical Decisions & Design Philosophy
+## 3. Design Token Documentation
 
-### Browser-Level History Integration (Deep Linking & Safe State)
-*   **The Challenge**: Next.js App Router query parameter syncing via standard `useSearchParams` hook requires wrapping pages in `<Suspense>` chunks to avoid compilation-time server-side generation warnings.
-*   **Our Solution**: Implemented native event listeners bound directly to the browser history (`popstate` API). This achieves:
-    1.  **Strict State Preservation**: Navigating between wizard steps (`?step=review` ➔ `?step=report`) preserves typed description text, title strings, and images without mounting/unmounting components.
-    2.  **Back-Button Support**: Tapping the browser back button rolls back individual steps seamlessly.
-    3.  **Static Build Safety**: No hydration mismatch or `<Suspense>` bundling bottlenecks.
+All visual aesthetics are centralized in `/lib/designTokens.ts` to enforce branding guidelines:
 
-### Interactive "Autofill Presets"
-*   Since file uploads and device hardware cameras are simulated in the current frontend phase, we designed an **Interactive Presets Gallery**.
-*   Users select a specific real-world incident type (e.g., *Potable Water main spray*, *Crater pothole*, *Tree fall blockages*). Tapping a preset loads a high-resolution Unsplash visual, and offers an **Auto-fill** link that instantly populates the title, categories, urgency levels, and location fields.
-*   This ensures the simulation behaves predictably while allowing developers and testers to inspect realistic AI summaries.
-
-### Architecture-Aligned Design Language
-*   **Aesthetic Continuity**: Adheres strictly to the **Stitch Design System** rules:
-    *   **Typography**: Generous pairing of display-weight titles (Inter) with technical labels (JetBrains Mono).
-    *   **Colors**: Deep, commanding dark blues (`brand-primary`) paired with highly stable emerald green status markers (`brand-secondary`).
-    *   **Geometry**: Circular rounded geometry (`rounded-[28px]`, `rounded-[32px]`) that mimics tactile touch elements.
-
----
-
-## 4. Limitations & Future Integration Points
-
-### Live Google Maps Integration
-*   *Current state*: Static layout with SVG icons mimicking vector pins.
-*   *Phase 2 integration*: Swap static markers with `<GoogleMap>` React components from `@react-google-maps/api`. Map the report coordinates to active coordinates, pulling from the user's geofenced device GPS location.
-
-### Dynamic Gemini AI Processing
-*   *Current state*: Client-side preset dictionaries return pre-mapped diagnostic analysis fields.
-*   *Phase 2 integration*: Create an API Route endpoint (`/api/gemini/analyze`) utilizing the `@google/genai` SDK. Pass the uploaded image data block as base64 and feed it into a structured prompt schema:
-    ```json
-    {
-      "title": "Road crater with visual water leaking",
-      "category": "Roads",
-      "urgency": "High",
-      "suggestedDepartment": "Public Works - Road Maintenance Division",
-      "confidenceScore": 96
+```typescript
+export const DESIGN_TOKENS = {
+  radius: {
+    xs: 'rounded-md',      // 6px
+    sm: 'rounded-xl',      // 12px
+    md: 'rounded-2xl',     // 16px
+    lg: 'rounded-[24px]',  // 24px
+    xl: 'rounded-[28px]',  // 28px
+    xxl: 'rounded-[32px]', // 32px
+    full: 'rounded-full',
+  },
+  shadows: {
+    sm: 'shadow-sm',
+    md: 'shadow-md',
+    lg: 'shadow-lg',
+    xl: 'shadow-xl',
+  },
+  colors: {
+    status: {
+      Live: { bg: 'bg-red-500/10 text-red-600', dot: 'bg-red-500' },
+      Reported: { bg: 'bg-blue-500/10 text-blue-600', dot: 'bg-blue-50' },
+      'In Progress': { bg: 'bg-amber-500/10 text-amber-600', dot: 'bg-amber-500' },
+      Resolved: { bg: 'bg-emerald-500/10 text-emerald-600', dot: 'bg-emerald-500' },
     }
-    ```
+  }
+};
+```
 
-### Durable Firebase Firestore Storage
-*   *Current state*: Local React state manages newly created records, disappearing upon browser session termination.
-*   *Phase 2 integration*: Hook up firebase-blueprint rules so that when a user completes Step 5 (Success), the system executes:
-    ```javascript
-    await addDoc(collection(db, "reports"), { ...newReport, status: "Submitted" });
-    ```
-    This updates the main list collection, enabling real-time global feed additions!
+---
+
+## 4. Animation System
+
+Cohesive transition animations are centralized in `/lib/animations.ts` using Framer Motion:
+
+*   **Page Transitions (`ANIMATIONS.pageTransition`)**: Slide-up fade entrance on page layout mountings.
+*   **Modal Entries (`ANIMATIONS.modal`)**: High-performance spring scale-up slide entrances for overlay boxes.
+*   **Toasts (`ANIMATIONS.toast`)**: Bouncy spring slips slide-in from the corner of screen with smooth opacity exit steps.
+*   **Hover Lift (`ANIMATIONS.hoverLift`)**: Hardware-accelerated gentle y-axis offset lifts for cards and interactive assets.
+
+---
+
+## 5. Utility Functions
+
+Standardized helper functions reside in `/lib/helpers.ts` for clean code decoupling:
+
+*   `formatConfidence(score)`: Translates numerical ranges into exact formatted percentages (e.g. `96%`).
+*   `getStatusClasses(status)`: Fetches precise, high-contrast Tailwind classes associated with a current incident stage.
+*   `getPriorityClasses(priority)`: Translates critical, high, or medium priorities into accessible badge color styles.
+*   `formatLocation(loc)`: Standardizes input addresses into readable city listings.
+
+---
+
+## 6. Mock Data Organization
+
+Mock data is entirely isolated from UI components inside `/lib/mockData.ts` and `/lib/mockReports.ts`:
+
+*   `mockReports`: Main registry of reported neighborhood issues with full timeline records, commenter profiles, and verification counters.
+*   `PRESET_OPTIONS`: Templates representing realistic potholes, water geysers, or streetlight outages, enabling instantaneous user testing autofills.
+*   `CATEGORIES`: List of approved reporting branches.
+*   `ALL_STAGES_MOCK`: Sequential lifecycle stages mapping the 8 chronological check-points of the blockchain registry ledger.
+
+---
+
+## 7. Routing Architecture
+
+Routing is powered by Next.js App Router for deep-linking, query syncs, and native browser back navigation:
+
+*   `/`: Home Page with institutional branding and gateway paths.
+*   `/citizen`: Main scrolling dashboard. Supports `activeTab` query sync state.
+*   `/citizen/issues/[id]`: Interactive detail file. Deep-linked dynamic cases.
+*   `/citizen/issues/[id]/timeline`: Chronological 8-stage ledger details.
+*   `/citizen/report`: Five-stage wizard. Syncs `?step=...` directly to browser historical layers for robust user back-navigation.
+
+---
+
+## 8. Accessibility & Responsive Strategy
+
+*   **Responsive Adaptation**: Pure CSS media-query layouts dynamically scale navigation, side-by-side maps, and forms between Mobile (touch targets >= 44px), Tablet grid columns, and spacious Desktop layouts.
+*   **Accessibility (a11y)**: Focus rings are styled on form entries. Proper semantic structures (`blockquote`, `button`, `main`, `header`) are enforced. Every image contains robust descriptive alternate text (`alt`), and high contrast levels satisfy eye-safety guidelines.
+
+---
+
+## 9. Technical Debt & Future Refactoring
+
+*   **Google Maps SDK Integration**: Placeholder maps should be swapped with reactive `@react-google-maps/api` canvases linked with actual coordinate filters.
+*   **Server-Side Gemini AI**: Visual analyzer logs will be connected to server-side Gemini 3.5 API routes parsing base64 inputs dynamically.
+*   **Cloud Persistence**: React states for newly submitted files will be wired into Google Cloud Firestore/Auth clusters using `@google-cloud/firestore` systems.

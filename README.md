@@ -1,69 +1,86 @@
-# CivicHero
+# CivicHero - Dynamic Civic Engagement Portal
 
 CivicHero is a high-fidelity, highly polished, next-generation civic engagement portal where citizens can capture, verify, and track neighborhood infrastructure concerns. This application empowers local agency by mapping local crowd-vetted reports directly into municipal public works queues.
 
-## Project Overview
+---
 
-CivicHero bridges the gap between chaos and coordinate-precise action. By employing micro-visual scanner feedback, transparent community endorsement mechanics, and structural timeline tracking, CivicHero turns citizen observation into real municipal momentum.
+## 1. Project Directory Structure
 
-## Tech Stack
-
-*   **Framework**: Next.js (App Router, React 19)
-*   **Language**: TypeScript
-*   **Styling**: Tailwind CSS (v4) with custom utility glassmorphic styles
-*   **Animations**: Framer Motion (`motion/react`)
-*   **Icons**: Lucide React
+```
+/
+├── app/                      # Next.js App Router (pages and routing)
+│   ├── citizen/              # Citizen Workspace views and portals
+│   ├── layout.tsx            # HTML root layout & font loading
+│   └── page.tsx              # Public Landings & Hero entrypoints
+├── components/               # Shareable UI atomic React components
+│   └── ui/                   # Primitive widgets and third-party UI blocks
+├── docs/                     # Technical specifications and handbooks
+│   ├── info.md               # Architecture and functional documentation
+│   └── conventions.md        # Institutional Engineering Handbook
+├── hooks/                    # Reusable React stateful hooks
+├── lib/                      # Centralized data collections, constants, and utilities
+│   ├── designTokens.ts       # Visual constants (radii, colors, shadows)
+│   ├── animations.ts         # Framer Motion transitions and variants
+│   ├── helpers.ts            # Formatting functions and styling maps
+│   ├── mockData.ts           # Shared presets, categories, and stages mock registry
+│   └── mockReports.ts        # Dynamic issue reports base
+└── public/                   # Static vector assets and illustrations
+```
 
 ---
 
-## Completed Phases
+## 2. Core Frontend Architecture
 
-### Phase 1.0: Premium Landing Experience
-*   Establishes the visual identity, premium typography pairing (Inter + Space Grotesk), and spacing rhythm.
-*   Builds the cohesive visual theme: **Deep Navy** (`#001e40`) with emerald-green accents (`#006c49`), set against crisp off-white canvas spaces.
+CivicHero is engineered using a robust, decoupled, and component-driven modular design system, ensuring that components are fully shared between the **Citizen** application and upcoming **Administrator** portals.
 
-### Phase 1.1: Citizen Application Frontend Shell & Feed
-*   Unified navigation sidebar (desktop) and responsive persistent bottom tab-bar (mobile).
-*   Search and filter filters for real-time neighborhood event reports.
-*   Interactive spotlight hero cards highlight critical municipal actions and status updates.
-
-### Phase 1.2: Complete Citizen Browse Flow
-*   Integrated comprehensive inspection view (Issue Detail) supporting dynamic map positions, chronological stage timeline widgets, and local citizen co-signing bars.
-*   Developed nested forums (Community Discussion Threads) enabling crowdsourced visual status updates.
-
-### Phase 1.3: Interactive Citizen Report Flow (Latest)
-*   Implemented the **5-Step Report Engine** to capture, preview, and process neighborhood incidents.
-*   **Simulated Photo Capture / Gallery presets** representing common municipal hazards (Potholes, Water Rruptures, Tree Collapse, Lighting Outage, Garbage Overflow).
-*   **Progressive AI Diagnostics Analyzer** with animated laser scanning visual feeds and live log outputs.
-*   **Consolidated Case Docket Ledger** reviews raw input coordinates side-by-side with automated confidence scores and suggested department routing targets.
-*   **Polished Success confirmation** with randomized ticket IDs (`#CH-XXXXX`) and structured dispatch workflow.
+*   **Design Token Layer (`lib/designTokens.ts`)**: Consolidates design primitives like corner rounding (`radius`), elevated shadows (`shadows`), and state status colors (`colors`).
+*   **Animation System (`lib/animations.ts`)**: Standardizes motion transitions (page entries, spring pop-ups, and hover lifts) using hardware-accelerated `motion/react` variants.
+*   **Utility & Formatting Layer (`lib/helpers.ts`)**: Houses pure formatting functions (`formatConfidence`, `getPriorityClasses`, `getStatusClasses`) to separate business logic from the view layer.
+*   **Mock Data Registry (`lib/mockData.ts`)**: Centralizes list definitions, dropdown categories, and incident presets to facilitate consistent simulations.
 
 ---
 
-## Roadmap & Upcoming Integration Points
+## 3. Implemented User Flows
 
-*   **Phase 2.1 (Google Maps Integration)**: Transition map placeholders to active Google Maps SDK views with dynamic vector geofencing layers.
-*   **Phase 2.2 (Gemini AI Processing)**: Power the scanner using live server-side Gemini 3.5 API calls to classify visual images, extract addresses, and auto-generate narrative summaries.
-*   **Phase 2.3 (Firebase Firestore Storage)**: Migrate from local mock state data storage to real-time Cloud Firestore clusters, enabling durable collaborative co-signing and forum entries.
+*   **Premium Landing & Portal Hero Gateway (`/app/page.tsx`)**: Prompts onboarding, sets visual hierarchies with elegant typography pairing (Inter + Space Grotesk), and establishes brand tone.
+*   **Citizen Scrolling Dashboard (`/app/citizen/page.tsx`)**: Showcases critical neighborhood alerts, custom search matching engines, and interactive spotlights.
+*   **Incident Browse & Dynamic Detail Inspection (`/app/citizen/issues/[id]/page.tsx`)**: Full case folder containing geographic map layouts, verification panels, and community comments.
+*   **Chronological Verification Ledger (`/app/citizen/issues/[id]/timeline/page.tsx`)**: High-fidelity, 8-stage visual timeline tracking a case's lifecycle.
+*   **5-Step Interactive Report Wizard (`/app/citizen/report/page.tsx`)**: Guided form containing image capture presets, animated optical laser scanner feedback, automated routing department classifiers, and ticket generation workflows.
 
 ---
 
-## Getting Started
+## 4. Engineering Conventions & Workflow
+
+We maintain a pristine codebase by sticking to strict principles:
+1.  **Decomposed Components**: Decoupled from route states where possible, accepting properties via clear, typed interfaces.
+2.  **No Mock Inline Configurations**: Static dropdown lists, categories, and animation duration numbers are imported from `lib/mockData` and `lib/animations` respectively.
+3.  **Strict Lint & TypeScript Compilation**: Continuous testing ensures the codebase maintains **zero compile errors and zero warning markers**.
+
+---
+
+## 5. Development Workflow
 
 ### Prerequisites
-
 *   Node.js (v18+)
 *   npm
 
 ### Installation & Run
-
-1. Clone the workspace files.
+1. Clone the project workspace.
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Start the dev server:
+3. Start the local dev server:
    ```bash
    npm run dev
    ```
-4. Access the application locally on [http://localhost:3000](http://localhost:3000).
+4. Access the server at [http://localhost:3000](http://localhost:3000).
+
+---
+
+## 6. Roadmap & Upcoming Integration Points
+
+*   **Phase 2.1 (Google Maps SDK)**: Transition map placeholders to active Google Maps SDK views with dynamic vector geofencing layers.
+*   **Phase 2.2 (Gemini AI API)**: Power the scanner using live server-side Gemini 3.5 API routes parsing base64 image data dynamically.
+*   **Phase 2.3 (Cloud persistence)**: Wire state captures into persistent Google Cloud Firestore/Auth clusters.

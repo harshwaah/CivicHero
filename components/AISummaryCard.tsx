@@ -3,6 +3,8 @@
 import React from 'react';
 import { Sparkles, ShieldCheck } from 'lucide-react';
 import { motion } from 'motion/react';
+import { DESIGN_TOKENS } from '@/lib/designTokens';
+import { formatConfidence } from '@/lib/helpers';
 
 interface AISummaryProps {
   summary?: string;
@@ -20,7 +22,7 @@ export default function AISummaryCard({
   routingTo = 'Public Works Department'
 }: AISummaryProps) {
   return (
-    <div className="bg-gradient-to-br from-amber-50/40 via-white to-slate-50/50 rounded-[28px] border border-amber-100/60 p-6 md:p-8 relative overflow-hidden shadow-sm">
+    <div className={`bg-gradient-to-br from-amber-50/40 via-white to-slate-50/50 ${DESIGN_TOKENS.radius.xl} border border-amber-100/60 p-6 md:p-8 relative overflow-hidden ${DESIGN_TOKENS.shadows.sm}`}>
       {/* Decorative top-right abstract backdrop glow */}
       <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-amber-100/20 blur-2xl pointer-events-none" />
 
@@ -44,7 +46,7 @@ export default function AISummaryCard({
         <div className="flex items-center gap-1.5 px-3 py-1 bg-amber-100/40 border border-amber-200/40 rounded-full">
           <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
           <span className="font-mono text-[10px] font-bold text-amber-800">
-            {confidence}% Match
+            {formatConfidence(confidence)} Match
           </span>
         </div>
       </div>

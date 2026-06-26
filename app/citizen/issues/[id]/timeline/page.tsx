@@ -21,18 +21,20 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { mockReports } from '@/lib/mockReports';
+import { ALL_STAGES_MOCK } from '@/lib/mockData';
+import { DESIGN_TOKENS } from '@/lib/designTokens';
 
-// List of standard stages to represent the complete lifecycle
-const ALL_STAGES = [
-  { id: 'reported', label: 'Reported', icon: AlertCircle, color: 'bg-blue-500 text-white', ringColor: 'ring-blue-100' },
-  { id: 'ai_categorized', label: 'AI Categorized', icon: Sparkles, color: 'bg-amber-500 text-white', ringColor: 'ring-amber-100' },
-  { id: 'community_verified', label: 'Community Verified', icon: Users, color: 'bg-purple-500 text-white', ringColor: 'ring-purple-100' },
-  { id: 'assigned', label: 'Assigned to Dept', icon: Truck, color: 'bg-indigo-500 text-white', ringColor: 'ring-indigo-100' },
-  { id: 'work_started', label: 'Work Started', icon: Wrench, color: 'bg-orange-500 text-white', ringColor: 'ring-orange-100' },
-  { id: 'repair_completed', label: 'Repair Complete', icon: CheckCircle, color: 'bg-emerald-500 text-white', ringColor: 'ring-emerald-100' },
-  { id: 'community_confirmation', label: 'Community Confirmation', icon: BadgeCheck, color: 'bg-teal-500 text-white', ringColor: 'ring-teal-100' },
-  { id: 'closed', label: 'Closed & Sealed', icon: FileText, color: 'bg-slate-600 text-white', ringColor: 'ring-slate-200' },
-];
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  AlertCircle,
+  Sparkles,
+  Users,
+  Truck,
+  Wrench,
+  CheckCircle,
+  BadgeCheck,
+  FileText,
+};
+
 
 export default function PublicTimelinePage() {
   const params = useParams();
@@ -54,13 +56,13 @@ export default function PublicTimelinePage() {
 
   // Combine existing report timeline events and fill pending ones to demonstrate the complete 8-stage lifecycle
   const renderFullTimeline = () => {
-    return ALL_STAGES.map((stage, idx) => {
+    return ALL_STAGES_MOCK.map((stage, idx) => {
       // Find matching event in mock timeline
       const matchedEvent = report.timeline?.find(e => e.type === stage.id);
       const isCompleted = !!matchedEvent;
-      const isCurrentlyActive = !isCompleted && idx > 0 && report.timeline?.some(e => e.type === ALL_STAGES[idx - 1].id) && (idx === report.timeline.length);
+      const isCurrentlyActive = !isCompleted && idx > 0 && report.timeline?.some(e => e.type === ALL_STAGES_MOCK[idx - 1].id) && (idx === report.timeline.length);
       
-      const Icon = stage.icon;
+      const Icon = ICON_MAP[stage.iconName] || AlertCircle;
 
       // Define placeholder info if the stage is pending
       const displayTitle = isCompleted ? matchedEvent.title : `${stage.label} (Upcoming)`;
@@ -89,7 +91,7 @@ export default function PublicTimelinePage() {
           className={`relative pl-10 pb-12 last:pb-0 group`}
         >
           {/* Vertical connecting line */}
-          {idx < ALL_STAGES.length - 1 && (
+          {idx < ALL_STAGES_MOCK.length - 1 && (
             <div className={`absolute left-4 top-8 bottom-0 w-0.5 ${
               isCompleted 
                 ? 'bg-gradient-to-b from-brand-primary to-brand-primary/40' 
