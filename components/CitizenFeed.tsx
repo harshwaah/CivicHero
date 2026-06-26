@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, MapPin, Sparkles, SlidersHorizontal, ArrowRight, X, Smile } from 'lucide-react';
-import EvidenceCard, { CivicReport } from './EvidenceCard';
-import { mockReports } from '../lib/mockReports';
+import EvidenceCard from './EvidenceCard';
+import { IssueService } from '../lib/services/issueService';
+import { Issue } from '../lib/models';
 
 interface CitizenFeedProps {
   onOpenReportPlaceholder: () => void;
@@ -27,18 +28,18 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
   const [activeCategory, setActiveCategory] = useState('All Activity');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [reports, setReports] = useState<Issue[]>([]);
 
-  // Simple elegant filter
-  const filteredReports = mockReports.filter((report) => {
-    const matchesCategory =
-      activeCategory === 'All Activity' ||
-      report.category.toLowerCase() === activeCategory.toLowerCase();
-    const matchesSearch =
-      report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      report.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      report.location.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  useEffect(() => {
+    async function fetchIssues() {
+      const data = await IssueService.getIssues(
+        activeCategory === 'All Activity' ? undefined : activeCategory, 
+        searchQuery
+      );
+      setReports(data);
+    }
+    fetchIssues();
+  }, [activeCategory, searchQuery]);
 
   return (
     <div className="flex-1 flex flex-col gap-6">
@@ -187,13 +188,13 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
             Recent Nearby Updates
           </h3>
           <span className="font-mono text-[11px] font-bold text-slate-400">
-            {filteredReports.length} {filteredReports.length === 1 ? 'Report' : 'Reports'} Found
+            {reports.length} {reports.length === 1 ? 'Report' : 'Reports'} Found
           </span>
         </div>
 
-        {filteredReports.length > 0 ? (
+        {reports.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredReports.map((report, index) => (
+            {reports.map((report, index) => (
               <motion.div
                 key={report.id}
                 initial={{ opacity: 0, y: 16 }}

@@ -66,7 +66,7 @@ export default function PublicTimelinePage() {
 
       // Define placeholder info if the stage is pending
       const displayTitle = isCompleted ? matchedEvent.title : `${stage.label} (Upcoming)`;
-      const displayTime = isCompleted ? matchedEvent.time : 'Awaiting previous phase completion';
+      const displayTime = isCompleted ? matchedEvent.timestamp : 'Awaiting previous phase completion';
       const displayActor = isCompleted ? matchedEvent.actor : 'Pending assignment';
       const displayDesc = isCompleted 
         ? matchedEvent.description 
@@ -75,7 +75,7 @@ export default function PublicTimelinePage() {
       // Assign some rich visual media to specific completed events to resemble real evidence attachments
       let mediaUrl = '';
       if (isCompleted && stage.id === 'reported') {
-        mediaUrl = report.imageUrl; // Original issue picture
+        mediaUrl = report.imageUrl || ''; // Original issue picture
       } else if (isCompleted && stage.id === 'work_started') {
         mediaUrl = 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=640&q=80'; // Work crew
       } else if (isCompleted && stage.id === 'repair_completed') {

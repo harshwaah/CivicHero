@@ -50,19 +50,31 @@ export interface TimelineEvent {
   title: string;
   description: string;
   timestamp: string;
+  actor?: string;
   status?: string;
   category?: string;
 }
 
 export interface Comment {
   id: string;
-  issueId: string;
-  authorName: string;
+  issueId?: string;
+  user?: {
+    name: string;
+    avatar?: string;
+    isOfficial?: boolean;
+    badge?: string;
+  };
+  timeAgo?: string;
+  text?: string;
+  likesCount?: number;
+  
+  // Keep original fields for backward compatibility during transition
+  authorName?: string;
   authorAvatar?: string;
   authorBadge?: string;
-  content: string;
-  timestamp: string;
-  likes: number;
+  content?: string;
+  timestamp?: string;
+  likes?: number;
 }
 
 export interface Verification {
@@ -94,22 +106,41 @@ export interface Issue {
   timestamp: string;
   location: string;
   upvotes: number;
-  commentsCount: number;
+  commentsCount?: number;
   imageUrl?: string;
   distance?: string;
-  aiSummary?: string;
+  aiSummary?: {
+    summary: string;
+    confidence: number;
+    categoryMatch: string;
+    severityMatch: string;
+    routingTo: string;
+  };
   confidence?: number;
   verifiedByCount?: number;
+  reporter?: {
+    name: string;
+    avatar?: string;
+    badge?: string;
+  };
   reporterName?: string;
   reporterBadge?: string;
   timeline?: TimelineEvent[];
+  discussion?: Comment[];
   comments?: Comment[];
   coordinates?: {
     lat: number;
     lng: number;
   };
+  verificationStats?: {
+    confirmCount: number;
+    alreadyFixedCount: number;
+    notFoundCount: number;
+    spamCount: number;
+  };
   trustMetrics?: TrustMetrics;
   routingDepartment?: string;
+  relatedIssues?: string[];
 }
 
 export interface Notification {

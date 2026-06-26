@@ -145,3 +145,9 @@ While currently operating on client-side state, user authentication will be laye
 1.  **Google Sign-In**: Powered by `signInWithPopup(auth, googleProvider)` to resolve iframe redirection restrictions.
 2.  **Authentication Context**: We will wrap the layout in an `AuthProvider` that listens to `onAuthStateChanged()` and syncs the current session across all repositories.
 3.  **Role-Based Access Control (RBAC)**: Administrator status is managed via a dedicated, read-only `/admins/{uid}` collection. This will prevent identity spoofing, as user custom claims can be bypassed but database-level document constraints are absolute.
+
+---
+
+## Setup Instructions
+
+For full setup instructions regarding environment variables, Firebase setup, Google Maps setup, Gemini API, and synchronization validation, please refer to the [Setup Guide](./setup.md).

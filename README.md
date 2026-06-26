@@ -18,6 +18,7 @@ This workspace represents the completion of **Phase 2**, which establishes a pro
 ├── docs/                       # Architectural design manuals & guides
 │   ├── info.md                 # Technical system manual (Architecture, files, structures)
 │   ├── backend.md              # [NEW] Backend implementation guide (Firestore, Storage, Maps, Gemini)
+│   ├── setup.md                # [NEW] Developer platform setup guide (Env, Firebase, Diagnostics)
 │   └── conventions.md          # Institutional Engineering Handbook
 ├── lib/                        # Core utility packages and data contracts
 │   ├── firebase/               # [NEW] Firebase Web SDK configurations
@@ -38,6 +39,8 @@ This workspace represents the completion of **Phase 2**, which establishes a pro
 ## 2. Environment Setup
 
 All backend settings and secrets are read dynamically from standard environment variables, keeping credentials safely hidden from client browsers.
+
+For detailed setup instructions, troubleshooting, and synchronization validation, refer to the **[CivicHero Platform Setup Guide](docs/setup.md)**.
 
 Create a `.env` file in the root directory (matching the keys in `.env.example`):
 

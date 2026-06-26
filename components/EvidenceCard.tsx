@@ -6,71 +6,10 @@ import { motion } from 'motion/react';
 import { MapPin, ArrowRight, Check } from 'lucide-react';
 import { DESIGN_TOKENS } from '@/lib/designTokens';
 import { getPriorityClasses, getStatusClasses } from '@/lib/helpers';
-
-
-export interface TimelineEvent {
-  id: string;
-  type: 'reported' | 'ai_categorized' | 'community_verified' | 'assigned' | 'work_started' | 'repair_completed' | 'community_confirmation' | 'closed';
-  title: string;
-  time: string;
-  actor: string;
-  description: string;
-  imageUrl?: string;
-  status: string;
-}
-
-export interface DiscussionComment {
-  id: string;
-  user: {
-    name: string;
-    avatar: string;
-    isOfficial?: boolean;
-    badge?: string;
-  };
-  timeAgo: string;
-  text: string;
-  likesCount: number;
-  replies?: DiscussionComment[];
-}
-
-export interface CivicReport {
-  id: string;
-  title: string;
-  description: string;
-  location: string;
-  distance: string;
-  imageUrl: string;
-  timeAgo: string;
-  category: string;
-  priority: 'Critical' | 'High' | 'Medium' | 'Low';
-  status: 'Live' | 'Reported' | 'In Progress' | 'Resolved';
-  watchingCount: number;
-  verifiedCount?: number;
-  timeline?: TimelineEvent[];
-  reporter?: {
-    name: string;
-    avatar: string;
-    badge?: string;
-  };
-  discussion?: DiscussionComment[];
-  verificationStats?: {
-    confirmCount: number;
-    alreadyFixedCount: number;
-    notFoundCount: number;
-    spamCount: number;
-  };
-  aiSummary?: {
-    summary: string;
-    confidence: number;
-    categoryMatch: string;
-    severityMatch: string;
-    routingTo: string;
-  };
-  relatedIssues?: string[];
-}
+import { Issue } from '@/lib/models';
 
 interface EvidenceCardProps {
-  report: CivicReport;
+  report: Issue;
 }
 
 export default function EvidenceCard({ report }: EvidenceCardProps) {
@@ -105,7 +44,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
   };
 
   const getPriorityBadge = () => {
-    return getPriorityClasses(report.priority);
+    return getPriorityClasses(report.urgency);
   };
 
   const badge = getStatusBadge();
@@ -118,7 +57,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
       {/* Visual Top Image Stage */}
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
         <Image
-          src={report.imageUrl}
+          src={report.imageUrl || 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=640&q=80'}
           alt={report.title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -143,7 +82,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
 
           {/* Time ago floating glass pill */}
           <div className="bg-slate-950/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-mono text-white/90 border border-white/10 tracking-wider">
-            {report.timeAgo.toUpperCase()}
+            {report.timestamp.toUpperCase()}
           </div>
         </div>
 
@@ -162,7 +101,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
           {/* Tags & Metadata bar */}
           <div className="flex items-center gap-2 mb-3">
             <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-mono font-bold uppercase tracking-wider ${getPriorityBadge()}`}>
-              {report.priority} priority
+              {report.urgency} priority
             </span>
             <span className="text-slate-300 font-mono text-xs">•</span>
             <span className="font-mono text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -194,8 +133,8 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
             
             <span className="font-mono text-[10px] font-bold text-slate-400">
               {report.status === 'Resolved' 
-                ? `${report.verifiedCount || 12} verified resolve` 
-                : `${report.watchingCount} watching`
+                ? `${report.verifiedByCount || 12} verified resolve` 
+                : `${report.upvotes} watching`
               }
             </span>
           </div>

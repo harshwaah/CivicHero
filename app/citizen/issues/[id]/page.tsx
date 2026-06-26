@@ -222,7 +222,7 @@ export default function IssueDetailPage() {
             {/* Visual Header Banner Stage */}
             <div className="relative aspect-[16/10] sm:aspect-[21/10] lg:aspect-[16/9] rounded-[32px] overflow-hidden bg-slate-950 border border-slate-100 shadow-sm group">
               <Image
-                src={report.imageUrl}
+                src={report.imageUrl || 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=640&q=80'}
                 alt={report.title}
                 fill
                 priority
@@ -257,13 +257,13 @@ export default function IssueDetailPage() {
             {/* Core Text Section */}
             <div className="bg-white rounded-[28px] border border-slate-100 p-6 md:p-8 shadow-sm">
               <div className="flex items-center gap-2 mb-4 flex-wrap">
-                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${getPriorityClasses(report.priority)}`}>
-                  {report.priority} Priority
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${getPriorityClasses(report.urgency)}`}>
+                  {report.urgency} Priority
                 </span>
                 <span className="text-slate-300 font-mono text-xs">•</span>
                 <div className="flex items-center gap-1 font-mono text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>Reported {report.timeAgo}</span>
+                  <span>Reported {report.timestamp}</span>
                 </div>
               </div>
 
@@ -328,7 +328,7 @@ export default function IssueDetailPage() {
             {/* Crowd Sourcing verification interactive bar */}
             <VerificationBar 
               onVerify={handleVerify}
-              confirmCount={report.verificationStats?.confirmCount || report.watchingCount}
+              confirmCount={report.verificationStats?.confirmCount || report.upvotes}
               alreadyFixedCount={report.verificationStats?.alreadyFixedCount || 0}
             />
 
@@ -376,7 +376,7 @@ export default function IssueDetailPage() {
                       
                       <div>
                         <span className="font-mono text-[9px] text-slate-400 font-bold block">
-                          {event.time.toUpperCase()}
+                          {event.timestamp.toUpperCase()}
                         </span>
                         <h4 className="font-sans font-bold text-xs text-brand-primary mt-1 leading-snug">
                           {event.title}
@@ -460,8 +460,8 @@ export default function IssueDetailPage() {
                       <div className="flex items-center gap-2.5">
                         <div className="relative w-8 h-8 rounded-full overflow-hidden border border-slate-100 bg-slate-50 shrink-0">
                           <Image
-                            src={comment.user.avatar}
-                            alt={comment.user.name}
+                            src={comment.user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80'}
+                            alt={comment.user?.name || 'User'}
                             fill
                             sizes="32px"
                             className="object-cover"
@@ -471,16 +471,16 @@ export default function IssueDetailPage() {
                         <div>
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="font-sans font-bold text-xs text-brand-primary">
-                              {comment.user.name}
+                              {comment.user?.name || 'Unknown'}
                             </span>
-                            {comment.user.isOfficial && (
+                            {comment.user?.isOfficial && (
                               <span className="bg-brand-primary/5 text-brand-primary px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase tracking-wider border border-brand-primary/10">
                                 Official
                               </span>
                             )}
                           </div>
                           <span className="font-mono text-[8px] text-slate-400 font-bold block mt-0.5 uppercase">
-                            {comment.timeAgo} • {comment.user.badge || 'Verified Neighbor'}
+                            {comment.timestamp || comment.timeAgo} • {comment.user?.badge || 'Verified Neighbor'}
                           </span>
                         </div>
                       </div>
