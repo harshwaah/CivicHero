@@ -145,3 +145,20 @@ Our unified error framework guarantees that low-level failures are caught, logge
 *   **Milestone 2.2 (Gemini Server-side Routes)**: Wire base64 photo scans directly to `gemini-3.5-flash` API routes.
 *   **Milestone 2.3 (Firebase Active Collections)**: Swap in-memory state fallbacks with real-time Firestore collection references.
 *   **Milestone 2.4 (Security Audit)**: Deploy and dry-run `firestore.rules` using the Red-Team test suite.
+
+---
+
+## 7. Mission Control (Administrator) Architecture
+
+The CivicHero Administrator Portal ("Mission Control") operates alongside the Citizen Portal to provide a comprehensive management interface for municipal operations. 
+
+### 7.1 Shared Synchronization Flow
+CivicHero is built on the philosophy of "Trust Through Transparency." The Citizen application and the Administrator Portal are not separate applications; they are two interfaces connected to the exact same shared data models.
+*   **One Source of Truth**: When an administrator performs an action (e.g., assigning a department, updating a status), the `IssueService` updates the repository. This state change is instantly available to the Citizen UI.
+*   **Automated Transparency**: Administrative actions automatically append immutable entries to the timeline via the `TimelineService`. Citizens immediately see these events (e.g., "Assigned to Roads Department", "Work Started").
+
+### 7.2 Administrator Workflow
+*   **Mission Control Dashboard**: Provides a high-level view of system health, department workloads, and critical issues requiring attention.
+*   **Priority Queue**: Allows administrators to filter, search, and triage active reports efficiently.
+*   **Operational Detail View**: The Administrator Issue Detail page shares UI components with the Citizen view (like `AISummaryCard` and `MapPlaceholder`), but adds operational controls for assigning departments, updating status, and manual timeline appending.
+*   **AI Copilot & Analytics**: Empowers administrators with AI-generated work drafts, geographic hotspot detection, resource forecasting, and live civic trust indices, utilizing the `AdministratorCopilot`, `CommunityIntelligenceAgent`, and `AnalyticsService`.

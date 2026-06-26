@@ -33,6 +33,34 @@ export const IssueService = {
   },
 
   /**
+   * Update issue status and append timeline event
+   */
+  async updateIssueStatus(id: string, status: 'Live' | 'Reported' | 'In Progress' | 'Resolved', actor: string): Promise<Issue> {
+    const issue = await IssueRepository.update(id, { status });
+    await import('./timelineService').then(m => m.TimelineService.appendMilestone(
+      id,
+      'status_update',
+      `Status updated to ${status}`,
+      `The issue status was changed to ${status}.`
+    ));
+    return issue;
+  },
+
+  /**
+   * Assign issue to a department
+   */
+  async assignDepartment(id: string, department: string, actor: string): Promise<Issue> {
+    const issue = await IssueRepository.update(id, { routingDepartment: department });
+    await import('./timelineService').then(m => m.TimelineService.appendMilestone(
+      id,
+      'department_assigned',
+      `Assigned to ${department}`,
+      `The issue has been assigned to the ${department} department for resolution.`
+    ));
+    return issue;
+  },
+
+  /**
    * Append a citizen comment to a report
    */
   async postComment(issueId: string, content: string, authorName: string, authorBadge?: string): Promise<Comment> {

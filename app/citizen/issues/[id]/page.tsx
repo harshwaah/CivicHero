@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,6 +22,8 @@ import {
   Award
 } from 'lucide-react';
 import { mockReports } from '@/lib/mockReports';
+import { IssueService } from '@/lib/services/issueService';
+import { Issue } from '@/lib/models';
 import MapPlaceholder from '@/components/MapPlaceholder';
 import AISummaryCard from '@/components/AISummaryCard';
 import VerificationBar from '@/components/VerificationBar';
@@ -31,15 +33,36 @@ export default function IssueDetailPage() {
   const router = useRouter();
   const id = params?.id as string;
   
-  // Find report
-  const report = mockReports.find(r => r.id === id);
+  const [report, setReport] = useState<Issue | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // States
   const [isSaved, setIsSaved] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [commentInput, setCommentInput] = useState('');
-  const [commentsList, setCommentsList] = useState(report?.discussion || []);
+  const [commentsList, setCommentsList] = useState<any[]>([]);
   const [isShareOpen, setIsShareOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadIssue() {
+      const data = await IssueService.getIssueDetails(id);
+      if (data) {
+        setReport(data);
+        setCommentsList(data.comments || data.discussion || []);
+      }
+      setLoading(false);
+    }
+    loadIssue();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#fafbfc] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-8 h-8 border-4 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin mb-4" />
+        <p className="font-mono text-xs text-slate-500 font-bold uppercase tracking-widest">Loading...</p>
+      </div>
+    );
+  }
 
   if (!report) {
     return (

@@ -139,12 +139,18 @@ Server-side Gemini 3.5 API calls are proxied through standard Next.js App Router
 
 ---
 
-## 5. Future Authentication Strategy
+## 5. Future Authentication & Mission Control Strategy
 
 While currently operating on client-side state, user authentication will be layered seamlessly when required:
 1.  **Google Sign-In**: Powered by `signInWithPopup(auth, googleProvider)` to resolve iframe redirection restrictions.
 2.  **Authentication Context**: We will wrap the layout in an `AuthProvider` that listens to `onAuthStateChanged()` and syncs the current session across all repositories.
 3.  **Role-Based Access Control (RBAC)**: Administrator status is managed via a dedicated, read-only `/admins/{uid}` collection. This will prevent identity spoofing, as user custom claims can be bypassed but database-level document constraints are absolute.
+
+### Mission Control Repository Synchronization
+The Administrator Portal relies entirely on the exact same `IssueRepository` and `TimelineRepository` as the Citizen Portal. 
+*   **Write Operations**: The `IssueService` implements administrative functions such as `updateIssueStatus` and `assignDepartment`. These methods trigger immediate writes to the underlying data layer.
+*   **Audit Logging**: Every administrative action utilizes `TimelineService.appendMilestone()` to write directly to the `/issues/{issueId}/timeline` subcollection, ensuring an immutable ledger.
+*   **AI Integration**: The `AdministratorCopilot` and `CommunityIntelligenceAgent` provide data-driven insights by reading the aggregated issues collection, keeping operational intelligence tightly coupled to real-time citizen reporting.
 
 ---
 

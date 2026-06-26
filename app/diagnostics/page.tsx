@@ -7,6 +7,19 @@ import { IssueService } from '@/lib/services/issueService';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
 
+const StatusItem = ({ label, status, detail, success }: { label: string, status: string, detail: string, success: boolean }) => (
+  <div className="p-4 border border-slate-200 rounded-xl bg-white flex flex-col gap-1 shadow-sm">
+    <div className="flex items-center gap-2">
+      {success ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
+      <span className="font-sans font-bold text-sm text-slate-900">{label}</span>
+    </div>
+    <div className="pl-7">
+      <span className="font-mono text-xs font-bold text-slate-500 uppercase">{status}</span>
+      <p className="font-body text-xs text-slate-500 mt-1">{detail}</p>
+    </div>
+  </div>
+);
+
 export default function DiagnosticsPage() {
   const { apiKey, isLoaded: mapsLoaded, loadError: mapsError } = useMaps();
   const [repoStatus, setRepoStatus] = useState<string>('Checking...');
@@ -22,19 +35,6 @@ export default function DiagnosticsPage() {
     }
     checkRepo();
   }, []);
-
-  const StatusItem = ({ label, status, detail, success }: { label: string, status: string, detail: string, success: boolean }) => (
-    <div className="p-4 border border-slate-200 rounded-xl bg-white flex flex-col gap-1 shadow-sm">
-      <div className="flex items-center gap-2">
-        {success ? <CheckCircle className="w-5 h-5 text-emerald-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
-        <span className="font-sans font-bold text-sm text-slate-900">{label}</span>
-      </div>
-      <div className="pl-7">
-        <span className="font-mono text-xs font-bold text-slate-500 uppercase">{status}</span>
-        <p className="font-body text-xs text-slate-500 mt-1">{detail}</p>
-      </div>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-[#fafbfc] text-brand-primary p-6 md:p-12">
