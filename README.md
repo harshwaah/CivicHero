@@ -18,6 +18,7 @@ This workspace represents the completion of **Phase 2**, which establishes a pro
 ├── docs/                       # Architectural design manuals & guides
 │   ├── info.md                 # Technical system manual (Architecture, files, structures)
 │   ├── backend.md              # [NEW] Backend implementation guide (Firestore, Storage, Maps, Gemini)
+│   ├── maps.md                 # [NEW] Google Maps Platform implementation & architecture manual
 │   ├── setup.md                # [NEW] Developer platform setup guide (Env, Firebase, Diagnostics)
 │   └── conventions.md          # Institutional Engineering Handbook
 ├── lib/                        # Core utility packages and data contracts
@@ -121,6 +122,6 @@ Hosts central context bindings for maps and AI agents:
 
 ## 5. Upcoming Implementation Roadmaps
 
-*   **Phase 2.1 (Google Maps SDK)**: Replace the map placeholder component inside `<CivicMap>` with real reactive coordinates overlays and dynamic reverse-address geocoding.
+*   **Phase 5 (Google Maps Platform Integration) [COMPLETED]**: Replaced all map placeholder components with fully interactive, unified Google Maps, supporting user geolocations, real-time spatial heatmaps via deck.gl, clustered markers, custom priority styling, and interactive report point selection.
 *   **Phase 2.2 (Gemini Live API)**: Connect `scanInfrastructureImage` base64 uploads directly to a server-side Gemini 3.5 API route.
 *   **Phase 2.3 (Cloud Persistence)**: Hook all Repository methods directly into live Firestore collections and set up real-time `onSnapshot` collections synchronization.

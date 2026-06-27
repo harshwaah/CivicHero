@@ -26,12 +26,14 @@ The project conforms to a clean, component-driven, and multi-layered architectur
 │   ├── AISummaryCard.tsx       # Computer-vision diagnostic results block
 │   ├── CitizenFeed.tsx         # Scrolling incident feeds with expandable search
 │   ├── CitizenNav.tsx          # Mobile (Bottom-glass) & Desktop (Left-rail) navigation
+│   ├── ClusteredMarkers.tsx    # Google Maps clustered markers engine
+│   ├── DeckGlOverlay.tsx       # WebGL dynamic heatmap layer
 │   ├── EvidenceCard.tsx        # Feed list element summarizing category & status
 │   ├── IncidentsMapPreview.tsx # Desktop sidebar georef dashboard preview
 │   ├── VerificationBar.tsx     # Co-signing incrementer enabling crowd certification
 │   ├── Header.tsx              # Global application navigation bar
 │   ├── Footer.tsx              # Standardized institutional footer layout
-│   └── MapPlaceholder.tsx      # Shared static SVG responsive map canvas
+│   └── MapPlaceholder.tsx      # Shared static SVG responsive map canvas (Deprecated)
 ├── lib/                        # Core utility packages and data contracts
 │   ├── firebase/               # Firebase Web SDK initialization & helpers
 │   │   ├── firebase.ts         # Base client config & lazy initializer
@@ -68,6 +70,7 @@ The project conforms to a clean, component-driven, and multi-layered architectur
 └── docs/                       # Architectural design document manuals
     ├── info.md                 # [THIS FILE] Technical system manual
     ├── backend.md              # Technical backend implementation roadmap
+    ├── maps.md                 # Google Maps Platform implementation & architecture manual
     └── conventions.md          # Institutional Engineering Handbook
 ```
 
@@ -77,7 +80,9 @@ The project conforms to a clean, component-driven, and multi-layered architectur
 
 *   **AISummaryCard** (`components/AISummaryCard.tsx`): Displays computer-vision analysis results, including a dynamic confidence score, structured category matching labels, severity analysis, and routing departments.
 *   **EvidenceCard** (`components/EvidenceCard.tsx`): Highly scalable card summarizing issue titles, geographic locations, category badges, dynamic timestamps, priority indicators, and status chips.
-*   **MapPlaceholder** (`components/MapPlaceholder.tsx`): A responsive, custom-styled SVG canvas with styled pins representing real geofenced coordinates. Perfect for high-fidelity offline layouts.
+*   **CivicMap** (`lib/providers/maps/mapProvider.tsx`): Unified, high-fidelity responsive Google Map wrapper. Supports custom-colored pins, marker clustering via `@googlemaps/markerclusterer`, dynamic user geolocations, map style selections, and custom touch interactions.
+*   **DeckGlOverlay** (`components/DeckGlOverlay.tsx`): Dynamic WebGL-based heatmap rendering layer using `@deck.gl/google-maps`. Maps real-time hotspot clusters based on issue category, severity, and upvote engagement levels.
+*   **ClusteredMarkers** (`components/ClusteredMarkers.tsx`): Combines multiple individual incident nodes into unified, zoom-adaptive cluster objects to optimize rendering performance.
 *   **VerificationBar** (`components/VerificationBar.tsx`): A community co-signing tool with state managers allowing local residents to upvote report accuracy, flag resolved issues, and register reports.
 *   **CitizenNav** (`components/CitizenNav.tsx`): Polymorphic navigation that dynamically switches between a glass bottom-bar on mobile viewports and a clean, responsive left-side rail on desktop screens.
 

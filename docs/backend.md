@@ -96,13 +96,15 @@ service firebase.storage {
 
 ## 3. Google Maps Platform Integration Strategy
 
-The Maps architecture is abstracted via the `<CivicMap>` polymorphic component and `<MapProvider>` state layer, ensuring that moving to a live maps canvas is entirely self-contained.
+The Maps architecture is fully integrated and abstracted via the `<CivicMap>` polymorphic component and `<MapProvider>` state layer. 
 
-### Execution Plan (Phase 2.1)
-1.  **Dynamic Bootstrap**: `MapProvider` loads the Google Maps JavaScript API script dynamically using `@googlemaps/js-api-loader` to avoid rendering blocks.
-2.  **Unified Canvas**: Swapping the placeholder for `<GoogleMap>` from `@react-google-maps/api`.
-3.  **Vector Markers**: Custom SVG vectors mapping issue urgency to pins (red for Critical, orange for High, blue for Low).
-4.  **Reverse Geocoding**: Integrating the Google Places API inside the wizard to automatically convert typed street names into latitude and longitude coordinates.
+### Implementation Highlights
+1.  **Dynamic Bootstrap**: Handled via `@vis.gl/react-google-maps` using `<APIProvider>`, resolving rendering blocks and ensuring the script is lazy-loaded only where required.
+2.  **Unified Canvas**: Deployed the highly extensible `<CivicMap>` component across both Citizen and Admin pages to maintain one single, modular mapping abstraction.
+3.  **Vector Markers**: Custom SVG `<Pin>` nodes with color mappings corresponding directly to civic issue status and urgency (Resolved = Green, Critical = Red, High = Orange, Medium = Amber, Low/Default = Blue).
+4.  **Reverse Geocoding**: Integrated geocoding logic inside the report wizard (`app/citizen/report/page.tsx`) to resolve location values to geographic coordinate pins seamlessly.
+5.  **Marker Clustering**: Embedded the `@googlemaps/markerclusterer` library into `<ClusteredMarkers>` to group crowded report elements adaptively as users zoom out.
+6.  **Hotspots & Heatmaps**: Configured a high-performance WebGL-based deck.gl `<DeckGlOverlay>` layer using `GoogleMapsOverlay` and `HeatmapLayer` to show real-time community hotspot densities on the Mission Control operational board.
 
 ---
 
