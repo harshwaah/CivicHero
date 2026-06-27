@@ -13,7 +13,7 @@ import { IssueService } from '@/lib/services/issueService';
 import { TimelineService } from '@/lib/services/timelineService';
 import { Issue } from '@/lib/models';
 import { formatTimestamp } from '@/lib/helpers';
-import MapPlaceholder from '@/components/MapPlaceholder';
+import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import AISummaryCard from '@/components/AISummaryCard';
 import { Skeleton } from '@/components/Skeleton';
 
@@ -351,7 +351,24 @@ export default function AdminIssueDetailPage() {
             {/* GIS Map */}
             <div className="flex flex-col gap-3">
               <h3 className="font-sans font-extrabold text-sm text-slate-900 uppercase tracking-wider px-2">Geospatial Data</h3>
-              <MapPlaceholder locationName={issue.location} categoryName={issue.category} />
+              <div className="w-full h-64 rounded-3xl overflow-hidden border border-slate-200">
+                <CivicMap 
+                  locationName={issue.location} 
+                  categoryName={issue.category} 
+                  interactive={true}
+                  mapId={`ADMIN_MAP_${issue.id}`}
+                  latitude={issue.coordinates?.lat || 40.7128 + ((parseInt(issue.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05}
+                  longitude={issue.coordinates?.lng || -74.0060 + ((parseInt(issue.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05}
+                  markers={[{
+                    id: issue.id,
+                    lat: issue.coordinates?.lat || 40.7128 + ((parseInt(issue.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+                    lng: issue.coordinates?.lng || -74.0060 + ((parseInt(issue.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+                    title: issue.title,
+                    urgency: issue.urgency,
+                    status: issue.status
+                  }]}
+                />
+              </div>
             </div>
 
           </section>

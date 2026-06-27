@@ -113,7 +113,7 @@ export const UserRepository = {
     try {
       await ensureUserSeedData();
       const snapshot = await getDocs(collection(db, 'users'));
-      return snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Citizen)).sort((a, b) => b.trustScore - a.trustScore);
+      return snapshot.docs.map(doc => ({ ...(doc.data() as any), id: doc.id } as Citizen)).sort((a, b) => b.trustScore - a.trustScore);
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, `users`);
       return defaultLeaderboard;

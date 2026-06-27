@@ -26,7 +26,7 @@ import { IssueService } from '@/lib/services/issueService';
 import { TimelineService } from '@/lib/services/timelineService';
 import { Issue } from '@/lib/models';
 import { formatTimestamp } from '@/lib/helpers';
-import MapPlaceholder from '@/components/MapPlaceholder';
+import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import AISummaryCard from '@/components/AISummaryCard';
 import VerificationBar from '@/components/VerificationBar';
 import { Skeleton } from '@/components/Skeleton';
@@ -409,10 +409,24 @@ export default function IssueDetailPage() {
               <h3 className="font-sans font-extrabold text-sm text-brand-primary uppercase tracking-wider px-2">
                 Geospatial Incident Coordinates
               </h3>
-              <MapPlaceholder 
-                locationName={report.location} 
-                categoryName={report.category} 
-              />
+              <div className="w-full h-64 rounded-3xl overflow-hidden border border-slate-100">
+                <CivicMap 
+                  locationName={report.location} 
+                  categoryName={report.category} 
+                  interactive={true}
+                  mapId={`MAP_${report.id}`}
+                  latitude={report.coordinates?.lat || 40.7128 + ((parseInt(report.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05}
+                  longitude={report.coordinates?.lng || -74.0060 + ((parseInt(report.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05}
+                  markers={[{
+                    id: report.id,
+                    lat: report.coordinates?.lat || 40.7128 + ((parseInt(report.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+                    lng: report.coordinates?.lng || -74.0060 + ((parseInt(report.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+                    title: report.title,
+                    urgency: report.urgency,
+                    status: report.status
+                  }]}
+                />
+              </div>
             </div>
 
             {/* Crowd Sourcing verification interactive bar */}

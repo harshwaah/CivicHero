@@ -1,19 +1,33 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode, useState, useCallback } from 'react';
-import { useJsApiLoader, GoogleMap, Marker } from '@react-google-maps/api';
-import MapPlaceholder from '@/components/MapPlaceholder';
+import React, { createContext, useContext, ReactNode, useState, useCallback, useMemo } from 'react';
+import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps';
+import { DeckGlOverlay } from '@/components/DeckGlOverlay';
+import { ClusteredMarkers } from '@/components/ClusteredMarkers';
+import { MapPin, Layers } from 'lucide-react';
 
 interface MapMarkerType {
   lat: number;
   lng: number;
   title?: string;
   category?: string;
+  urgency?: string;
+  id?: string;
+  onClick?: () => void;
+  status?: string;
 }
 
+export const getMarkerColor = (urgency?: string, status?: string) => {
+  if (status === 'Resolved') return { background: '#10b981', borderColor: '#059669', glyphColor: '#ffffff' }; // emerald
+  switch (urgency) {
+    case 'Critical': return { background: '#ef4444', borderColor: '#b91c1c', glyphColor: '#ffffff' }; // red
+    case 'High': return { background: '#f97316', borderColor: '#c2410c', glyphColor: '#ffffff' }; // orange
+    case 'Medium': return { background: '#f59e0b', borderColor: '#b45309', glyphColor: '#ffffff' }; // amber
+    default: return { background: '#3b82f6', borderColor: '#1d4ed8', glyphColor: '#ffffff' }; // blue
+  }
+};
+
 interface MapContextProps {
-  isLoaded: boolean;
-  loadError: Error | undefined;
   apiKey: string | null;
   mapStyle: 'streets' | 'satellite' | 'terrain';
   setMapStyle: (style: 'streets' | 'satellite' | 'terrain') => void;
@@ -23,27 +37,17 @@ interface MapContextProps {
 
 const MapContext = createContext<MapContextProps | undefined>(undefined);
 
-const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places', 'visualization'];
-
 export function MapProvider({ children }: { children: ReactNode }) {
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'terrain'>('streets');
   const [registeredMarkers, setRegisteredMarkers] = useState<MapMarkerType[]>([]);
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-
-  const { isLoaded, loadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: apiKey,
-    libraries,
-  });
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_PLATFORM_KEY || '';
 
   const registerMarker = useCallback((marker: MapMarkerType) => {
     setRegisteredMarkers((prev) => [...prev, marker]);
   }, []);
 
   const value: MapContextProps = {
-    isLoaded,
-    loadError,
     apiKey,
     mapStyle,
     setMapStyle,
@@ -69,22 +73,83 @@ interface CivicMapProps {
   longitude?: number;
   interactive?: boolean;
   markers?: MapMarkerType[];
+  onClick?: (e: any) => void;
+  heatmapData?: any[]; // optional, if we add heatmap layer
+  children?: ReactNode;
+  mapId?: string;
+  showLocateMe?: boolean;
 }
-
-const containerStyle = {
-  width: '100%',
-  height: '100%',
-  borderRadius: '24px'
-};
 
 const defaultCenter = {
   lat: 40.7128,
   lng: -74.0060
 };
 
-/**
- * Polymorphic map component that abstracts Google Maps/Placeholder rendering.
- */
+function LocateMeControl() {
+  const map = useMap();
+  const [locating, setLocating] = useState(false);
+
+  const locateUser = () => {
+    if (!map || !navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        map.panTo({ lat: latitude, lng: longitude });
+        map.setZoom(16);
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+      }
+    );
+  };
+
+  return (
+    <button 
+      onClick={locateUser}
+      className={`absolute bottom-6 right-6 w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-lg flex items-center justify-center transition-colors ${locating ? 'text-brand-accent animate-pulse' : 'text-slate-700 hover:text-brand-primary'}`}
+      title="Locate Me"
+    >
+      <MapPin className="w-5 h-5" />
+    </button>
+  );
+}
+
+function MapStyleControl() {
+  const { mapStyle, setMapStyle } = useMaps();
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="absolute top-6 left-6 z-10">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:text-brand-primary transition-colors"
+        title="Map Type"
+      >
+        <Layers className="w-4 h-4" />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute top-12 left-0 mt-2 p-2 bg-white rounded-xl border border-slate-200 shadow-xl flex flex-col gap-1 w-32">
+          {(['streets', 'satellite', 'terrain'] as const).map(style => (
+            <button
+              key={style}
+              onClick={() => {
+                setMapStyle(style);
+                setIsOpen(false);
+              }}
+              className={`px-3 py-2 rounded-lg text-left font-mono text-[10px] font-bold uppercase tracking-wider transition-colors ${mapStyle === style ? 'bg-brand-primary/10 text-brand-primary' : 'text-slate-600 hover:bg-slate-50'}`}
+            >
+              {style}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function CivicMap({
   locationName,
   categoryName,
@@ -92,53 +157,76 @@ export function CivicMap({
   longitude,
   interactive = true,
   markers = [],
+  onClick,
+  heatmapData = [],
+  children,
+  mapId = 'DEMO_MAP_ID',
+  showLocateMe = false
 }: CivicMapProps) {
-  const { isLoaded, loadError, apiKey } = useMaps();
+  const { apiKey, mapStyle } = useMaps();
 
   const center = latitude && longitude ? { lat: latitude, lng: longitude } : defaultCenter;
+  
+  const hasValidKey = Boolean(apiKey) && apiKey !== 'YOUR_API_KEY';
 
-  if (loadError || !apiKey) {
-    return (
-      <MapPlaceholder 
-        locationName={locationName} 
-        categoryName={categoryName} 
-      />
-    );
-  }
+  const getGoogleMapTypeId = () => {
+    switch (mapStyle) {
+      case 'satellite': return 'hybrid';
+      case 'terrain': return 'terrain';
+      default: return 'roadmap';
+    }
+  };
 
-  if (!isLoaded) {
+  if (!hasValidKey) {
     return (
-      <div className="w-full h-48 bg-slate-100 rounded-3xl animate-pulse flex items-center justify-center border border-slate-200">
-        <span className="font-mono text-xs font-bold text-slate-400 uppercase tracking-widest">Loading Map...</span>
+      <div className="w-full h-full min-h-[300px] flex items-center justify-center p-8 bg-slate-50 border border-slate-200 rounded-[28px]">
+        <div style={{textAlign:'center',maxWidth:520}}>
+          <h2 className="font-sans font-bold text-xl text-slate-800 mb-2">Google Maps API Key Required</h2>
+          <p className="text-sm text-slate-600 mb-4"><strong>Step 1:</strong> <a href="https://console.cloud.google.com/google/maps-apis/start?utm_campaign=gmp-code-assist-ais" target="_blank" rel="noopener" className="text-blue-600 underline">Get an API Key</a></p>
+          <p className="text-sm text-slate-600 mb-2"><strong>Step 2:</strong> Add your key as a secret in AI Studio:</p>
+          <ul className="text-left text-sm text-slate-600 space-y-1 mb-4 list-disc pl-5">
+            <li>Open <strong>Settings</strong> (⚙️ gear icon, <strong>top-right corner</strong>)</li>
+            <li>Select <strong>Secrets</strong></li>
+            <li>Type <code>GOOGLE_MAPS_PLATFORM_KEY</code> as the secret name, press <strong>Enter</strong></li>
+            <li>Paste your API key as the value, press <strong>Enter</strong></li>
+          </ul>
+          <p className="text-xs text-slate-500 font-mono">The app rebuilds automatically after you add the secret.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full min-h-[200px] relative rounded-3xl overflow-hidden border border-slate-200 shadow-sm">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={14}
-        options={{
-          disableDefaultUI: !interactive,
-          zoomControl: interactive,
-          streetViewControl: false,
-          mapTypeControl: false,
-          clickableIcons: interactive,
-        }}
-      >
-        {latitude && longitude && (
-          <Marker position={center} />
-        )}
-        {markers.map((marker, idx) => (
-          <Marker 
-            key={idx}
-            position={{ lat: marker.lat, lng: marker.lng }}
-            title={marker.title}
-          />
-        ))}
-      </GoogleMap>
+    <div className="w-full h-full min-h-[300px] relative rounded-[28px] overflow-hidden border border-slate-200 shadow-sm isolate">
+      <APIProvider apiKey={apiKey!} version="weekly">
+        <Map
+          defaultCenter={center}
+          defaultZoom={14}
+          mapId={mapId}
+          mapTypeId={getGoogleMapTypeId()}
+          style={{ width: '100%', height: '100%' }}
+          disableDefaultUI={!interactive}
+          zoomControl={interactive}
+          streetViewControl={false}
+          mapTypeControl={false}
+          onClick={onClick}
+          clickableIcons={interactive}
+          gestureHandling={interactive ? "auto" : "none"}
+        >
+          {latitude && longitude && markers.length === 0 && (
+            <AdvancedMarker position={center}>
+              <Pin background="#3b82f6" borderColor="#1d4ed8" glyphColor="#ffffff" />
+            </AdvancedMarker>
+          )}
+          {markers.length > 0 && (
+            <ClusteredMarkers markers={markers} />
+          )}
+          {children}
+          {heatmapData.length > 0 && <DeckGlOverlay heatmapData={heatmapData} />}
+        </Map>
+        {interactive && hasValidKey && <MapStyleControl />}
+        {showLocateMe && interactive && hasValidKey && <LocateMeControl />}
+      </APIProvider>
     </div>
   );
 }

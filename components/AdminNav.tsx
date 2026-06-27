@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { LayoutDashboard, ListTodo, Activity, Bot } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Activity, Bot, MapIcon } from 'lucide-react';
 
 interface AdminNavProps {
   activeTab: string;
@@ -12,6 +12,7 @@ interface AdminNavProps {
 export default function AdminNav({ activeTab, onTabChange }: AdminNavProps) {
   const tabs = [
     { id: 'dashboard', label: 'MISSION CONTROL', icon: LayoutDashboard },
+    { id: 'map', label: 'OPERATIONAL MAP', icon: MapIcon },
     { id: 'queue', label: 'ISSUE QUEUE', icon: ListTodo },
     { id: 'analytics', label: 'CIVIC TRUST', icon: Activity },
     { id: 'copilot', label: 'AI COPILOT', icon: Bot },

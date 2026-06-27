@@ -27,6 +27,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import AISummaryCard from '@/components/AISummaryCard';
+import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import { PresetOption, PRESET_OPTIONS, CATEGORIES, URGENCY_LEVELS } from '@/lib/mockData';
 
 
@@ -40,6 +41,27 @@ export default function CitizenReportFlowPage() {
   const [category, setCategory] = useState('Roads');
   const [urgency, setUrgency] = useState('Medium');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lat = urlParams.get('lat');
+      const lng = urlParams.get('lng');
+      if (lat && lng) {
+        return { lat: parseFloat(lat), lng: parseFloat(lng) };
+      }
+    }
+    return null;
+  });
+
+  // Pre-fill location value if coords passed via URL
+  useEffect(() => {
+    if (coordinates && !locationValue && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('lat')) {
+        setLocationValue(`${coordinates.lat.toFixed(4)}, ${coordinates.lng.toFixed(4)}`);
+      }
+    }
+  }, []);
 
   // Flow State
   // Flow State (report | review | analysis | submit | success)
@@ -405,6 +427,34 @@ export default function CitizenReportFlowPage() {
                         className="w-full bg-slate-50/50 border border-slate-150 rounded-2xl py-4 pl-11 pr-4 font-sans text-xs sm:text-sm text-brand-primary placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:bg-white transition-all font-medium"
                       />
                       <MapPin className="w-4 h-4 text-brand-secondary absolute left-4 top-1/2 -translate-y-1/2" />
+                    </div>
+                    
+                    {/* Interactive Map Selection */}
+                    <div className="mt-3 h-48 w-full rounded-2xl overflow-hidden border border-slate-200">
+                      <CivicMap 
+                        locationName={locationValue || "New Incident Location"}
+                        categoryName={category}
+                        interactive={true}
+                        showLocateMe={true}
+                        latitude={coordinates?.lat || 40.7128}
+                        longitude={coordinates?.lng || -74.0060}
+                        markers={coordinates ? [{
+                          id: 'new-report-marker',
+                          lat: coordinates.lat,
+                          lng: coordinates.lng,
+                          title: "New Incident",
+                          urgency: urgency,
+                          status: 'Live'
+                        }] : []}
+                        onClick={(e) => {
+                           const lat = e.detail?.latLng?.lat;
+                           const lng = e.detail?.latLng?.lng;
+                           if (lat && lng) {
+                             setCoordinates({ lat, lng });
+                             setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                           }
+                        }}
+                      />
                     </div>
                   </div>
 

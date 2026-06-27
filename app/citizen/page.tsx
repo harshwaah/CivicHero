@@ -18,6 +18,9 @@ import {
 import CitizenNav from '../../components/CitizenNav';
 import CitizenFeed from '../../components/CitizenFeed';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
+import { CivicMap } from '../../lib/providers/maps/mapProvider';
+import { IssueService } from '../../lib/services/issueService';
+import { Issue } from '../../lib/models';
 
 export default function CitizenPage() {
   const router = useRouter();
@@ -27,6 +30,14 @@ export default function CitizenPage() {
     phase: string;
     desc: string;
   } | null>(null);
+  const [issues, setIssues] = useState<Issue[]>([]);
+
+  React.useEffect(() => {
+    const unsubscribe = IssueService.subscribe(fetchedIssues => {
+      setIssues(fetchedIssues);
+    });
+    return () => unsubscribe();
+  }, []);
 
   // Quick milestone activation helper
   const handleOpenMilestone = (title: string, phase: string, desc: string) => {
@@ -53,65 +64,47 @@ export default function CitizenPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            className="flex-1 bg-white rounded-[28px] border border-slate-100 p-8 md:p-12 shadow-sm flex flex-col justify-between h-full min-h-[500px]"
+            className="flex-1 flex flex-col gap-6 h-[calc(100vh-160px)]"
           >
-            <div>
-              <div className="flex items-center gap-2 bg-brand-primary/5 border border-brand-primary/10 px-4 py-1.5 rounded-full text-brand-primary text-xs font-mono font-bold tracking-wider w-fit mb-6">
-                <Compass className="w-4 h-4 text-brand-secondary animate-pulse" />
-                PHASE 1.2 ROADMAP MILESTONE
-              </div>
-
-              <h2 className="font-sans font-extrabold text-3xl text-brand-primary tracking-tight leading-tight">
-                Interactive Geospatial Map Canvas
-              </h2>
-              <p className="font-body text-sm text-brand-muted leading-relaxed mt-3 max-w-2xl">
-                The high-performance map interface is scheduled for deployment in Phase 1.2. This view will incorporate real-time vector maps, customizable area polygons, distance-filtered incident alerts, and direct coordinates validation.
-              </p>
-
-              {/* Mock map graphic representation */}
-              <div className="relative w-full aspect-[2/1] bg-slate-950 rounded-2xl overflow-hidden mt-8 border border-slate-900 group">
-                <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40" />
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent">
-                  <div className="w-12 h-12 rounded-full bg-brand-primary/40 border border-brand-primary/30 flex items-center justify-center mb-3">
-                    <Map className="w-5 h-5 text-brand-secondary" />
-                  </div>
-                  <h4 className="font-sans font-bold text-sm text-white">Geoproof Registry Module</h4>
-                  <p className="font-mono text-[10px] text-slate-400 mt-1 uppercase tracking-wider">
-                    INTEGRATING GOOGLE MAPS PLATFORM • OFFLINE QUEUE READY
-                  </p>
+            <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-2 flex flex-col h-full">
+              <div className="flex items-center justify-between p-4 pb-2 border-b border-slate-100">
+                <h2 className="font-sans font-extrabold text-2xl text-brand-primary tracking-tight">
+                  Civic Hub Map
+                </h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => router.push('/citizen/report')}
+                    className="px-4 py-2 bg-brand-primary text-white font-mono text-[10px] font-bold uppercase rounded-xl hover:bg-brand-primary/90 transition-colors"
+                  >
+                    Report Issue Here
+                  </button>
                 </div>
               </div>
-
-              {/* Bullet list of upcoming features */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-100">
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100/60 flex items-center justify-center text-brand-secondary shrink-0 mt-0.5">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h5 className="font-sans font-bold text-xs text-brand-primary">Precision Geofencing</h5>
-                    <p className="font-body text-[11px] text-slate-500 mt-0.5">Track and filter issues within 1.5 miles of your verified location.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100/60 flex items-center justify-center text-brand-secondary shrink-0 mt-0.5">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h5 className="font-sans font-bold text-xs text-brand-primary">Heatmap Metrics</h5>
-                    <p className="font-body text-[11px] text-slate-500 mt-0.5">Identify cluster zones where infrastructure demands priority paving.</p>
-                  </div>
-                </div>
+              <div className="flex-1 rounded-[24px] overflow-hidden m-2">
+                <CivicMap
+                  locationName="Citizen View"
+                  categoryName="All"
+                  interactive={true}
+                  showLocateMe={true}
+                  markers={issues.map(i => ({
+                    id: i.id,
+                    lat: i.coordinates?.lat || 40.7128 + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+                    lng: i.coordinates?.lng || -74.0060 + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+                    title: i.title,
+                    urgency: i.urgency,
+                    status: i.status,
+                    onClick: () => router.push(`/citizen/issues/${i.id}`)
+                  }))}
+                  onClick={(e) => {
+                    const lat = e.detail?.latLng?.lat;
+                    const lng = e.detail?.latLng?.lng;
+                    if (lat && lng) {
+                      router.push(`/citizen/report?lat=${lat}&lng=${lng}`);
+                    }
+                  }}
+                />
               </div>
             </div>
-
-            <button
-              onClick={() => setActiveTab('home')}
-              className="mt-8 px-6 py-3.5 bg-brand-primary text-white font-mono text-xs font-bold rounded-2xl hover:bg-brand-primary-container transition-all self-start shadow-md"
-            >
-              Return to Active Feed
-            </button>
           </motion.div>
         );
       case 'safety':

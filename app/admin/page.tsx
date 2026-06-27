@@ -33,6 +33,7 @@ import { AdministratorCopilot } from '../../lib/providers/ai/administratorCopilo
 import { CommunityIntelligenceAgent } from '../../lib/providers/ai/communityIntelligenceAgent';
 import { Issue, TrustMetrics } from '../../lib/models';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
+import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { CityAnalytics } from '../../lib/repositories/analyticsRepository';
 import { HotspotCluster } from '../../lib/providers/ai/communityIntelligenceAgent';
 import { Skeleton } from '../../components/Skeleton';
@@ -46,6 +47,7 @@ export default function AdminPage() {
   const [analytics, setAnalytics] = useState<CityAnalytics | null>(null);
   const [hotspots, setHotspots] = useState<HotspotCluster[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showHeatmap, setShowHeatmap] = useState(true);
   
   useEffect(() => {
     let unsubscribe = () => {};
@@ -367,6 +369,57 @@ export default function AdminPage() {
     </motion.div>
   );
 
+  const renderMap = () => (
+    <motion.div 
+      key="map"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      className="flex flex-col gap-6 h-[calc(100vh-160px)]"
+    >
+      <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-2 flex flex-col h-full">
+        <div className="flex items-center justify-between p-4 pb-2 border-b border-slate-100">
+          <h2 className="font-sans font-extrabold text-2xl text-slate-900 tracking-tight">
+            Operational Map
+          </h2>
+          <div className="flex gap-2">
+            <button className="px-4 py-2 bg-slate-100 text-slate-600 font-mono text-[10px] font-bold uppercase rounded-xl hover:bg-slate-200 transition-colors">
+              Filter Area
+            </button>
+            <button 
+              onClick={() => setShowHeatmap(!showHeatmap)}
+              className={`px-4 py-2 font-mono text-[10px] font-bold uppercase rounded-xl transition-colors ${showHeatmap ? 'bg-brand-primary text-white hover:bg-brand-primary/90' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            >
+              Toggle Heatmap
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 rounded-[24px] overflow-hidden m-2">
+          <CivicMap
+            locationName="Admin Operational View"
+            categoryName="All Issues"
+            interactive={true}
+            showLocateMe={true}
+            mapId="ADMIN_MAP"
+            heatmapData={showHeatmap ? hotspots.map(h => ({
+              position: [h.longitude, h.latitude],
+              weight: h.reportCount * 10
+            })) : []}
+            markers={issues.map(i => ({
+              id: i.id,
+              lat: i.coordinates?.lat || 40.7128 + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+              lng: i.coordinates?.lng || -74.0060 + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+              title: i.title,
+              urgency: i.urgency,
+              status: i.status,
+              onClick: () => router.push(`/admin/issues/${i.id}`)
+            }))}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50 relative pb-32 md:pb-12">
       {/* Header */}
@@ -415,6 +468,7 @@ export default function AdminPage() {
           ) : (
             <AnimatePresence mode="wait">
               {activeTab === 'dashboard' && renderDashboard()}
+              {activeTab === 'map' && renderMap()}
               {activeTab === 'queue' && renderQueue()}
               {activeTab === 'copilot' && renderCopilot()}
               {activeTab === 'analytics' && renderAnalytics()}

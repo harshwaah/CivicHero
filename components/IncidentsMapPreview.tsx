@@ -1,46 +1,51 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, Heart, Users, Map, CheckCircle2, ChevronRight, Activity, ArrowUpRight } from 'lucide-react';
+import { CivicMap } from '@/lib/providers/maps/mapProvider';
+import { IssueService } from '@/lib/services/issueService';
+import { Issue } from '@/lib/models';
+import { useRouter } from 'next/navigation';
 
 export default function IncidentsMapPreview() {
-  const recentActions = [
-    { id: 1, title: 'Gas Leak Resolved', location: 'Upper West Side', time: '34m ago', status: 'Verified' },
-    { id: 2, title: 'Streetlight Fixed', location: 'Elm St & 4th', time: '4h ago', status: 'Signed' },
-    { id: 3, title: 'Pothole Filled', location: 'Oakwood Ave.', time: '1d ago', status: 'Completed' },
-  ];
+  const router = useRouter();
+  const [issues, setIssues] = useState<Issue[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = IssueService.subscribe(fetchedIssues => {
+      setIssues(fetchedIssues);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const recentActions = issues.slice(0, 3).map(i => ({
+    id: i.id,
+    title: i.title,
+    location: i.location,
+    time: 'Recent',
+    status: i.status
+  }));
 
   return (
     <div className="hidden lg:flex flex-col w-80 sticky top-28 h-[calc(100vh-120px)] gap-6 z-30">
-      {/* 1. Neighborhood Status Hub Card */}
-      <div className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-6 flex flex-col gap-5">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[9px] font-bold tracking-widest text-slate-400">LEDGER INTEGRITY</span>
-          <span className="flex h-2 w-2 relative">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-        </div>
-
-        <div>
-          <h4 className="font-sans font-extrabold text-2xl text-brand-primary tracking-tight">100%</h4>
-          <p className="font-sans font-bold text-xs text-brand-secondary uppercase tracking-wider mt-0.5">Unified District Trust</p>
-          <p className="font-body text-[11px] text-brand-muted leading-relaxed mt-2">
-            Every civic dispute and resolution in this area is verified via a tamper-proof cryptographic timeline.
-          </p>
-        </div>
-
-        {/* Dynamic Metric Grid */}
-        <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-100/60">
-            <span className="text-[10px] font-mono text-slate-400 font-bold block mb-1">CO-SIGNS</span>
-            <span className="font-sans font-bold text-sm text-brand-primary">1,482</span>
-          </div>
-          <div className="bg-slate-50 rounded-xl p-3 border border-slate-100/60">
-            <span className="text-[10px] font-mono text-slate-400 font-bold block mb-1">VELOCITY</span>
-            <span className="font-sans font-bold text-sm text-brand-primary">12m response</span>
-          </div>
+      <div className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-2 flex flex-col gap-2 h-64">
+        <div className="flex-1 rounded-[24px] overflow-hidden">
+          <CivicMap
+            locationName="Preview"
+            categoryName="All"
+            interactive={true}
+            mapId="PREVIEW_MAP"
+            markers={issues.map(i => ({
+              id: i.id,
+              lat: i.coordinates?.lat || 40.7128 + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+              lng: i.coordinates?.lng || -74.0060 + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+              title: i.title,
+              urgency: i.urgency,
+              status: i.status,
+              onClick: () => router.push(`/admin/issues/${i.id}`) // Defaults to admin route for preview clicks
+            }))}
+          />
         </div>
       </div>
 
@@ -52,7 +57,6 @@ export default function IncidentsMapPreview() {
             <span className="font-mono text-[9px] font-bold text-brand-secondary bg-emerald-50 px-2 py-0.5 rounded-full">REALTIME</span>
           </div>
 
-          {/* Simple ledger stream */}
           <div className="flex flex-col gap-4 flex-1 overflow-y-auto pr-1">
             {recentActions.map((action, i) => (
               <motion.div 
@@ -61,6 +65,7 @@ export default function IncidentsMapPreview() {
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
+                onClick={() => router.push(`/admin/issues/${action.id}`)}
               >
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-brand-secondary shrink-0 border border-emerald-100/40 group-hover:bg-emerald-100 transition-colors">
                   <CheckCircle2 className="w-4 h-4" />
@@ -77,15 +82,6 @@ export default function IncidentsMapPreview() {
               </motion.div>
             ))}
           </div>
-        </div>
-
-        {/* Minimalist interactive banner */}
-        <div className="mt-4 pt-4 border-t border-slate-100 bg-gradient-to-r from-brand-primary/5 to-transparent rounded-2xl p-4 border border-brand-primary/10 flex items-center justify-between">
-          <div>
-            <h5 className="font-sans font-bold text-[11px] text-brand-primary">View Ledger Registry</h5>
-            <p className="font-body text-[9px] text-brand-muted">Public, verifiable contract logs</p>
-          </div>
-          <ArrowUpRight className="w-4 h-4 text-brand-secondary" />
         </div>
       </div>
     </div>
