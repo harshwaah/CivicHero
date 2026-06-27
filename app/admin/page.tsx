@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import AdminNav from '../../components/AdminNav';
 import { IssueService } from '../../lib/services/issueService';
+import { formatTimestamp } from '../../lib/helpers';
 import { AnalyticsService } from '../../lib/services/analyticsService';
 import { TrustService } from '../../lib/services/trustService';
 import { AdministratorCopilot } from '../../lib/providers/ai/administratorCopilot';
@@ -34,6 +35,7 @@ import { Issue, TrustMetrics } from '../../lib/models';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
 import { CityAnalytics } from '../../lib/repositories/analyticsRepository';
 import { HotspotCluster } from '../../lib/providers/ai/communityIntelligenceAgent';
+import { Skeleton } from '../../components/Skeleton';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -89,6 +91,7 @@ export default function AdminPage() {
 
   const renderDashboard = () => (
     <motion.div 
+      key="dashboard"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
@@ -161,7 +164,7 @@ export default function AdminPage() {
                 <span className={`px-2 py-1 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border ${getPriorityColor(issue.urgency)}`}>
                   {issue.urgency}
                 </span>
-                <span className="font-mono text-[10px] text-slate-400">{issue.timestamp}</span>
+                <span className="font-mono text-[10px] text-slate-400">{formatTimestamp(issue.timestamp)}</span>
               </div>
             </Link>
           ))}
@@ -172,6 +175,7 @@ export default function AdminPage() {
 
   const renderQueue = () => (
     <motion.div 
+      key="queue"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
@@ -220,7 +224,7 @@ export default function AdminPage() {
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
-                <span className="font-mono text-[10px] text-slate-400">{issue.timestamp}</span>
+                <span className="font-mono text-[10px] text-slate-400">{formatTimestamp(issue.timestamp)}</span>
                 <span className="font-mono text-[10px] text-brand-primary font-bold">{issue.upvotes} validations</span>
               </div>
             </Link>
@@ -232,6 +236,7 @@ export default function AdminPage() {
 
   const renderCopilot = () => (
     <motion.div 
+      key="copilot"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
@@ -312,6 +317,7 @@ export default function AdminPage() {
 
   const renderAnalytics = () => (
     <motion.div 
+      key="analytics"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
@@ -396,10 +402,15 @@ export default function AdminPage() {
         <AdminNav activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 w-full">
           {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="w-8 h-8 border-4 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
+            <div className="flex flex-col gap-6 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[1, 2, 3].map(i => (
+                  <Skeleton key={i} className="h-32 rounded-2xl w-full" />
+                ))}
+              </div>
+              <Skeleton className="h-[400px] rounded-2xl w-full" />
             </div>
           ) : (
             <AnimatePresence mode="wait">

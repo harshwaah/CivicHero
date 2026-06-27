@@ -55,6 +55,28 @@ export function formatRelativeTime(timeStr: string): string {
 }
 
 /**
+ * Safe formatter for any timestamp format, handling Firestore Timestamps, Date objects, and strings.
+ */
+export function formatTimestamp(timestamp: any): string {
+  if (!timestamp) return 'Just now';
+  if (typeof timestamp === 'string') return timestamp;
+  if (timestamp instanceof Date) {
+    return timestamp.toLocaleDateString() + ' ' + timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  if (typeof timestamp === 'object') {
+    if (typeof timestamp.seconds === 'number') {
+      const d = new Date(timestamp.seconds * 1000);
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    if (typeof timestamp.toDate === 'function') {
+      const d = timestamp.toDate();
+      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+  return String(timestamp);
+}
+
+/**
  * Clean up location names (e.g. truncating long paths or uppercase formatting)
  */
 export function formatLocation(loc: string): string {

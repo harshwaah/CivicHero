@@ -12,6 +12,7 @@ import {
   where,
   orderBy,
   limit,
+  onSnapshot,
   FirestoreError
 } from 'firebase/firestore';
 
@@ -71,5 +72,6 @@ export {
   query, 
   where, 
   orderBy, 
-  limit 
+  limit,
+  onSnapshot
 };

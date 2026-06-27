@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import { MapPin, ArrowRight, Check } from 'lucide-react';
 import { DESIGN_TOKENS } from '@/lib/designTokens';
-import { getPriorityClasses, getStatusClasses } from '@/lib/helpers';
+import { getPriorityClasses, getStatusClasses, formatTimestamp } from '@/lib/helpers';
 import { Issue } from '@/lib/models';
 
 interface EvidenceCardProps {
@@ -82,7 +82,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
 
           {/* Time ago floating glass pill */}
           <div className="bg-slate-950/40 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-mono text-white/90 border border-white/10 tracking-wider">
-            {report.timestamp.toUpperCase()}
+            {formatTimestamp(report.timestamp).toUpperCase()}
           </div>
         </div>
 

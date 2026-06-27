@@ -23,10 +23,13 @@ import {
 } from 'lucide-react';
 import { mockReports } from '@/lib/mockReports';
 import { IssueService } from '@/lib/services/issueService';
+import { TimelineService } from '@/lib/services/timelineService';
 import { Issue } from '@/lib/models';
+import { formatTimestamp } from '@/lib/helpers';
 import MapPlaceholder from '@/components/MapPlaceholder';
 import AISummaryCard from '@/components/AISummaryCard';
 import VerificationBar from '@/components/VerificationBar';
+import { Skeleton } from '@/components/Skeleton';
 
 export default function IssueDetailPage() {
   const params = useParams();
@@ -70,9 +73,60 @@ export default function IssueDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fafbfc] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-8 h-8 border-4 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin mb-4" />
-        <p className="font-mono text-xs text-slate-500 font-bold uppercase tracking-widest">Loading...</p>
+      <div className="min-h-screen bg-[#fafbfc] pb-24">
+        <header className="sticky top-0 z-30 bg-white border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-xl" />
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            </div>
+          </div>
+        </header>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+            <section className="lg:col-span-7 flex flex-col gap-6 md:gap-8">
+              <Skeleton className="w-full aspect-[16/10] sm:aspect-[21/10] lg:aspect-[16/9] rounded-[32px]" />
+              <div className="bg-white rounded-[28px] border border-slate-100 p-6 md:p-8 space-y-4">
+                <div className="flex gap-2">
+                  <Skeleton className="h-4 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-32 rounded-full" />
+                </div>
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-16 w-full" />
+                <div className="pt-6 border-t border-slate-100 flex items-center gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="space-y-1 flex-1">
+                    <Skeleton className="h-2 w-20" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                </div>
+              </div>
+            </section>
+            <aside className="lg:col-span-5 flex flex-col gap-6 md:gap-8">
+              <div className="bg-white rounded-[28px] border border-slate-100 p-6 md:p-8 space-y-6">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-8 h-8 rounded-xl" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-2 w-24" />
+                  </div>
+                </div>
+                <div className="space-y-4 pl-6 border-l border-slate-100 ml-2">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-2 w-16" />
+                      <Skeleton className="h-3 w-3/4" />
+                      <Skeleton className="h-8 w-full" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </aside>
+          </div>
+        </main>
       </div>
     );
   }
@@ -299,7 +353,7 @@ export default function IssueDetailPage() {
                 <span className="text-slate-300 font-mono text-xs">•</span>
                 <div className="flex items-center gap-1 font-mono text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>Reported {report.timestamp}</span>
+                  <span>Reported {formatTimestamp(report.timestamp)}</span>
                 </div>
               </div>
 
@@ -412,7 +466,7 @@ export default function IssueDetailPage() {
                       
                       <div>
                         <span className="font-mono text-[9px] text-slate-400 font-bold block">
-                          {event.timestamp.toUpperCase()}
+                          {formatTimestamp(event.timestamp).toUpperCase()}
                         </span>
                         <h4 className="font-sans font-bold text-xs text-brand-primary mt-1 leading-snug">
                           {event.title}
@@ -516,7 +570,7 @@ export default function IssueDetailPage() {
                             )}
                           </div>
                           <span className="font-mono text-[8px] text-slate-400 font-bold block mt-0.5 uppercase">
-                            {comment.timestamp || comment.timeAgo} • {comment.user?.badge || 'Verified Neighbor'}
+                            {formatTimestamp(comment.timestamp || comment.timeAgo)} • {comment.user?.badge || 'Verified Neighbor'}
                           </span>
                         </div>
                       </div>

@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "Issue": {
+      "title": "Issue",
+      "description": "A municipal infrastructure concern reported by a citizen",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "urgency": { "type": "string" },
+        "status": { "type": "string" },
+        "timestamp": { "type": "object" },
+        "location": { "type": "string" },
+        "upvotes": { "type": "number" },
+        "commentsCount": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "verifiedByCount": { "type": "number" },
+        "reporterName": { "type": "string" },
+        "reporterBadge": { "type": "string" },
+        "coordinates": { "type": "object" },
+        "trustMetrics": { "type": "object" },
+        "comments": { "type": "array" }
+      },
+      "required": ["id", "title", "description", "category", "urgency", "status"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A registered citizen's profile and reputation stats",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "trustScore": { "type": "number" },
+        "completedReports": { "type": "number" },
+        "verifiedReports": { "type": "number" },
+        "badgeTitle": { "type": "string" },
+        "joinedAt": { "type": "object" }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "An alert or notification for a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "read": { "type": "boolean" },
+        "type": { "type": "string" },
+        "issueId": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "message", "timestamp", "read", "type"]
+    }
+  },
+  "firestore": {
+    "issues": {
+      "schema": "#/entities/Issue",
+      "description": "Collection of infrastructure issues"
+    },
+    "users": {
+      "schema": "#/entities/User",
+      "description": "Collection of user profiles"
+    },
+    "notifications": {
+      "schema": "#/entities/Notification",
+      "description": "Collection of notifications"
+    }
+  }
+}

@@ -22,9 +22,12 @@ import {
 } from 'lucide-react';
 import { mockReports } from '@/lib/mockReports';
 import { IssueService } from '@/lib/services/issueService';
+import { TimelineService } from '@/lib/services/timelineService';
 import { Issue } from '@/lib/models';
 import { ALL_STAGES_MOCK } from '@/lib/mockData';
+import { formatTimestamp } from '@/lib/helpers';
 import { DESIGN_TOKENS } from '@/lib/designTokens';
+import { Skeleton } from '@/components/Skeleton';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   AlertCircle,
@@ -72,9 +75,46 @@ export default function PublicTimelinePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fafbfc] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-8 h-8 border-4 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin mb-4" />
-        <p className="font-mono text-xs text-slate-500 font-bold uppercase tracking-widest">Loading Ledger...</p>
+      <div className="min-h-screen bg-[#fafbfc] pb-24">
+        <header className="sticky top-0 z-30 bg-white border-b border-slate-100">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-xl" />
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            </div>
+            <Skeleton className="w-24 h-8 rounded-xl" />
+          </div>
+        </header>
+        <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+          <div className="bg-white rounded-[28px] border border-slate-100 p-6 md:p-8 mb-10 space-y-4 shadow-sm">
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="h-8 w-3/4" />
+            <div className="flex gap-2 mt-4">
+              <Skeleton className="h-6 w-20 rounded-md" />
+              <Skeleton className="h-6 w-24 rounded-md" />
+              <Skeleton className="h-6 w-20 rounded-md" />
+            </div>
+            <Skeleton className="h-24 w-full mt-6 rounded-xl" />
+          </div>
+          <div className="space-y-8 pl-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="flex gap-4">
+                <Skeleton className="w-8 h-8 rounded-full shrink-0" />
+                <div className="flex-1 space-y-3 bg-white p-6 rounded-2xl border border-slate-100">
+                  <div className="flex justify-between">
+                    <Skeleton className="h-4 w-20 rounded-md" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-16 w-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
@@ -102,7 +142,7 @@ export default function PublicTimelinePage() {
 
       // Define placeholder info if the stage is pending
       const displayTitle = isCompleted ? matchedEvent.title : `${stage.label} (Upcoming)`;
-      const displayTime = isCompleted ? matchedEvent.timestamp : 'Awaiting previous phase completion';
+      const displayTime = isCompleted ? formatTimestamp(matchedEvent.timestamp) : 'Awaiting previous phase completion';
       const displayActor = isCompleted ? matchedEvent.actor : 'Pending assignment';
       const displayDesc = isCompleted 
         ? matchedEvent.description 

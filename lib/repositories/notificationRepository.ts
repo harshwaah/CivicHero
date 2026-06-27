@@ -1,4 +1,4 @@
-import { db, isFirebaseConfigured, handleFirestoreError, OperationType } from '../firebase/firestore';
+import { db, isFirebaseConfigured, handleFirestoreError, OperationType, collection, doc, getDocs, updateDoc, query, where, orderBy, setDoc } from '../firebase/firestore';
 import { Notification } from '../models';
 
 const defaultNotifications: Notification[] = [
@@ -24,6 +24,25 @@ const defaultNotifications: Notification[] = [
   },
 ];
 
+let seeded = false;
+
+async function ensureNotificationSeedData() {
+  if (!isFirebaseConfigured || seeded) return;
+  try {
+    const snapshot = await getDocs(collection(db, 'notifications'));
+    if (snapshot.empty) {
+      seeded = true;
+      for (const notif of defaultNotifications) {
+        await setDoc(doc(db, 'notifications', notif.id), notif);
+      }
+    } else {
+      seeded = true;
+    }
+  } catch (err) {
+    console.error('Error seeding notifications:', err);
+  }
+}
+
 export const NotificationRepository = {
   /**
    * Fetch all notifications for a specific user
@@ -34,13 +53,15 @@ export const NotificationRepository = {
     }
 
     try {
-      // Future Firebase Query Implementation
-      // const ref = collection(db, 'notifications');
-      // const q = query(ref, where('userId', '==', userId), orderBy('timestamp', 'desc'));
-      // ...
-      return defaultNotifications;
+      await ensureNotificationSeedData();
+      const ref = collection(db, 'notifications');
+      const q = query(ref, where('userId', '==', userId));
+      const snapshot = await getDocs(q);
+      const notifications = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Notification));
+      return notifications;
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, 'notifications');
+      return [];
     }
   },
 
@@ -48,21 +69,20 @@ export const NotificationRepository = {
    * Mark notification as read
    */
   async markAsRead(id: string): Promise<boolean> {
-    const notif = defaultNotifications.find((n) => n.id === id);
-    if (notif) {
-      notif.isRead = true;
-    }
-
     if (!isFirebaseConfigured) {
+      const notif = defaultNotifications.find((n) => n.id === id);
+      if (notif) {
+        notif.isRead = true;
+      }
       return true;
     }
 
     try {
-      // Future Firebase Update Implementation
-      // await updateDoc(doc(db, 'notifications', id), { isRead: true });
+      await updateDoc(doc(db, 'notifications', id), { isRead: true });
       return true;
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, `notifications/${id}`);
+      return false;
     }
   },
 };
