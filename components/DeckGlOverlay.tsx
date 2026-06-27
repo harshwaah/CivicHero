@@ -4,6 +4,13 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { useMap } from '@vis.gl/react-google-maps';
 import { GoogleMapsOverlay } from '@deck.gl/google-maps';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
+import { log } from '@deck.gl/core';
+
+// Silence benign luma.gl/deck.gl warnings such as weightsTexture not found in shader layout
+if (typeof window !== 'undefined' && log) {
+  log.level = 0;
+  log.enable(false);
+}
 
 interface DeckGlOverlayProps {
   heatmapData: { position: [number, number], weight: number }[];

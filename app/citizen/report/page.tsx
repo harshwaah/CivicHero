@@ -37,7 +37,6 @@ export default function CitizenReportFlowPage() {
   // Primary input states
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [locationValue, setLocationValue] = useState('');
   const [category, setCategory] = useState('Roads');
   const [urgency, setUrgency] = useState('Medium');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -53,15 +52,17 @@ export default function CitizenReportFlowPage() {
     return null;
   });
 
-  // Pre-fill location value if coords passed via URL
-  useEffect(() => {
-    if (coordinates && !locationValue && typeof window !== 'undefined') {
+  const [locationValue, setLocationValue] = useState(() => {
+    if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('lat')) {
-        setLocationValue(`${coordinates.lat.toFixed(4)}, ${coordinates.lng.toFixed(4)}`);
+      const lat = urlParams.get('lat');
+      const lng = urlParams.get('lng');
+      if (lat && lng) {
+        return `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
       }
     }
-  }, []);
+    return '';
+  });
 
   // Flow State
   // Flow State (report | review | analysis | submit | success)

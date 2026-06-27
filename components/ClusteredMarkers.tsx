@@ -25,6 +25,46 @@ export const getMarkerColor = (urgency?: string, status?: string) => {
   }
 };
 
+interface MarkerWithGmpClickProps {
+  marker: MapMarkerType;
+  colors: { background: string; borderColor: string; glyphColor: string };
+  markerKey: string;
+  onRegister: (key: string, element: google.maps.marker.AdvancedMarkerElement | null) => void;
+}
+
+function MarkerWithGmpClick({ marker, colors, markerKey, onRegister }: MarkerWithGmpClickProps) {
+  const markerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const { onClick } = marker;
+
+  useEffect(() => {
+    const element = markerRef.current;
+    if (!element || !onClick) return;
+
+    const handler = () => {
+      onClick();
+    };
+
+    element.addEventListener('gmp-click', handler);
+
+    return () => {
+      element.removeEventListener('gmp-click', handler);
+    };
+  }, [onClick]);
+
+  return (
+    <AdvancedMarker
+      position={{ lat: marker.lat, lng: marker.lng }}
+      title={marker.title}
+      ref={(el) => {
+        markerRef.current = el;
+        onRegister(markerKey, el);
+      }}
+    >
+      <Pin background={colors.background} borderColor={colors.borderColor} glyphColor={colors.glyphColor} />
+    </AdvancedMarker>
+  );
+}
+
 export function ClusteredMarkers({ markers }: { markers: MapMarkerType[] }) {
   const map = useMap();
   const [markerElements, setMarkerElements] = useState<{[key: string]: google.maps.marker.AdvancedMarkerElement}>({});
@@ -42,25 +82,35 @@ export function ClusteredMarkers({ markers }: { markers: MapMarkerType[] }) {
     clusterer.current?.addMarkers(Object.values(markerElements));
   }, [markerElements]);
 
+  const handleRegister = (key: string, element: google.maps.marker.AdvancedMarkerElement | null) => {
+    if (element) {
+      if (markerElements[key] !== element) {
+        setMarkerElements(prev => ({ ...prev, [key]: element }));
+      }
+    } else {
+      if (markerElements[key]) {
+        setMarkerElements(prev => {
+          const next = { ...prev };
+          delete next[key];
+          return next;
+        });
+      }
+    }
+  };
+
   return (
     <>
       {markers.map((marker, idx) => {
         const colors = getMarkerColor(marker.urgency, marker.status);
         const key = marker.id || idx.toString();
         return (
-          <AdvancedMarker
+          <MarkerWithGmpClick
             key={key}
-            position={{ lat: marker.lat, lng: marker.lng }}
-            title={marker.title}
-            onClick={marker.onClick}
-            ref={(markerElement) => {
-              if (markerElement && markerElements[key] !== markerElement) {
-                setMarkerElements(prev => ({ ...prev, [key]: markerElement }));
-              }
-            }}
-          >
-            <Pin background={colors.background} borderColor={colors.borderColor} glyphColor={colors.glyphColor} />
-          </AdvancedMarker>
+            marker={marker}
+            colors={colors}
+            markerKey={key}
+            onRegister={handleRegister}
+          />
         );
       })}
     </>
