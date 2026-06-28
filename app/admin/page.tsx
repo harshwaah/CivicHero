@@ -35,8 +35,8 @@ import { Issue, TrustMetrics } from '../../lib/models';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
 import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { CityAnalytics } from '../../lib/repositories/analyticsRepository';
-import { HotspotCluster } from '../../lib/providers/ai/communityIntelligenceAgent';
 import { Skeleton } from '../../components/Skeleton';
+import { CopilotInsights } from '../../lib/providers/ai/administratorCopilot';
 
 export default function AdminPage() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function AdminPage() {
   // State
   const [issues, setIssues] = useState<Issue[]>([]);
   const [analytics, setAnalytics] = useState<CityAnalytics | null>(null);
-  const [hotspots, setHotspots] = useState<HotspotCluster[]>([]);
+  const [copilotInsights, setCopilotInsights] = useState<CopilotInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [showHeatmap, setShowHeatmap] = useState(true);
   
@@ -55,15 +55,21 @@ export default function AdminPage() {
     const fetchData = async () => {
       setLoading(true);
       
-      unsubscribe = IssueService.subscribe(fetchedIssues => {
+      unsubscribe = IssueService.subscribe(async (fetchedIssues) => {
         setIssues(fetchedIssues);
+        if (fetchedIssues.length > 0) {
+          try {
+             const insights = await AdministratorCopilot.generateInsights(fetchedIssues);
+             setCopilotInsights(insights);
+          } catch(err) {
+             console.error("Failed to generate copilot insights", err);
+          }
+        }
       });
 
       const fetchedAnalytics = await AnalyticsService.getCityScorecard();
-      const fetchedHotspots = await CommunityIntelligenceAgent.detectHotspots();
       
       setAnalytics(fetchedAnalytics);
-      setHotspots(fetchedHotspots);
       setLoading(false);
     };
     fetchData();
@@ -253,7 +259,7 @@ export default function AdminPage() {
           <div>
             <h2 className="font-sans font-extrabold text-2xl tracking-tight mb-2">Administrator AI Copilot</h2>
             <p className="font-body text-sm text-slate-300 max-w-2xl leading-relaxed">
-              Analyzing real-time incident data to detect emerging hotspots, forecast required operational hours, and draft automated work orders.
+              {copilotInsights ? copilotInsights.operationalBriefing : 'Analyzing real-time incident data to generate operational insights...'}
             </p>
           </div>
         </div>
@@ -266,51 +272,48 @@ export default function AdminPage() {
             <h3 className="font-sans font-bold text-sm text-slate-900">Emerging Geographic Hotspots</h3>
           </div>
           <div className="space-y-4 flex-1">
-            {hotspots.map(h => (
-              <div key={h.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex gap-4">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${getPriorityColor(h.urgencyLevel)}`}>
+            {copilotInsights?.emergingHotspots.map((h, i) => (
+              <div key={i} className="p-4 rounded-xl border border-slate-100 bg-slate-50 flex gap-4">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-orange-50 text-orange-600 border border-orange-200`}>
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-sans font-bold text-sm text-slate-900">{h.category} Cluster</h4>
+                    <h4 className="font-sans font-bold text-sm text-slate-900">{h.issueType}</h4>
                     <span className="font-mono text-[9px] font-bold text-slate-500 uppercase">{h.reportCount} Reports</span>
                   </div>
-                  <p className="font-body text-xs text-slate-600 leading-relaxed mb-2">{h.recommendation}</p>
-                  <button className="font-mono text-[10px] font-bold text-brand-primary uppercase hover:text-brand-secondary transition-colors">
-                    Draft Work Order &rarr;
-                  </button>
+                  <p className="font-mono text-[9px] font-bold text-slate-400 mb-2 uppercase">{h.location}</p>
+                  <p className="font-body text-xs text-slate-600 leading-relaxed mb-2">{h.description}</p>
                 </div>
               </div>
             ))}
+            {!copilotInsights && (
+              <div className="space-y-4">
+                 <Skeleton className="h-24 w-full rounded-xl" />
+                 <Skeleton className="h-24 w-full rounded-xl" />
+              </div>
+            )}
           </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
           <div className="flex items-center gap-2 mb-6">
             <Workflow className="w-4 h-4 text-brand-primary" />
-            <h3 className="font-sans font-bold text-sm text-slate-900">Resource Forecasting</h3>
+            <h3 className="font-sans font-bold text-sm text-slate-900">Department Recommendations</h3>
           </div>
-          <div className="flex-1 flex flex-col justify-center gap-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 text-center">
-                <p className="font-mono text-[10px] font-bold text-blue-600 uppercase mb-1">Estimated Hours</p>
-                <p className="font-sans font-extrabold text-2xl text-blue-900">124<span className="text-sm">h</span></p>
+          <div className="flex-1 flex flex-col gap-4">
+            {copilotInsights?.departmentRecommendations.map((rec, i) => (
+               <div key={i} className="p-4 border border-slate-100 rounded-xl bg-blue-50/50">
+                 <h4 className="font-sans font-bold text-sm text-brand-primary">{rec.department}</h4>
+                 <p className="font-body text-xs text-slate-600 mt-1">{rec.action}</p>
+               </div>
+            ))}
+            {!copilotInsights && (
+              <div className="space-y-4">
+                 <Skeleton className="h-20 w-full rounded-xl" />
+                 <Skeleton className="h-20 w-full rounded-xl" />
               </div>
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-                <p className="font-mono text-[10px] font-bold text-emerald-600 uppercase mb-1">Estimated Cost</p>
-                <p className="font-sans font-extrabold text-2xl text-emerald-900"><span className="text-sm">$</span>8,600</p>
-              </div>
-            </div>
-            <div className="p-4 rounded-xl border border-slate-100 bg-slate-50">
-              <h4 className="font-sans font-bold text-xs text-slate-900 mb-2">Duplicate Detection</h4>
-              <p className="font-body text-xs text-slate-600 mb-2">
-                2 new reports in West Hill appear to be duplicates of existing active issue #ISSUE-1092.
-              </p>
-              <button className="px-3 py-1.5 bg-slate-200 text-slate-700 font-mono text-[10px] font-bold uppercase rounded-lg hover:bg-slate-300 transition-colors">
-                Merge Reports
-              </button>
-            </div>
+            )}
           </div>
         </div>
       </div>

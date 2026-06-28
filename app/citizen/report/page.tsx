@@ -88,6 +88,31 @@ export default function CitizenReportFlowPage() {
     return `CH-${Math.floor(10000 + Math.random() * 90000)}`;
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      const { ReportService } = await import('@/lib/services/reportService');
+      const issue = await ReportService.submitNewReport({
+        title,
+        description,
+        category,
+        urgency: urgency as any,
+        location: locationValue,
+        imageUrl: selectedImage || undefined,
+        coordinates: coordinates || undefined
+      });
+      setMockReportId(issue.id);
+      goToStep('success');
+    } catch (error) {
+      console.error('Submission failed', error);
+      alert('Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Synchronize state with search query for deep-linked browser back/forward buttons
   useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
@@ -983,11 +1008,12 @@ export default function CitizenReportFlowPage() {
 
                   <button
                     type="button"
-                    onClick={() => goToStep('success')}
-                    className="px-6 py-3.5 bg-brand-primary text-white hover:bg-brand-primary/95 rounded-2xl font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md hover:shadow-lg"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="px-6 py-3.5 bg-brand-primary text-white hover:bg-brand-primary/95 rounded-2xl font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-md hover:shadow-lg disabled:opacity-50"
                   >
                     <CheckCircle className="w-4 h-4 text-brand-secondary" />
-                    <span>Submit Active Report</span>
+                    <span>{isSubmitting ? 'Submitting...' : 'Submit Active Report'}</span>
                   </button>
                 </div>
 

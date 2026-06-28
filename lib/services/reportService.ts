@@ -1,5 +1,7 @@
 import { IssueRepository } from '../repositories/issueRepository';
 import { Issue } from '../models';
+import { CommunityIntegrityAgent } from '../providers/ai/communityIntegrityAgent';
+import { CommunityIntelligenceAgent } from '../providers/ai/communityIntelligenceAgent';
 
 export const ReportService = {
   /**
@@ -52,6 +54,53 @@ export const ReportService = {
       },
     };
 
-    return IssueRepository.create(issuePayload);
+    const newIssue = await IssueRepository.create(issuePayload);
+
+    // Fire and forget AI analysis background task
+    setTimeout(async () => {
+       try {
+         // 1. Community Integrity Agent evaluates the report
+         const integrityResult = await CommunityIntegrityAgent.evaluateReport(newIssue);
+         
+         // 2. Community Intelligence Agent analyzes for urgency and routing
+         const intelligenceResult = await CommunityIntelligenceAgent.analyzeReport(newIssue);
+
+         // Update the issue with AI insights
+         const updatedIssue = { ...newIssue };
+         updatedIssue.urgency = intelligenceResult.severityMatch as any;
+         updatedIssue.category = intelligenceResult.categoryMatch;
+         updatedIssue.trustMetrics = {
+           ...updatedIssue.trustMetrics!,
+           verificationConfidence: integrityResult.confidenceScore,
+           isVerified: integrityResult.isVerified
+         };
+         
+         // Add AI analysis events to timeline
+         updatedIssue.timeline = [
+           ...updatedIssue.timeline!,
+           {
+             id: `tl-ai-int-${Date.now()}`,
+             type: 'update',
+             title: 'AI Integrity Check',
+             description: integrityResult.analysisSummary,
+             timestamp: 'Just now',
+           },
+           {
+             id: `tl-ai-intel-${Date.now()}`,
+             type: 'update',
+             title: 'AI Intelligence Routing',
+             description: `Routed to ${intelligenceResult.routingTo}. ${intelligenceResult.aiSummary}`,
+             timestamp: 'Just now',
+           }
+         ];
+
+         await IssueRepository.update(newIssue.id, updatedIssue);
+
+       } catch (err) {
+         console.error("AI Analysis background task failed:", err);
+       }
+    }, 100); // Slight delay
+
+    return newIssue;
   },
 };
