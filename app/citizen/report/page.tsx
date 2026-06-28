@@ -525,14 +525,21 @@ export default function CitizenReportFlowPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      if (realAiResults && realAiResults.id) {
-        await IssueRepository.update(realAiResults.id, { status: 'Live' });
-        setMockReportId(realAiResults.id);
-      }
+      const { ReportService } = await import('@/lib/services/reportService');
+      const issue = await ReportService.submitNewReport({
+        title,
+        description,
+        category,
+        urgency: (realAiResults?.severityMatch || urgency) as any,
+        location: locationValue,
+        imageUrl: selectedImage || undefined,
+        coordinates: coordinates || undefined
+      });
+      setMockReportId(issue.id);
       goToStep('success');
     } catch (error) {
-      console.error('Finalizing submission failed:', error);
-      alert('Unable to lock report onto the immutable docket list. Please retry.');
+      console.error('Submission failed', error);
+      alert('Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -541,7 +548,20 @@ export default function CitizenReportFlowPage() {
   // Determine standard custom values or fallback if user edited manually
   const getAiResults = (): PresetOption => {
     if (realAiResults) {
-      return realAiResults;
+      return {
+        id: 'real-ai-case',
+        title: title || 'Custom Incident Report',
+        description: description || 'No secondary details provided.',
+        location: locationValue || 'Unknown Location Point',
+        category: category,
+        urgency: realAiResults.severityMatch as any,
+        imageUrl: selectedImage || 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80',
+        aiSummary: realAiResults.aiSummary,
+        confidence: realAiResults.confidence,
+        categoryMatch: realAiResults.categoryMatch,
+        severityMatch: realAiResults.severityMatch,
+        routingTo: realAiResults.routingTo
+      };
     }
 
     // If we have an autofilled image, match that preset
