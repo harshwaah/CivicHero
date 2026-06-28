@@ -78,6 +78,23 @@ function stopGlobalListener() {
 
 const issueUnsubscribes: Map<string, () => void> = new Map();
 
+export async function invalidateCopilotBriefing() {
+  if (isFirebaseConfigured) {
+    try {
+      const briefingRef = doc(db, 'copilot_briefings', 'latest');
+      await setDoc(briefingRef, { invalidated: true }, { merge: true });
+      console.log('[COPILOT] Event-driven invalidation triggered: Cache marked as invalidated in Firestore.');
+    } catch (err) {
+      console.warn('[COPILOT] Failed to invalidate copilot briefing in Firestore:', err);
+    }
+  } else {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('copilot_briefing_invalidated', 'true');
+      console.log('[COPILOT] Event-driven invalidation triggered: Cache marked as invalidated in localStorage.');
+    }
+  }
+}
+
 export const IssueRepository = {
   subscribe(callback: Subscriber): () => void {
     subscribers.push(callback);
@@ -206,11 +223,13 @@ export const IssueRepository = {
     if (!isFirebaseConfigured) {
       currentIssues = [createdIssue, ...currentIssues];
       subscribers.forEach(sub => sub([...currentIssues]));
+      invalidateCopilotBriefing();
       return createdIssue;
     }
 
     try {
       await setDoc(doc(db, 'issues', newId), createdIssue);
+      invalidateCopilotBriefing();
       return createdIssue;
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, `issues/${newId}`);
@@ -222,6 +241,12 @@ export const IssueRepository = {
    * Update an existing issue report
    */
   async update(id: string, updates: Partial<Issue>): Promise<Issue> {
+    const statusChanged = updates.status !== undefined;
+    const isCritical = updates.urgency === 'Critical' || (currentIssues.find(i => i.id === id)?.urgency === 'Critical');
+    if (statusChanged && isCritical) {
+      invalidateCopilotBriefing();
+    }
+
     if (!isFirebaseConfigured) {
       const idx = currentIssues.findIndex((r) => r.id === id);
       if (idx === -1) throw new Error(`Issue ${id} not found.`);

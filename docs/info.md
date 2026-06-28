@@ -6,11 +6,12 @@ This document details the frontend architecture, system flows, design tokens, re
 
 ## 1. Application Directory Structure
 
-The project conforms to a clean, component-driven, and multi-layered architectural taxomony:
+The project conforms to a clean, component-driven, and multi-layered architectural taxonomy:
 
 ```
 /
 ├── app/                        # Next.js App Router root
+│   ├── admin/                  # Mission Control Admin dashboard & controls
 │   ├── citizen/                # Citizen Portal layout & workspace
 │   │   ├── issues/             # Browse & inspection dynamic subroutes
 │   │   │   └── [id]/           # Dynamic Issue view
@@ -40,7 +41,7 @@ The project conforms to a clean, component-driven, and multi-layered architectur
 │   │   ├── firestore.ts        # Firestore helpers & error handlers
 │   │   └── storage.ts          # Storage helpers & error handlers
 │   ├── repositories/           # Repository Data Layer (Decoupled from UI)
-│   │   ├── issueRepository.ts  # Issue, upvote, and comment CRUD operations
+│   │   ├── issueRepository.ts  # Issue, upvote, and comment CRUD operations (and Copilot invalidation)
 │   │   ├── userRepository.ts   # User profile and leaderboards
 │   │   ├── timelineRepository.ts # Milestone checkpoints logging
 │   │   ├── analyticsRepository.ts # City-wide metrics & charts
@@ -69,8 +70,9 @@ The project conforms to a clean, component-driven, and multi-layered architectur
 │   └── utils.ts                # Tailwind merging configuration helpers
 └── docs/                       # Architectural design document manuals
     ├── info.md                 # [THIS FILE] Technical system manual
-    ├── backend.md              # Technical backend implementation roadmap
-    ├── maps.md                 # Google Maps Platform implementation & architecture manual
+    ├── ai.md                   # AI architecture, Fallbacks & Router manual
+    ├── performance.md          # Technical performance optimization handbook
+    ├── maps.md                 # Google Maps Platform implementation manual
     └── conventions.md          # Institutional Engineering Handbook
 ```
 
@@ -98,7 +100,7 @@ To ensure maximum scalability and clean testing boundaries, CivicHero implements
 
 ### 3.1 Repository Responsibilities
 Repositories handle direct database queries and CRUD updates, converting database documents into canonical data models:
-*   **IssueRepository**: Manages write/read pipelines for public concerns, appending comments, and transactional upvote counters.
+*   **IssueRepository**: Manages write/read pipelines for public concerns, appending comments, transactional upvote counters, and event-driven invalidation of AI briefings.
 *   **UserRepository**: Retrieves citizen stats, computes leaderboard ranks, and saves trust credentials.
 *   **TimelineRepository**: Handles audit-log entries tracking milestone progression.
 *   **AnalyticsRepository**: Compiles aggregated system performance metrics and category distributions.
@@ -107,7 +109,7 @@ Repositories handle direct database queries and CRUD updates, converting databas
 ### 3.2 Service Responsibilities
 Services incorporate business logic, domain filters, trust calculations, and coordination of multiple repository actions:
 *   **IssueService**: Powers advanced search, text parsing, and category matching.
-*   **ReportService**: Guides the 5-step reporting wizard pipeline and handles asset uploads.
+*   **ReportService**: Guides the 5-step reporting wizard pipeline and coordinates the asynchronous upload process.
 *   **TimelineService**: Manages workflow status transitions.
 *   **TrustService**: Incorporates trust weighting formulas into upvote co-signings and registers disputes.
 *   **MapService**: Formulates coordinates for clustering.
@@ -135,21 +137,21 @@ Centralized in `lib/models.ts`:
 
 ---
 
-## 5. Robust Error Handling
+## 5. Robust Error Handling & Performance-Grade Routing
 
 Our unified error framework guarantees that low-level failures are caught, logged inside developer-friendly diagnostic contexts, and translated into clean human labels without compromising system safety:
 *   **Firestore Errors**: Handled by `handleFirestoreError`, packing operations, routes, and auth states into serializable JSON payloads.
 *   **Storage Errors**: Handled by `handleStorageError` detailing upload and file format issues.
-*   **Service & AI Failures**: Gracefully logs developer warnings and falls back to robust, cached local data if environment credentials (e.g. `GEMINI_API_KEY`) are temporarily missing, keeping the frontend stable.
+*   **AI Routing Failures**: Handled by our dynamic provider-skipping router. If critical API keys (e.g. `GEMINI_API_KEY` or `NEMOTRON_API_KEY`) are omitted in the workspace settings, the gateway bypasses network requests immediately and redirects directly to `getGracefulFallback`, safeguarding form operations and dashboard render cycles.
 
 ---
 
 ## 6. Future Backend Milestones
 
-*   **Milestone 2.1 (Google Maps API)**: Activate live coordinates mapping, reverse address lookup, and vector clustering.
-*   **Milestone 2.2 (Gemini Server-side Routes)**: Wire base64 photo scans directly to `gemini-3.5-flash` API routes.
-*   **Milestone 2.3 (Firebase Active Collections)**: Swap in-memory state fallbacks with real-time Firestore collection references.
-*   **Milestone 2.4 (Security Audit)**: Deploy and dry-run `firestore.rules` using the Red-Team test suite.
+*   **Milestone 2.1 (Google Maps API)**: Activate live coordinates mapping, reverse address lookup, and vector clustering. (COMPLETED)
+*   **Milestone 2.2 (Gemini Server-side Routes)**: Wire base64 photo scans directly to `gemini-3.5-flash` API routes. (COMPLETED)
+*   **Milestone 2.3 (Firebase Active Collections)**: Swap in-memory state fallbacks with real-time Firestore collection references. (COMPLETED)
+*   **Milestone 2.4 (Security Audit)**: Deploy and dry-run `firestore.rules` using the Red-Team test suite. (COMPLETED)
 
 ---
 
@@ -160,10 +162,11 @@ The CivicHero Administrator Portal ("Mission Control") operates alongside the Ci
 ### 7.1 Shared Synchronization Flow
 CivicHero is built on the philosophy of "Trust Through Transparency." The Citizen application and the Administrator Portal are not separate applications; they are two interfaces connected to the exact same shared data models.
 *   **One Source of Truth**: When an administrator performs an action (e.g., assigning a department, updating a status), the `IssueService` updates the repository. This state change is instantly available to the Citizen UI.
-*   **Automated Transparency**: Administrative actions automatically append immutable entries to the timeline via the `TimelineService`. Citizens immediately see these events (e.g., "Assigned to Roads Department", "Work Started").
+*   **Automated Transparency**: Administrative actions automatically append entries to the timeline via the `TimelineService`. Citizens immediately see these events (e.g., "Work Started").
 
-### 7.2 Administrator Workflow
-*   **Mission Control Dashboard**: Provides a high-level view of system health, department workloads, and critical issues requiring attention.
-*   **Priority Queue**: Allows administrators to filter, search, and triage active reports efficiently.
-*   **Operational Detail View**: The Administrator Issue Detail page shares UI components with the Citizen view (like `AISummaryCard` and `MapPlaceholder`), but adds operational controls for assigning departments, updating status, and manual timeline appending.
-*   **AI Copilot & Analytics**: Empowers administrators with AI-generated work drafts, geographic hotspot detection, resource forecasting, and live civic trust indices, utilizing the `AdministratorCopilot`, `CommunityIntelligenceAgent`, and `AnalyticsService`.
+### 7.2 Administrator Workflow & Cached Operational Briefings
+*   **AI Copilot & Analytics**: Empowers administrators with AI-generated work drafts, geographic hotspot detection, resource forecasting, and live civic trust indices.
+*   **Cached Intelligence Gateway**: To preserve rate-limits and eliminate continuous background Gemini polling, the dashboard reads briefings from a cached Firestore document.
+*   **Configurable TTL**: A cached briefing expires based on `process.env.COPILOT_TTL_MS` (defaulting to 15 minutes).
+*   **Automated Invalidations**: Any new citizen report creation or critical-level status modification invalidates the active cache, forcing a refresh of the briefings on the next request.
+*   **Manual On-Demand Refresh**: Administrators can trigger manual briefing generation via the on-screen **"Refresh Briefing"** button, instantly bypassing active caches and updating Firestore.

@@ -115,13 +115,25 @@ export const AIOrchestrator = {
     // 3. Gemini Pro ('gemini-3.1-pro-preview')
     // 4. Nemotron Nano VL
     // 5. Graceful Fallback
-    const models = [
-      { name: 'gemini-3.1-flash-lite', provider: 'google' },
-      { name: 'gemini-3.5-flash', provider: 'google' },
-      { name: 'gemini-2.5-pro', provider: 'google' },
-      { name: 'gemini-1.5-pro', provider: 'google' },
-      { name: 'nemotron-nano-vl', provider: 'nemotron' }
-    ];
+    
+    const hasGeminiKey = !!(process.env.APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
+    const hasNemotronKey = !!(process.env.NEMOTRON_API_KEY || process.env.OPENROUTER_API_KEY || process.env.NVIDIA_API_KEY);
+
+    const models = [];
+    if (hasGeminiKey) {
+      models.push({ name: 'gemini-3.1-flash-lite', provider: 'google' });
+      models.push({ name: 'gemini-3.5-flash', provider: 'google' });
+      models.push({ name: 'gemini-2.5-pro', provider: 'google' });
+      models.push({ name: 'gemini-1.5-pro', provider: 'google' });
+    } else {
+      console.log('[AIROUTER] Gemini API key is absent. Skipping Google Gemini models.');
+    }
+
+    if (hasNemotronKey) {
+      models.push({ name: 'nemotron-nano-vl', provider: 'nemotron' });
+    } else {
+      console.log('[AIROUTER] Nemotron API key is absent. Skipping Nemotron models.');
+    }
 
     let lastError: any = null;
 

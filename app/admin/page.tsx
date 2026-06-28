@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
@@ -23,7 +23,8 @@ import {
   BarChart,
   Target,
   Workflow,
-  Sparkles
+  Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import AdminNav from '../../components/AdminNav';
 import { IssueService } from '../../lib/services/issueService';
@@ -50,6 +51,11 @@ export default function AdminPage() {
   const [copilotError, setCopilotError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showHeatmap, setShowHeatmap] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Smart state refs for Administrator Copilot caching
+  const prevIssuesRef = useRef<Issue[]>([]);
+  const hasLoadedCopilotRef = useRef<boolean>(false);
   
   useEffect(() => {
     let unsubscribe = () => {};
@@ -58,15 +64,57 @@ export default function AdminPage() {
       setLoading(true);
       
       unsubscribe = IssueService.subscribe(async (fetchedIssues) => {
+        const prevIssues = prevIssuesRef.current;
+        prevIssuesRef.current = fetchedIssues;
         setIssues(fetchedIssues);
+
         if (fetchedIssues.length > 0) {
-          try {
-             const insights = await AdministratorCopilot.generateInsights(fetchedIssues);
-             setCopilotInsights(insights);
-             setCopilotError(null);
-          } catch(err: any) {
-             console.error("Failed to generate copilot insights", err);
-             setCopilotError(err?.message || "Failed to load copilot insights");
+          const isInitialLoad = !hasLoadedCopilotRef.current;
+          let shouldTriggerRegen = false;
+          let regenReason = "";
+
+          if (isInitialLoad) {
+            hasLoadedCopilotRef.current = true;
+            shouldTriggerRegen = true;
+            regenReason = "Initial dashboard load (reading existing Firestore cache)";
+          } else {
+            // Check if a new report was created
+            if (fetchedIssues.length > prevIssues.length) {
+              shouldTriggerRegen = true;
+              regenReason = "New report created";
+            } else {
+              // Check if any critical issue changed status
+              for (const next of fetchedIssues) {
+                const prev = prevIssues.find(p => p.id === next.id);
+                if (prev) {
+                  if (prev.status !== next.status) {
+                    const wasCritical = prev.urgency === 'Critical';
+                    const isNowCritical = next.urgency === 'Critical';
+                    if (wasCritical || isNowCritical) {
+                      shouldTriggerRegen = true;
+                      regenReason = `Critical issue changed status from ${prev.status} to ${next.status}`;
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          if (shouldTriggerRegen) {
+            try {
+              console.log(`[COPILOT] Fetching insights. Reason: ${regenReason}`);
+              const insights = await AdministratorCopilot.generateInsights(fetchedIssues, { 
+                forceRefresh: !isInitialLoad 
+              });
+              setCopilotInsights(insights);
+              setCopilotError(null);
+            } catch (err: any) {
+              console.error("Failed to generate copilot insights", err);
+              setCopilotError(err?.message || "Failed to load copilot insights");
+            }
+          } else {
+            console.log("[COPILOT] Subscription update. No invalidation criteria met (no new reports or critical state changes). Bypassing API request.");
           }
         }
       });
@@ -82,6 +130,22 @@ export default function AdminPage() {
       unsubscribe();
     };
   }, [activeTab]);
+
+  const handleRefreshBriefing = async () => {
+    if (isRefreshing || issues.length === 0) return;
+    setIsRefreshing(true);
+    try {
+      console.log('[COPILOT] Manual refresh requested by administrator.');
+      const insights = await AdministratorCopilot.generateInsights(issues, { forceRefresh: true });
+      setCopilotInsights(insights);
+      setCopilotError(null);
+    } catch (err: any) {
+      console.error("Failed to manually refresh copilot insights", err);
+      setCopilotError(err?.message || "Failed to refresh copilot insights");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const getPriorityColor = (urgency: string) => {
     switch (urgency) {
@@ -256,15 +320,35 @@ export default function AdminPage() {
     >
       <div className="bg-slate-900 rounded-2xl border border-slate-800 p-8 shadow-xl text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-brand-secondary/20 blur-3xl rounded-full pointer-events-none -translate-y-1/2 translate-x-1/2" />
-        <div className="relative z-10 flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-brand-secondary/20 flex items-center justify-center shrink-0 border border-brand-secondary/30">
-            <Bot className="w-6 h-6 text-brand-secondary" />
+        <div className="relative z-10 flex flex-col gap-6">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-brand-secondary/20 flex items-center justify-center shrink-0 border border-brand-secondary/30">
+              <Bot className="w-6 h-6 text-brand-secondary" />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-sans font-extrabold text-2xl tracking-tight mb-2">Administrator AI Copilot</h2>
+              <p className="font-body text-sm text-slate-300 max-w-2xl leading-relaxed">
+                {copilotInsights ? copilotInsights.operationalBriefing : 'Analyzing real-time incident data to generate operational insights...'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-sans font-extrabold text-2xl tracking-tight mb-2">Administrator AI Copilot</h2>
-            <p className="font-body text-sm text-slate-300 max-w-2xl leading-relaxed">
-              {copilotInsights ? copilotInsights.operationalBriefing : 'Analyzing real-time incident data to generate operational insights...'}
-            </p>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-800/80">
+            <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+              <Clock className="w-3.5 h-3.5 text-slate-500 animate-pulse" />
+              <span>
+                Last briefing update: {copilotInsights?.updatedAt ? new Date(copilotInsights.updatedAt).toLocaleTimeString() : 'Never'}
+              </span>
+            </div>
+            
+            <button
+              onClick={handleRefreshBriefing}
+              disabled={isRefreshing}
+              className="px-4 py-2 bg-brand-secondary hover:bg-brand-secondary/90 disabled:opacity-50 text-slate-900 rounded-xl font-sans font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition-all self-end sm:self-auto cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing Briefing...' : 'Refresh Briefing'}
+            </button>
           </div>
         </div>
       </div>

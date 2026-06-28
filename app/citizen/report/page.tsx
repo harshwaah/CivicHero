@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity, react-hooks/exhaustive-deps */
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -52,6 +53,15 @@ export default function CitizenReportFlowPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [evidenceFile, setEvidenceFile] = useState<File | Blob | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Background upload states
+  const [backgroundUploadUrl, setBackgroundUploadUrl] = useState<string | null>(null);
+  const [backgroundUploadProgress, setBackgroundUploadProgress] = useState(0);
+  const [backgroundUploadStatus, setBackgroundUploadStatus] = useState<'idle' | 'uploading' | 'complete' | 'error'>('idle');
+  const [backgroundUploadError, setBackgroundUploadError] = useState<string | null>(null);
+  
+  const uploadTaskRef = useRef<any>(null);
+  const uploadPromiseRef = useRef<Promise<string> | null>(null);
 
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(() => {
     if (typeof window !== 'undefined') {
@@ -226,6 +236,71 @@ export default function CitizenReportFlowPage() {
     });
   };
 
+  const cancelBackgroundUpload = () => {
+    if (uploadTaskRef.current) {
+      try {
+        uploadTaskRef.current.cancel();
+        console.log('[BACKGROUND UPLOAD] Previous upload canceled.');
+      } catch (e) {
+        console.warn('[BACKGROUND UPLOAD] Cancel failed:', e);
+      }
+      uploadTaskRef.current = null;
+    }
+    uploadPromiseRef.current = null;
+    setBackgroundUploadUrl(null);
+    setBackgroundUploadProgress(0);
+    setBackgroundUploadStatus('idle');
+  };
+
+  const startBackgroundUpload = (fileBlob: Blob | File) => {
+    setBackgroundUploadStatus('uploading');
+    setBackgroundUploadProgress(0);
+    setBackgroundUploadError(null);
+    setBackgroundUploadUrl(null);
+
+    const fileExt = 'jpg';
+    const storagePath = `issues/evidence/${Date.now()}_img.${fileExt}`;
+    const storageRef = ref(storage, storagePath);
+    const uploadTask = uploadBytesResumable(storageRef, fileBlob);
+    uploadTaskRef.current = uploadTask;
+
+    console.log('[BACKGROUND UPLOAD] Starting background upload for:', storagePath);
+
+    const promise = new Promise<string>((resolve, reject) => {
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          const boundedProgress = Math.min(progress, 100);
+          setBackgroundUploadProgress(boundedProgress);
+          console.log(`[BACKGROUND UPLOAD] Progress: ${boundedProgress}%`);
+        },
+        (error) => {
+          console.error('[BACKGROUND UPLOAD] Upload failed:', error);
+          setBackgroundUploadStatus('error');
+          setBackgroundUploadError(error.message);
+          reject(error);
+        },
+        async () => {
+          try {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            console.log('[BACKGROUND UPLOAD] Completed! URL:', downloadUrl);
+            setBackgroundUploadUrl(downloadUrl);
+            setBackgroundUploadStatus('complete');
+            resolve(downloadUrl);
+          } catch (err: any) {
+            console.error('[BACKGROUND UPLOAD] Failed to get download URL:', err);
+            setBackgroundUploadStatus('error');
+            setBackgroundUploadError(err.message);
+            reject(err);
+          }
+        }
+      );
+    });
+
+    uploadPromiseRef.current = promise;
+    return promise;
+  };
+
   const processFile = async (file: File) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
@@ -239,18 +314,23 @@ export default function CitizenReportFlowPage() {
       return;
     }
 
+    // Cancel any previous upload
+    cancelBackgroundUpload();
+
     try {
       const compressedBlob = await compressImage(file);
       setEvidenceFile(compressedBlob);
       const localUrl = URL.createObjectURL(compressedBlob);
       setSelectedImage(localUrl);
       setHasAutofilled(false);
+      startBackgroundUpload(compressedBlob);
     } catch (err) {
       console.error('Image compression failed, using original', err);
       setEvidenceFile(file);
       const localUrl = URL.createObjectURL(file);
       setSelectedImage(localUrl);
       setHasAutofilled(false);
+      startBackgroundUpload(file);
     }
   };
 
@@ -290,6 +370,10 @@ export default function CitizenReportFlowPage() {
 
     setSelectedImage(preset.imageUrl);
     setEvidenceFile(null); // No local file needed
+    cancelBackgroundUpload();
+    setBackgroundUploadUrl(preset.imageUrl);
+    setBackgroundUploadStatus('complete');
+
     setTitle(preset.title);
     setDescription(preset.description);
     setLocationValue(preset.location);
@@ -349,51 +433,77 @@ export default function CitizenReportFlowPage() {
     setScanningComplete(false);
     setScanError(null);
 
+    const isDev = typeof window !== 'undefined' && localStorage.getItem('developer_mode') === 'true';
+
+    const addLog = (friendly: string, technical: string, filterSubstring?: string) => {
+      console.log(`[PIPELINE] ${technical}`);
+      const displayLog = isDev ? technical : friendly;
+      setScanLogs(prev => {
+        if (filterSubstring) {
+          const base = prev.filter(l => !l.includes(filterSubstring));
+          return [...base, displayLog];
+        }
+        return [...prev, displayLog];
+      });
+    };
+
     try {
       let finalImageUrl = selectedImage || '';
 
-      // Phase A: Image upload to Firebase Storage
+      // Phase A: Image upload check
       if (evidenceFile) {
-        setScanLogs(prev => [...prev, '[STORAGE] Initiating secure upload channel to Firebase Storage...']);
-        setScanProgress(10);
+        if (backgroundUploadStatus === 'complete' && backgroundUploadUrl) {
+          finalImageUrl = backgroundUploadUrl;
+          addLog('Photo successfully secured.', '[STORAGE] Evidence photo secured on Cloud Run storage bucket.');
+          setScanProgress(35);
+        } else {
+          addLog('Securing your photo on the ledger...', '[STORAGE] Initiating secure upload channel to Firebase Storage...');
+          setScanProgress(10);
+          
+          if (uploadPromiseRef.current) {
+            try {
+              // Await the ongoing background upload
+              // Show progress logs in real-time
+              const checkProgressInterval = setInterval(() => {
+                if (backgroundUploadStatus === 'uploading') {
+                  addLog(`Uploading your photo... ${backgroundUploadProgress}%`, `[STORAGE] Uploading evidence proof to storage: ${backgroundUploadProgress}%`, 'Uploading');
+                  setScanProgress(Math.round(backgroundUploadProgress * 0.35));
+                }
+              }, 500);
 
-        const fileExt = 'jpg';
-        const storagePath = `issues/evidence/${Date.now()}_img.${fileExt}`;
-        const storageRef = ref(storage, storagePath);
-        const uploadTask = uploadBytesResumable(storageRef, evidenceFile);
-
-        await new Promise<void>((resolve, reject) => {
-          uploadTask.on('state_changed',
-            (snapshot) => {
-              const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-              setScanProgress(Math.round(progress * 0.35)); // 0 - 35% progress
-              setScanLogs(prev => {
-                const base = prev.filter(l => !l.startsWith('[STORAGE] Uploading'));
-                return [...base, `[STORAGE] Uploading evidence proof to storage: ${progress}%`];
-              });
-            },
-            (error) => {
-              reject(error);
-            },
-            async () => {
-              try {
-                finalImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                setScanLogs(prev => [...prev, '[STORAGE] Evidence photo secured on Cloud Run storage bucket.']);
-                resolve();
-              } catch (err) {
-                reject(err);
-              }
+              finalImageUrl = await uploadPromiseRef.current;
+              clearInterval(checkProgressInterval);
+              addLog('Photo successfully secured.', '[STORAGE] Evidence photo secured on Cloud Run storage bucket.');
+              setScanProgress(35);
+            } catch (err: any) {
+              throw new Error(`Photo upload failed: ${err.message}`);
             }
-          );
-        });
+          } else {
+            // No background upload was running, start it now
+            try {
+              const p = startBackgroundUpload(evidenceFile);
+              const checkProgressInterval = setInterval(() => {
+                addLog(`Uploading your photo... ${backgroundUploadProgress}%`, `[STORAGE] Uploading evidence proof to storage: ${backgroundUploadProgress}%`, 'Uploading');
+                setScanProgress(Math.round(backgroundUploadProgress * 0.35));
+              }, 500);
+
+              finalImageUrl = await p;
+              clearInterval(checkProgressInterval);
+              addLog('Photo successfully secured.', '[STORAGE] Evidence photo secured on Cloud Run storage bucket.');
+              setScanProgress(35);
+            } catch (err: any) {
+              throw new Error(`Photo upload failed: ${err.message}`);
+            }
+          }
+        }
       } else {
         setScanProgress(35);
-        setScanLogs(prev => [...prev, '[STORAGE] Utilizing high-fidelity verified preset asset. Bypassing upload.']);
+        addLog('Using high-quality preset photo.', '[STORAGE] Utilizing high-fidelity verified preset asset. Bypassing upload.');
       }
 
       // Phase B: Firestore initial entry
       setScanProgress(45);
-      setScanLogs(prev => [...prev, '[LEDGER] Registering metadata schema inside Firestore...']);
+      addLog('Logging your report details...', '[LEDGER] Registering metadata schema inside Firestore...');
 
       const issuePayload: Omit<Issue, 'id'> = {
         title: title || 'Custom Incident Report',
@@ -431,34 +541,31 @@ export default function CitizenReportFlowPage() {
 
       const newIssue = await IssueRepository.create(issuePayload);
       setMockReportId(newIssue.id);
-      setScanLogs(prev => [...prev, `[LEDGER] Created secure incident entry with ID: ${newIssue.id}`]);
+      addLog(`Report saved under Reference Code: ${newIssue.id}`, `[LEDGER] Created secure incident entry with ID: ${newIssue.id}`);
 
       // Phase C: Community Integrity Agent verification
       setScanProgress(60);
-      setScanLogs(prev => [...prev, '[AI_INTEGRITY] Calling Community Integrity Agent (Gemini-3.5-flash)...']);
+      addLog('Verifying report integrity...', '[AI_INTEGRITY] Calling Community Integrity Agent (Gemini-3.5-flash)...');
       
       const integrityResult = await CommunityIntegrityAgent.evaluateReport(newIssue);
-      setScanLogs(prev => [
-        ...prev,
-        `[AI_INTEGRITY] Moderation analysis complete. Confidence: ${integrityResult.confidenceScore}%`,
-        `[AI_INTEGRITY] Safety integrity: ${integrityResult.isVerified ? 'VERIFIED_OK' : 'UNDER_REVIEW'}`
-      ]);
+      addLog(
+        'Integrity check completed successfully.',
+        `[AI_INTEGRITY] Moderation analysis complete. Confidence: ${integrityResult.confidenceScore}%, Safety: ${integrityResult.isVerified ? 'VERIFIED_OK' : 'UNDER_REVIEW'}`
+      );
 
       // Phase D: Community Intelligence Agent routing
       setScanProgress(80);
-      setScanLogs(prev => [...prev, '[AI_INTELLIGENCE] Triggering Community Intelligence Agent routing...']);
+      addLog('Analyzing details for department routing...', '[AI_INTELLIGENCE] Triggering Community Intelligence Agent routing...');
       
       const intelligenceResult = await CommunityIntelligenceAgent.analyzeReport(newIssue);
-      setScanLogs(prev => [
-        ...prev,
-        `[AI_INTELLIGENCE] Resolved Department: ${intelligenceResult.routingTo}`,
-        `[AI_INTELLIGENCE] Smart category mapping: ${intelligenceResult.categoryMatch}`,
-        `[AI_INTELLIGENCE] Matched Urgency: ${intelligenceResult.severityMatch}`
-      ]);
+      addLog(
+        `Assigned to ${intelligenceResult.routingTo} under ${intelligenceResult.severityMatch} priority.`,
+        `[AI_INTELLIGENCE] Resolved Department: ${intelligenceResult.routingTo}, Smart category mapping: ${intelligenceResult.categoryMatch}, Matched Urgency: ${intelligenceResult.severityMatch}`
+      );
 
       // Phase E: Write results back to Firestore & sync
       setScanProgress(90);
-      setScanLogs(prev => [...prev, '[LEDGER] Writing AI evaluation matrices and dispatch routes into ledger...']);
+      addLog('Finalizing dispatch route and updating timeline...', '[LEDGER] Writing AI evaluation matrices and dispatch routes into ledger...');
 
       const updatedIssue = { ...newIssue };
       updatedIssue.urgency = intelligenceResult.severityMatch as any;
@@ -503,7 +610,7 @@ export default function CitizenReportFlowPage() {
         routingTo: intelligenceResult.routingTo
       });
 
-      setScanLogs(prev => [...prev, '[SUCCESS] System diagnostics fully verified. Case docket locked.']);
+      addLog('Dispatch routing confirmed! Report ready for submittal.', '[SUCCESS] System diagnostics fully verified. Case docket locked.');
       setScanProgress(100);
       setScanningComplete(true);
 
@@ -511,7 +618,7 @@ export default function CitizenReportFlowPage() {
       console.error('Real submission pipeline error:', err);
       const message = err?.message || 'A network error occurred. Please verify your connection.';
       setScanError(message);
-      setScanLogs(prev => [...prev, `[ERROR] Pipeline interrupted: ${message}`]);
+      addLog(`Submission interrupted: ${message}`, `[ERROR] Pipeline interrupted: ${message}`);
     }
   };
 
@@ -727,6 +834,7 @@ export default function CitizenReportFlowPage() {
                             setSelectedImage(null);
                             setEvidenceFile(null);
                             setHasAutofilled(false);
+                            cancelBackgroundUpload();
                           }}
                           className="p-1.5 rounded-xl bg-red-50 text-red-600 border border-red-100 shadow-md hover:bg-red-100 transition-colors"
                         >
@@ -736,6 +844,14 @@ export default function CitizenReportFlowPage() {
                       <div className="absolute bottom-4 left-4 bg-slate-950/60 backdrop-blur-md px-3 py-1.5 rounded-xl text-[9px] font-mono text-white font-semibold tracking-wider">
                         IMAGE CAPTURED • GIS LOC REGISTERED
                       </div>
+                      {evidenceFile && (
+                        <div className="absolute bottom-4 right-4 bg-slate-950/60 backdrop-blur-md px-2.5 py-1.5 rounded-xl text-[9px] font-mono text-white font-semibold tracking-wider flex items-center gap-1.5 border border-white/10">
+                          <span className={`w-1.5 h-1.5 rounded-full ${backgroundUploadStatus === 'complete' ? 'bg-green-400' : backgroundUploadStatus === 'error' ? 'bg-red-400' : 'bg-amber-400 animate-pulse'}`} />
+                          <span>
+                            {backgroundUploadStatus === 'complete' ? 'SECURED IN CLOUD' : backgroundUploadStatus === 'error' ? 'UPLOAD FAILED' : `UPLOADING... ${backgroundUploadProgress}%`}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
