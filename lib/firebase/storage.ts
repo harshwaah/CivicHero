@@ -2,6 +2,7 @@ import { storage, isFirebaseConfigured } from './firebase';
 import { 
   ref, 
   uploadBytes, 
+  uploadBytesResumable,
   getDownloadURL, 
   deleteObject, 
   listAll,
@@ -39,6 +40,7 @@ export {
   isFirebaseConfigured, 
   ref, 
   uploadBytes, 
+  uploadBytesResumable,
   getDownloadURL, 
   deleteObject, 
   listAll 

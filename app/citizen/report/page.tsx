@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -30,9 +30,19 @@ import AISummaryCard from '@/components/AISummaryCard';
 import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import { PresetOption, PRESET_OPTIONS, CATEGORIES, URGENCY_LEVELS } from '@/lib/mockData';
 
+// Import Real Firebase & Agent Repositories
+import { storage, ref, uploadBytesResumable, getDownloadURL } from '@/lib/firebase/storage';
+import { IssueRepository } from '@/lib/repositories/issueRepository';
+import { CommunityIntegrityAgent } from '@/lib/providers/ai/communityIntegrityAgent';
+import { CommunityIntelligenceAgent } from '@/lib/providers/ai/communityIntelligenceAgent';
+import { Issue } from '@/lib/models';
 
 export default function CitizenReportFlowPage() {
   const router = useRouter();
+
+  // Hidden File and Camera Input Ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Primary input states
   const [title, setTitle] = useState('');
@@ -40,6 +50,9 @@ export default function CitizenReportFlowPage() {
   const [category, setCategory] = useState('Roads');
   const [urgency, setUrgency] = useState('Medium');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [evidenceFile, setEvidenceFile] = useState<File | Blob | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   const [coordinates, setCoordinates] = useState<{lat: number, lng: number} | null>(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -64,7 +77,6 @@ export default function CitizenReportFlowPage() {
     return '';
   });
 
-  // Flow State
   // Flow State (report | review | analysis | submit | success)
   const [step, setStep] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -78,10 +90,12 @@ export default function CitizenReportFlowPage() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [hasAutofilled, setHasAutofilled] = useState(false);
 
-  // AI Scanning animations states
+  // AI Scanning animations and real execution states
   const [scanProgress, setScanProgress] = useState(0);
   const [scanLogs, setScanLogs] = useState<string[]>([]);
   const [scanningComplete, setScanningComplete] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [realAiResults, setRealAiResults] = useState<PresetOption | null>(null);
 
   // Mock dynamic report results
   const [mockReportId, setMockReportId] = useState(() => {
@@ -90,28 +104,38 @@ export default function CitizenReportFlowPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const { ReportService } = await import('@/lib/services/reportService');
-      const issue = await ReportService.submitNewReport({
-        title,
-        description,
-        category,
-        urgency: urgency as any,
-        location: locationValue,
-        imageUrl: selectedImage || undefined,
-        coordinates: coordinates || undefined
-      });
-      setMockReportId(issue.id);
-      goToStep('success');
-    } catch (error) {
-      console.error('Submission failed', error);
-      alert('Failed to submit report. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+  // Auto-acquire current GPS position if none is specified
+  useEffect(() => {
+    if (!coordinates && typeof navigator !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          setCoordinates({ lat, lng });
+          
+          // Reverse geocode on GPS acquire
+          if (window.google?.maps) {
+            const geocoder = new window.google.maps.Geocoder();
+            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+              if (status === 'OK' && results && results[0]) {
+                setLocationValue(results[0].formatted_address);
+              } else {
+                setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+              }
+            });
+          } else {
+            setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+          }
+        },
+        (error) => {
+          console.warn('GPS coordinates auto-retrieval bypassed:', error);
+          // Standard Brooklyn fallback center
+          setCoordinates({ lat: 40.7128, lng: -74.0060 });
+          setLocationValue('40.7128, -74.0060');
+        }
+      );
     }
-  };
+  }, []);
 
   // Synchronize state with search query for deep-linked browser back/forward buttons
   useEffect(() => {
@@ -125,7 +149,6 @@ export default function CitizenReportFlowPage() {
       }
     };
 
-    // Ensure we replace state on mount so history back-navigation contains valid states
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const urlStep = urlParams.get('step') || 'report';
@@ -139,13 +162,12 @@ export default function CitizenReportFlowPage() {
   const goToStep = (newStep: string) => {
     setStep(newStep);
     
-    // Clear scanning states when triggering new AI diagnostics
     if (newStep === 'analysis') {
       setScanProgress(0);
       setScanLogs([]);
       setScanningComplete(false);
+      setScanError(null);
     } else if (newStep === 'report') {
-      // Regenerate dynamic mock case ID
       setMockReportId(`CH-${Math.floor(10000 + Math.random() * 90000)}`);
     }
 
@@ -154,66 +176,374 @@ export default function CitizenReportFlowPage() {
     window.history.pushState({ step: newStep }, '', url.pathname + url.search);
   };
 
-  // Preset Selection / Autofill Handler
+  // Image validation & compression helper
+  const compressImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const maxDim = 1200;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(file);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                resolve(blob);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/jpeg',
+            0.85
+          );
+        };
+        img.onerror = (err) => reject(err);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const processFile = async (file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Only JPEG, PNG, or WEBP image formats are supported for verification.');
+      return;
+    }
+
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      alert('File size exceeds the 10MB limit.');
+      return;
+    }
+
+    try {
+      const compressedBlob = await compressImage(file);
+      setEvidenceFile(compressedBlob);
+      const localUrl = URL.createObjectURL(compressedBlob);
+      setSelectedImage(localUrl);
+      setHasAutofilled(false);
+    } catch (err) {
+      console.error('Image compression failed, using original', err);
+      setEvidenceFile(file);
+      const localUrl = URL.createObjectURL(file);
+      setSelectedImage(localUrl);
+      setHasAutofilled(false);
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      await processFile(files[0]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      await processFile(files[0]);
+    }
+  };
+
+  // Preset Selection / Autofill Handler with location coordinates
   const handleSelectPreset = (preset: PresetOption) => {
+    let presetCoords = { lat: 40.7128, lng: -74.0060 };
+    if (preset.id === 'preset-pothole') presetCoords = { lat: 40.6782, lng: -73.9442 };
+    else if (preset.id === 'preset-tree') presetCoords = { lat: 40.6892, lng: -73.9584 };
+    else if (preset.id === 'preset-water') presetCoords = { lat: 40.6742, lng: -73.9682 };
+    else if (preset.id === 'preset-streetlight') presetCoords = { lat: 40.6923, lng: -73.9851 };
+    else if (preset.id === 'preset-trash') presetCoords = { lat: 40.6952, lng: -73.9932 };
+
     setSelectedImage(preset.imageUrl);
+    setEvidenceFile(null); // No local file needed
     setTitle(preset.title);
     setDescription(preset.description);
     setLocationValue(preset.location);
     setCategory(preset.category);
     setUrgency(preset.urgency);
+    setCoordinates(presetCoords);
     setHasAutofilled(true);
     setIsGalleryOpen(false);
   };
 
-  // AI scan simulation logic - runs ONLY when active step is 'analysis'
-  useEffect(() => {
-    if (step !== 'analysis') {
-      return;
+  // Google Maps Address Geocoding resolver
+  const handleSearchAddress = () => {
+    if (!locationValue.trim()) return;
+    if (window.google?.maps) {
+      const geocoder = new window.google.maps.Geocoder();
+      geocoder.geocode({ address: locationValue }, (results, status) => {
+        if (status === 'OK' && results && results[0]) {
+          const loc = results[0].geometry.location;
+          const lat = loc.lat();
+          const lng = loc.lng();
+          setCoordinates({ lat, lng });
+          setLocationValue(results[0].formatted_address);
+        } else {
+          alert('Could not resolve the physical address. Please refine or select directly on the map.');
+        }
+      });
+    } else {
+      alert('Address verification engine is loading. Please select directly on the map container.');
     }
+  };
 
-    const logs = [
-      '[SECURE] Initializing hardware-accelerated telemetry...',
-      '[IMAGE] Running Convolutional Neural Network edge classification...',
-      '[GEOPROOF] Resolving GIS coordinates on municipal grid...',
-      '[DUPLICATE] Querying nearby spatial cluster registers...',
-      '[CLASSIFY] Automatic category and severity routing finalized.'
-    ];
-
-    let progress = 0;
-    let logIndex = 0;
-
-    const interval = setInterval(() => {
-      progress += 5;
-      if (progress > 100) progress = 100;
-      setScanProgress(progress);
-
-      // Add logs dynamically as progress advances
-      if (progress >= 20 && logIndex === 0) {
-        setScanLogs(prev => [...prev, logs[0]]);
-        logIndex++;
-      } else if (progress >= 40 && logIndex === 1) {
-        setScanLogs(prev => [...prev, logs[1]]);
-        logIndex++;
-      } else if (progress >= 60 && logIndex === 2) {
-        setScanLogs(prev => [...prev, logs[2]]);
-        logIndex++;
-      } else if (progress >= 85 && logIndex === 3) {
-        setScanLogs(prev => [...prev, logs[3]]);
-        logIndex++;
-      } else if (progress === 100 && logIndex === 4) {
-        setScanLogs(prev => [...prev, logs[4]]);
-        logIndex++;
-        setScanningComplete(true);
-        clearInterval(interval);
+  // Map click reverse-geocoder
+  const handleMapClick = (e: any) => {
+    const lat = e.detail?.latLng?.lat;
+    const lng = e.detail?.latLng?.lng;
+    if (lat && lng) {
+      setCoordinates({ lat, lng });
+      if (window.google?.maps) {
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          if (status === 'OK' && results && results[0]) {
+            setLocationValue(results[0].formatted_address);
+          } else {
+            setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+          }
+        });
+      } else {
+        setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
       }
-    }, 150);
+    }
+  };
 
-    return () => clearInterval(interval);
+  // Real pipeline engine run
+  const runRealAnalysis = async () => {
+    setScanProgress(0);
+    setScanLogs([]);
+    setScanningComplete(false);
+    setScanError(null);
+
+    try {
+      let finalImageUrl = selectedImage || '';
+
+      // Phase A: Image upload to Firebase Storage
+      if (evidenceFile) {
+        setScanLogs(prev => [...prev, '[STORAGE] Initiating secure upload channel to Firebase Storage...']);
+        setScanProgress(10);
+
+        const fileExt = 'jpg';
+        const storagePath = `issues/evidence/${Date.now()}_img.${fileExt}`;
+        const storageRef = ref(storage, storagePath);
+        const uploadTask = uploadBytesResumable(storageRef, evidenceFile);
+
+        await new Promise<void>((resolve, reject) => {
+          uploadTask.on('state_changed',
+            (snapshot) => {
+              const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+              setScanProgress(Math.round(progress * 0.35)); // 0 - 35% progress
+              setScanLogs(prev => {
+                const base = prev.filter(l => !l.startsWith('[STORAGE] Uploading'));
+                return [...base, `[STORAGE] Uploading evidence proof to storage: ${progress}%`];
+              });
+            },
+            (error) => {
+              reject(error);
+            },
+            async () => {
+              try {
+                finalImageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                setScanLogs(prev => [...prev, '[STORAGE] Evidence photo secured on Cloud Run storage bucket.']);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+            }
+          );
+        });
+      } else {
+        setScanProgress(35);
+        setScanLogs(prev => [...prev, '[STORAGE] Utilizing high-fidelity verified preset asset. Bypassing upload.']);
+      }
+
+      // Phase B: Firestore initial entry
+      setScanProgress(45);
+      setScanLogs(prev => [...prev, '[LEDGER] Registering metadata schema inside Firestore...']);
+
+      const issuePayload: Omit<Issue, 'id'> = {
+        title: title || 'Custom Incident Report',
+        description: description || 'No secondary details provided.',
+        category: category,
+        urgency: urgency as any,
+        status: 'Reported',
+        timestamp: 'Just now',
+        location: locationValue || 'Unknown Location Point',
+        upvotes: 0,
+        commentsCount: 0,
+        imageUrl: finalImageUrl || undefined,
+        verifiedByCount: 1,
+        reporterName: 'Citizen Hero',
+        reporterBadge: 'First-time Reporter',
+        timeline: [
+          {
+            id: `tl-init-${Date.now()}`,
+            type: 'reported',
+            title: 'Report Submitted',
+            description: 'Neighborhood concern logged into the ledger.',
+            timestamp: 'Just now',
+          }
+        ],
+        comments: [],
+        coordinates: coordinates || { lat: 40.7128, lng: -74.0060 },
+        trustMetrics: {
+          coSigningCount: 1,
+          accuracyRating: 100,
+          verificationConfidence: 90,
+          communityFlagsCount: 0,
+          isVerified: false,
+        }
+      };
+
+      const newIssue = await IssueRepository.create(issuePayload);
+      setMockReportId(newIssue.id);
+      setScanLogs(prev => [...prev, `[LEDGER] Created secure incident entry with ID: ${newIssue.id}`]);
+
+      // Phase C: Community Integrity Agent verification
+      setScanProgress(60);
+      setScanLogs(prev => [...prev, '[AI_INTEGRITY] Calling Community Integrity Agent (Gemini-3.5-flash)...']);
+      
+      const integrityResult = await CommunityIntegrityAgent.evaluateReport(newIssue);
+      setScanLogs(prev => [
+        ...prev,
+        `[AI_INTEGRITY] Moderation analysis complete. Confidence: ${integrityResult.confidenceScore}%`,
+        `[AI_INTEGRITY] Safety integrity: ${integrityResult.isVerified ? 'VERIFIED_OK' : 'UNDER_REVIEW'}`
+      ]);
+
+      // Phase D: Community Intelligence Agent routing
+      setScanProgress(80);
+      setScanLogs(prev => [...prev, '[AI_INTELLIGENCE] Triggering Community Intelligence Agent routing...']);
+      
+      const intelligenceResult = await CommunityIntelligenceAgent.analyzeReport(newIssue);
+      setScanLogs(prev => [
+        ...prev,
+        `[AI_INTELLIGENCE] Resolved Department: ${intelligenceResult.routingTo}`,
+        `[AI_INTELLIGENCE] Smart category mapping: ${intelligenceResult.categoryMatch}`,
+        `[AI_INTELLIGENCE] Matched Urgency: ${intelligenceResult.severityMatch}`
+      ]);
+
+      // Phase E: Write results back to Firestore & sync
+      setScanProgress(90);
+      setScanLogs(prev => [...prev, '[LEDGER] Writing AI evaluation matrices and dispatch routes into ledger...']);
+
+      const updatedIssue = { ...newIssue };
+      updatedIssue.urgency = intelligenceResult.severityMatch as any;
+      updatedIssue.category = intelligenceResult.categoryMatch;
+      updatedIssue.trustMetrics = {
+        ...updatedIssue.trustMetrics!,
+        verificationConfidence: integrityResult.confidenceScore,
+        isVerified: integrityResult.isVerified
+      };
+      updatedIssue.timeline = [
+        ...updatedIssue.timeline!,
+        {
+          id: `tl-ai-int-${Date.now()}`,
+          type: 'update',
+          title: 'AI Integrity Check',
+          description: integrityResult.analysisSummary,
+          timestamp: 'Just now',
+        },
+        {
+          id: `tl-ai-intel-${Date.now()}`,
+          type: 'update',
+          title: 'AI Intelligence Routing',
+          description: `Routed to ${intelligenceResult.routingTo}. ${intelligenceResult.aiSummary}`,
+          timestamp: 'Just now',
+        }
+      ];
+
+      await IssueRepository.update(newIssue.id, updatedIssue);
+
+      setRealAiResults({
+        id: newIssue.id,
+        title: newIssue.title,
+        description: newIssue.description,
+        location: newIssue.location,
+        category: updatedIssue.category,
+        urgency: updatedIssue.urgency,
+        imageUrl: newIssue.imageUrl || '',
+        aiSummary: intelligenceResult.aiSummary,
+        confidence: integrityResult.confidenceScore,
+        categoryMatch: intelligenceResult.categoryMatch,
+        severityMatch: intelligenceResult.severityMatch,
+        routingTo: intelligenceResult.routingTo
+      });
+
+      setScanLogs(prev => [...prev, '[SUCCESS] System diagnostics fully verified. Case docket locked.']);
+      setScanProgress(100);
+      setScanningComplete(true);
+
+    } catch (err: any) {
+      console.error('Real submission pipeline error:', err);
+      const message = err?.message || 'A network error occurred. Please verify your connection.';
+      setScanError(message);
+      setScanLogs(prev => [...prev, `[ERROR] Pipeline interrupted: ${message}`]);
+    }
+  };
+
+  // Run real analysis when page lands on Step 3
+  useEffect(() => {
+    if (step === 'analysis') {
+      runRealAnalysis();
+    }
   }, [step]);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      if (realAiResults && realAiResults.id) {
+        await IssueRepository.update(realAiResults.id, { status: 'Live' });
+        setMockReportId(realAiResults.id);
+      }
+      goToStep('success');
+    } catch (error) {
+      console.error('Finalizing submission failed:', error);
+      alert('Unable to lock report onto the immutable docket list. Please retry.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Determine standard custom values or fallback if user edited manually
   const getAiResults = (): PresetOption => {
+    if (realAiResults) {
+      return realAiResults;
+    }
+
     // If we have an autofilled image, match that preset
     const matchingPreset = PRESET_OPTIONS.find(p => p.imageUrl === selectedImage);
     if (matchingPreset) {
@@ -258,6 +588,23 @@ export default function CitizenReportFlowPage() {
   return (
     <div className="min-h-screen bg-[#fafbfc] text-brand-primary pb-24 relative selection:bg-brand-secondary selection:text-brand-primary">
       
+      {/* Hidden system files selectors */}
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        accept="image/jpeg,image/png,image/webp" 
+        className="hidden" 
+      />
+      <input 
+        type="file" 
+        ref={cameraInputRef} 
+        onChange={handleFileChange} 
+        accept="image/*" 
+        capture="environment" 
+        className="hidden" 
+      />
+
       {/* GLOBAL GLASS HEADER BAR */}
       <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
@@ -345,7 +692,7 @@ export default function CitizenReportFlowPage() {
                       <div className="absolute top-3 right-3 flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => setIsGalleryOpen(true)}
+                          onClick={() => fileInputRef.current?.click()}
                           className="px-3 py-1.5 rounded-xl bg-white text-[10px] font-mono font-bold uppercase text-brand-primary border border-slate-200 shadow-md hover:bg-slate-50 transition-colors flex items-center gap-1"
                         >
                           <Camera className="w-3.5 h-3.5" />
@@ -355,6 +702,7 @@ export default function CitizenReportFlowPage() {
                           type="button"
                           onClick={() => {
                             setSelectedImage(null);
+                            setEvidenceFile(null);
                             setHasAutofilled(false);
                           }}
                           className="p-1.5 rounded-xl bg-red-50 text-red-600 border border-red-100 shadow-md hover:bg-red-100 transition-colors"
@@ -367,41 +715,66 @@ export default function CitizenReportFlowPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Fake camera button */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Real Camera Capture Button */}
                       <button
                         type="button"
-                        onClick={() => setIsGalleryOpen(true)}
-                        className="border-2 border-dashed border-slate-200 hover:border-slate-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 bg-slate-50/50 hover:bg-slate-50/85 transition-all duration-200 group h-44"
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="border-2 border-dashed border-slate-200 hover:border-slate-300 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 bg-slate-50/50 hover:bg-slate-50/85 transition-all duration-200 group h-44"
                       >
-                        <div className="w-11 h-11 rounded-full bg-white border border-slate-200/60 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-200 shadow-sm">
-                          <Camera className="w-5 h-5 text-brand-primary" />
+                        <div className="w-10 h-10 rounded-full bg-white border border-slate-200/60 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-200 shadow-sm">
+                          <Camera className="w-4.5 h-4.5 text-brand-primary" />
                         </div>
                         <div>
                           <span className="font-sans font-bold text-xs text-brand-primary block">
-                            Simulate Camera Capture
+                            Camera Capture
                           </span>
-                          <span className="font-body text-[10px] text-slate-400 mt-1 block leading-tight">
-                            Leverage standard device lens parameters
+                          <span className="font-body text-[9px] text-slate-400 mt-0.5 block leading-tight">
+                            Snap live verified photo using device lens
                           </span>
                         </div>
                       </button>
 
-                      {/* Fake upload button */}
-                      <button
-                        type="button"
-                        onClick={() => setIsGalleryOpen(true)}
-                        className="border-2 border-dashed border-slate-200 hover:border-slate-300 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 bg-slate-50/50 hover:bg-slate-50/85 transition-all duration-200 group h-44"
+                      {/* Real File Upload Drop Zone */}
+                      <div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`border-2 border-dashed rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 cursor-pointer transition-all duration-200 h-44 ${
+                          isDragging 
+                            ? 'border-brand-secondary bg-brand-secondary/5 scale-[1.02]' 
+                            : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-50/85'
+                        }`}
                       >
-                        <div className="w-11 h-11 rounded-full bg-white border border-slate-200/60 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-200 shadow-sm">
-                          <Upload className="w-5 h-5 text-brand-secondary" />
+                        <div className="w-10 h-10 rounded-full bg-white border border-slate-200/60 flex items-center justify-center text-slate-500 shadow-sm">
+                          <Upload className="w-4.5 h-4.5 text-brand-secondary" />
                         </div>
                         <div>
                           <span className="font-sans font-bold text-xs text-brand-primary block">
-                            Upload Local Evidence
+                            Upload Photo / Drag
                           </span>
-                          <span className="font-body text-[10px] text-slate-400 mt-1 block leading-tight">
-                            Select PNG, JPG, or cellular video logs
+                          <span className="font-body text-[9px] text-slate-400 mt-0.5 block leading-tight">
+                            Supports JPG, PNG, WEBP up to 10MB
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Preset Demo Modal Trigger */}
+                      <button
+                        type="button"
+                        onClick={() => setIsGalleryOpen(true)}
+                        className="border-2 border-dashed border-slate-250 hover:border-slate-350 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-2 bg-slate-100/40 hover:bg-slate-100/70 transition-all duration-200 group h-44"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform duration-200 shadow-sm">
+                          <Sparkles className="w-4.5 h-4.5 text-amber-500" />
+                        </div>
+                        <div>
+                          <span className="font-sans font-bold text-xs text-brand-primary block">
+                            Choose Preset Demo
+                          </span>
+                          <span className="font-body text-[9px] text-amber-600 font-medium mt-0.5 block leading-tight">
+                            Prefill pothole, fallen tree, or streetlight details
                           </span>
                         </div>
                       </button>
@@ -444,15 +817,30 @@ export default function CitizenReportFlowPage() {
                     <label className="block font-mono text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">
                       GEOSPATIAL LOCATION / ADDRESS
                     </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        value={locationValue}
-                        onChange={(e) => setLocationValue(e.target.value)}
-                        placeholder="e.g., 421 President Street, Brooklyn"
-                        className="w-full bg-slate-50/50 border border-slate-150 rounded-2xl py-4 pl-11 pr-4 font-sans text-xs sm:text-sm text-brand-primary placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:bg-white transition-all font-medium"
-                      />
-                      <MapPin className="w-4 h-4 text-brand-secondary absolute left-4 top-1/2 -translate-y-1/2" />
+                    <div className="relative flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={locationValue}
+                          onChange={(e) => setLocationValue(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleSearchAddress();
+                            }
+                          }}
+                          placeholder="e.g., 421 President Street, Brooklyn"
+                          className="w-full bg-slate-50/50 border border-slate-150 rounded-2xl py-4 pl-11 pr-24 font-sans text-xs sm:text-sm text-brand-primary placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/10 focus:bg-white transition-all font-medium"
+                        />
+                        <MapPin className="w-4 h-4 text-brand-secondary absolute left-4 top-1/2 -translate-y-1/2" />
+                        <button
+                          type="button"
+                          onClick={handleSearchAddress}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl text-[10px] font-mono font-bold uppercase transition-colors"
+                        >
+                          Find/Verify
+                        </button>
+                      </div>
                     </div>
                     
                     {/* Interactive Map Selection */}
@@ -472,14 +860,7 @@ export default function CitizenReportFlowPage() {
                           urgency: urgency,
                           status: 'Live'
                         }] : []}
-                        onClick={(e) => {
-                           const lat = e.detail?.latLng?.lat;
-                           const lng = e.detail?.latLng?.lng;
-                           if (lat && lng) {
-                             setCoordinates({ lat, lng });
-                             setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-                           }
-                        }}
+                        onClick={handleMapClick}
                       />
                     </div>
                   </div>
@@ -779,22 +1160,45 @@ export default function CitizenReportFlowPage() {
                   <span className="text-slate-500 italic">Starting machine intelligence pipelines...</span>
                 )}
                 
-                {scanLogs.map((log, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="flex items-start gap-2 text-slate-200"
-                  >
-                    <span className="text-brand-secondary font-bold">✓</span>
-                    <span>{log}</span>
-                  </motion.div>
-                ))}
+                {scanLogs.map((log, idx) => {
+                  const isError = log.includes('[ERROR]');
+                  return (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={`flex items-start gap-2 ${isError ? 'text-red-400' : 'text-slate-200'}`}
+                    >
+                      <span className={isError ? 'text-red-500 font-bold' : 'text-brand-secondary font-bold'}>
+                        {isError ? '✗' : '✓'}
+                      </span>
+                      <span>{log}</span>
+                    </motion.div>
+                  );
+                })}
 
-                {!scanningComplete && (
+                {!scanningComplete && !scanError && (
                   <div className="flex items-center gap-2 text-amber-500 animate-pulse mt-2 pt-2 border-t border-dashed border-slate-800">
                     <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-ping" />
                     <span>Processing visual matrices...</span>
+                  </div>
+                )}
+
+                {scanError && (
+                  <div className="mt-4 pt-4 border-t border-dashed border-red-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-red-400">
+                    <div className="flex items-center gap-2">
+                      <AlertOctagon className="w-4 h-4 text-red-500 shrink-0" />
+                      <span className="text-[10px] leading-tight font-sans font-bold">
+                        Pipeline halted due to error. Please check your cloud connection.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={runRealAnalysis}
+                      className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-mono text-[9px] font-extrabold uppercase tracking-wider transition-colors shadow-sm self-end sm:self-auto"
+                    >
+                      Retry Diagnostics
+                    </button>
                   </div>
                 )}
               </div>
@@ -1090,10 +1494,10 @@ export default function CitizenReportFlowPage() {
                 </div>
 
                 {/* Quick Info Disclaimer */}
-                <div className="max-w-md bg-blue-50/30 border border-blue-100/50 rounded-xl p-3 flex items-start gap-2.5 text-left">
-                  <Info className="w-4 h-4 text-brand-primary shrink-0 mt-0.5" />
-                  <p className="font-body text-[10px] text-slate-500 leading-relaxed">
-                    This reporting run is simulated in frontend client state. The next phase roadmap will fully integrate this journey with Firestore and Gemini API models.
+                <div className="max-w-md bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-start gap-2.5 text-left">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <p className="font-body text-[10px] text-slate-600 leading-relaxed">
+                    This reporting run is completely integrated with the production Firestore database, cloud storage, and automated Gemini integrity and intelligence pipelines.
                   </p>
                 </div>
 
@@ -1107,7 +1511,9 @@ export default function CitizenReportFlowPage() {
                       setDescription('');
                       setLocationValue('');
                       setSelectedImage(null);
+                      setEvidenceFile(null);
                       setHasAutofilled(false);
+                      setRealAiResults(null);
                       goToStep('report');
                     }}
                     className="w-full sm:flex-1 py-3.5 border border-slate-200 hover:bg-slate-50 rounded-2xl text-slate-500 font-mono text-xs font-bold uppercase tracking-wider transition-colors text-center"
@@ -1116,10 +1522,10 @@ export default function CitizenReportFlowPage() {
                   </button>
 
                   <Link
-                    href="/citizen"
+                    href={`/citizen/issues/${mockReportId}`}
                     className="w-full sm:flex-1 py-3.5 bg-brand-primary text-white hover:bg-brand-primary/95 rounded-2xl font-mono text-xs font-bold uppercase tracking-wider transition-all text-center shadow-md hover:shadow-lg"
                   >
-                    Return to Feed
+                    View Docket
                   </Link>
                 </div>
 
