@@ -46,6 +46,7 @@ export default function AdminPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [analytics, setAnalytics] = useState<CityAnalytics | null>(null);
   const [copilotInsights, setCopilotInsights] = useState<CopilotInsights | null>(null);
+  const [copilotError, setCopilotError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showHeatmap, setShowHeatmap] = useState(true);
   
@@ -61,8 +62,10 @@ export default function AdminPage() {
           try {
              const insights = await AdministratorCopilot.generateInsights(fetchedIssues);
              setCopilotInsights(insights);
-          } catch(err) {
+             setCopilotError(null);
+          } catch(err: any) {
              console.error("Failed to generate copilot insights", err);
+             setCopilotError(err?.message || "Failed to load copilot insights");
           }
         }
       });
@@ -265,6 +268,27 @@ export default function AdminPage() {
         </div>
       </div>
 
+      {copilotError && (
+        <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl shadow-sm">
+          <div className="flex gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-amber-900">
+                AI Agent Requires Configuration
+              </p>
+              <div className="mt-1 text-xs text-amber-800 space-y-1 leading-relaxed">
+                <p>
+                  To enable live AI operational briefs, automated hotspots, and routing classifications, a dedicated Gemini API key is required.
+                </p>
+                <p className="font-bold">
+                  Setup Instructions: Click &apos;Settings&apos; (top right or gear icon) &rarr; &apos;Secrets&apos; &rarr; Add <code className="bg-amber-100 px-1.5 py-0.5 rounded font-mono text-amber-900 text-[10px]">APP_GEMINI_API_KEY</code> with your Google AI Studio key.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
           <div className="flex items-center gap-2 mb-6">
@@ -404,9 +428,9 @@ export default function AdminPage() {
             interactive={true}
             showLocateMe={true}
             mapId="ADMIN_MAP"
-            heatmapData={showHeatmap ? hotspots.map(h => ({
+            heatmapData={showHeatmap && copilotInsights?.emergingHotspots ? copilotInsights.emergingHotspots.map(h => ({
               position: [h.longitude, h.latitude],
-              weight: h.reportCount * 10
+              weight: (h.reportCount || 1) * 10
             })) : []}
             markers={issues.map(i => ({
               id: i.id,

@@ -58,8 +58,9 @@ Provide a concise operational briefing, priority queue recommendations, departme
 
     const result = await AIOrchestrator.generateObject(prompt, schema);
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to process copilot request" }, { status: 500 });
+    const message = error?.message || "Failed to process copilot request";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

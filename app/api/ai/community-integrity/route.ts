@@ -30,8 +30,9 @@ Validate authenticity, assess language tone, score confidence (0-100), and flag 
 
     const result = await AIOrchestrator.generateObject(prompt, schema);
     return NextResponse.json(result);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: "Failed to process integrity request" }, { status: 500 });
+    const message = error?.message || "Failed to process integrity request";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

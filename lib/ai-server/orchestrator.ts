@@ -1,9 +1,28 @@
 import { GoogleGenAI, Type } from '@google/genai';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let aiInstance: GoogleGenAI | null = null;
+
+function getAIClient(): GoogleGenAI {
+  if (!aiInstance) {
+    const apiKey = process.env.APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("APP_GEMINI_API_KEY environment variable is not defined. Please add it via the Settings > Secrets menu in AI Studio.");
+    }
+    aiInstance = new GoogleGenAI({
+      apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return aiInstance;
+}
 
 export const AIOrchestrator = {
   async generateObject(prompt: string, schema: any) {
+    const ai = getAIClient();
     const response = await ai.models.generateContent({
       model: 'gemini-3.5-flash',
       contents: prompt,
@@ -20,8 +39,6 @@ export const AIOrchestrator = {
   },
 
   async evaluateImage(prompt: string, imageUrl: string, schema: any) {
-    // For this prototype, we'll assume the imageUrl is a base64 string or public URL
-    // If it's a base64 data URI, we could extract the parts, but for simplicity, we pass it in text for now
     const fullPrompt = `${prompt}\n\nImage reference: ${imageUrl}`;
     return this.generateObject(fullPrompt, schema);
   }
