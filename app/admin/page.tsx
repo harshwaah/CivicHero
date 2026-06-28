@@ -22,7 +22,8 @@ import {
   TrendingUp,
   BarChart,
   Target,
-  Workflow
+  Workflow,
+  Sparkles
 } from 'lucide-react';
 import AdminNav from '../../components/AdminNav';
 import { IssueService } from '../../lib/services/issueService';

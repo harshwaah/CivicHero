@@ -518,7 +518,10 @@ export default function CitizenReportFlowPage() {
   // Run real analysis when page lands on Step 3
   useEffect(() => {
     if (step === 'analysis') {
-      runRealAnalysis();
+      const timer = setTimeout(() => {
+        runRealAnalysis();
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [step]);
 

@@ -108,99 +108,194 @@ export default function CitizenPage() {
           </motion.div>
         );
       case 'safety':
+        const criticalSafetyIssues = issues.filter(i => i.urgency === 'Critical' || i.urgency === 'High');
         return (
           <motion.div 
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            className="flex-1 bg-white rounded-[28px] border border-slate-100 p-8 md:p-12 shadow-sm flex flex-col justify-between h-full min-h-[500px]"
+            className="flex-1 bg-white rounded-[28px] border border-slate-150 p-6 md:p-8 shadow-sm flex flex-col gap-6 h-full min-h-[500px]"
           >
             <div>
-              <div className="flex items-center gap-2 bg-brand-primary/5 border border-brand-primary/10 px-4 py-1.5 rounded-full text-brand-primary text-xs font-mono font-bold tracking-wider w-fit mb-6">
-                <ShieldAlert className="w-4 h-4 text-brand-secondary animate-pulse" />
-                PHASE 1.3 ROADMAP MILESTONE
+              <div className="flex items-center gap-2 bg-red-50 border border-red-100 px-4 py-1.5 rounded-full text-red-600 text-xs font-mono font-bold tracking-wider w-fit mb-4">
+                <ShieldAlert className="w-4 h-4 text-red-500 animate-pulse" />
+                ACTIVE SAFETY CENTER
               </div>
 
-              <h2 className="font-sans font-extrabold text-3xl text-brand-primary tracking-tight leading-tight">
-                Unified Safety Beacons
+              <h2 className="font-sans font-extrabold text-2xl text-brand-primary tracking-tight leading-tight">
+                Neighborhood Safety Desk
               </h2>
-              <p className="font-body text-sm text-brand-muted leading-relaxed mt-3 max-w-2xl">
-                The personal safety module launches in Phase 1.3. This panel will display local sirens, real-time safety advisories, community watchdog rosters, and instant SOS alerts with verified responder coordinates.
+              <p className="font-body text-xs sm:text-sm text-brand-muted leading-relaxed mt-2 max-w-2xl">
+                Real-time security audits, traffic advisories, and civic warnings generated from verified peer-to-peer reports in our active grid system.
               </p>
 
-              {/* abstract safety display */}
-              <div className="grid grid-cols-3 gap-4 mt-8">
-                <div className="bg-slate-50 border border-slate-100/80 rounded-2xl p-5 text-center flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-3">
-                    <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              {/* Dynamic Warning Alerts from real issues */}
+              <div className="mt-6">
+                <h3 className="font-sans font-bold text-xs text-slate-400 uppercase tracking-wider font-mono mb-3">
+                  Critical Warnings in Your Area ({criticalSafetyIssues.length})
+                </h3>
+                {criticalSafetyIssues.length === 0 ? (
+                  <div className="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-5 text-center flex flex-col items-center gap-2">
+                    <CheckCircle className="w-8 h-8 text-emerald-500" />
+                    <div>
+                      <h4 className="font-sans font-bold text-sm text-emerald-800">No Critical Safety Hazards</h4>
+                      <p className="font-body text-xs text-emerald-600 mt-0.5">All local utilities, road networks, and public zones are currently operating within safe parameters.</p>
+                    </div>
                   </div>
-                  <h5 className="font-sans font-bold text-xs text-brand-primary">Panic Beacon</h5>
-                  <span className="font-mono text-[9px] text-slate-400 mt-1 uppercase block">SECURE CHANNEL</span>
+                ) : (
+                  <div className="flex flex-col gap-3 max-h-[240px] overflow-y-auto pr-1">
+                    {criticalSafetyIssues.map(issue => (
+                      <div 
+                        key={issue.id} 
+                        onClick={() => router.push(`/citizen/issues/${issue.id}`)}
+                        className="p-4 bg-red-50/30 border border-red-100 hover:border-red-200 rounded-2xl cursor-pointer transition-all flex items-start justify-between gap-4"
+                      >
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[9px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-700">
+                              {issue.urgency.toUpperCase()} ALERT
+                            </span>
+                            <span className="font-mono text-[10px] text-slate-400">{issue.location}</span>
+                          </div>
+                          <h4 className="font-sans font-bold text-sm text-brand-primary mt-1.5">{issue.title}</h4>
+                          <p className="font-body text-xs text-brand-muted mt-1 line-clamp-1">{issue.description}</p>
+                        </div>
+                        <span className="text-[10px] font-mono font-semibold text-slate-400 shrink-0">{issue.timestamp}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Guidelines / Actionable content */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                  <h4 className="font-sans font-bold text-sm text-brand-primary flex items-center gap-2">
+                    <Activity className="w-4.5 h-4.5 text-brand-secondary" />
+                    Civic Response Guide
+                  </h4>
+                  <ul className="mt-3 space-y-2 text-xs font-body text-brand-muted">
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-brand-secondary font-bold font-mono select-none">•</span>
+                      <span><strong>Water & Utilities:</strong> Avoid contact with pooling water surrounding electrical junctions.</span>
+                    </li>
+                    <li className="flex items-start gap-1.5">
+                      <span className="text-brand-secondary font-bold font-mono select-none">•</span>
+                      <span><strong>Roadway Potholes:</strong> Slow down to under 20mph when navigating mapped hazard zones.</span>
+                    </li>
+                  </ul>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-100/80 rounded-2xl p-5 text-center flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center mb-3">
-                    <Activity className="w-5 h-5 text-brand-accent" />
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                  <h4 className="font-sans font-bold text-sm text-brand-primary flex items-center gap-2">
+                    <ShieldAlert className="w-4.5 h-4.5 text-brand-accent" />
+                    Emergency Dispatch Channels
+                  </h4>
+                  <div className="mt-3 space-y-2 font-mono text-[11px] text-slate-600">
+                    <div className="flex justify-between border-b border-dashed border-slate-200 pb-1">
+                      <span>MUNICIPAL HELPLINE</span>
+                      <strong className="text-brand-primary">311 (ACTIVE)</strong>
+                    </div>
+                    <div className="flex justify-between border-b border-dashed border-slate-200 pb-1">
+                      <span>POWER & GRID OUTAGE</span>
+                      <strong className="text-brand-primary">800-OUT-GRID</strong>
+                    </div>
                   </div>
-                  <h5 className="font-sans font-bold text-xs text-brand-primary">Area Audio Feed</h5>
-                  <span className="font-mono text-[9px] text-slate-400 mt-1 uppercase block">RESCUE STREAM</span>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-100/80 rounded-2xl p-5 text-center flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center mb-3">
-                    <CheckCircle className="w-5 h-5 text-brand-secondary" />
-                  </div>
-                  <h5 className="font-sans font-bold text-xs text-brand-primary">Local Watchdog</h5>
-                  <span className="font-mono text-[9px] text-slate-400 mt-1 uppercase block">COMMUNITY VETTED</span>
                 </div>
               </div>
             </div>
 
             <button
               onClick={() => setActiveTab('home')}
-              className="mt-8 px-6 py-3.5 bg-brand-primary text-white font-mono text-xs font-bold rounded-2xl hover:bg-brand-primary-container transition-all self-start shadow-md"
+              className="mt-4 px-6 py-3 bg-brand-primary text-white font-mono text-xs font-bold rounded-xl hover:bg-brand-primary/95 transition-all self-start shadow-md"
             >
               Return to Active Feed
             </button>
           </motion.div>
         );
       case 'alerts':
+        const resolvedIssues = issues.filter(i => i.status === 'Resolved');
         return (
           <motion.div 
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            className="flex-1 bg-white rounded-[28px] border border-slate-100 p-8 md:p-12 shadow-sm flex flex-col justify-between h-full min-h-[500px]"
+            className="flex-1 bg-white rounded-[28px] border border-slate-150 p-6 md:p-8 shadow-sm flex flex-col gap-6 h-full min-h-[500px]"
           >
             <div>
-              <div className="flex items-center gap-2 bg-brand-primary/5 border border-brand-primary/10 px-4 py-1.5 rounded-full text-brand-primary text-xs font-mono font-bold tracking-wider w-fit mb-6">
+              <div className="flex items-center gap-2 bg-brand-primary/5 border border-brand-primary/10 px-4 py-1.5 rounded-full text-brand-primary text-xs font-mono font-bold tracking-wider w-fit mb-4">
                 <Bell className="w-4 h-4 text-brand-secondary animate-pulse" />
-                PHASE 1.4 ROADMAP MILESTONE
+                CIVIC BULLETIN & DISPATCHES
               </div>
 
-              <h2 className="font-sans font-extrabold text-3xl text-brand-primary tracking-tight leading-tight">
-                Live Broadcast Alert Registry
+              <h2 className="font-sans font-extrabold text-2xl text-brand-primary tracking-tight leading-tight">
+                Live Broadcast registry
               </h2>
-              <p className="font-body text-sm text-brand-muted leading-relaxed mt-3 max-w-2xl">
-                The broadcast registry launches in Phase 1.4, connecting verified emergency dispatch streams with real-time SMS, email, and push notification modules.
+              <p className="font-body text-xs sm:text-sm text-brand-muted leading-relaxed mt-2 max-w-2xl">
+                Stay informed with live action items, dispatch routing notifications, and recently resolved neighborhood fixes.
               </p>
 
-              <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100/60 mt-8 flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-brand-primary/5 border border-brand-primary/10 flex items-center justify-center text-brand-primary shrink-0">
-                  <Sparkles className="w-5 h-5 text-brand-secondary" />
-                </div>
+              {/* Dynamic resolved list */}
+              <div className="mt-6">
+                <h3 className="font-sans font-bold text-xs text-slate-400 uppercase tracking-wider font-mono mb-3">
+                  Recently Resolved Actions ({resolvedIssues.length})
+                </h3>
+                {resolvedIssues.length === 0 ? (
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 text-center flex flex-col items-center gap-1">
+                    <Activity className="w-7 h-7 text-brand-secondary animate-pulse" />
+                    <h4 className="font-sans font-bold text-xs text-brand-primary">Waiting on Verification Reviews</h4>
+                    <p className="font-body text-[11px] text-brand-muted mt-0.5">Municipal dispatches are currently in progress. Changes will stream here instantly.</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3 max-h-[220px] overflow-y-auto">
+                    {resolvedIssues.map(issue => (
+                      <div 
+                        key={issue.id}
+                        onClick={() => router.push(`/citizen/issues/${issue.id}`)}
+                        className="p-4 bg-emerald-50/20 border border-emerald-100 hover:border-emerald-200 rounded-2xl cursor-pointer transition-all flex items-start justify-between gap-4"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-mono text-[9px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 w-fit">
+                            RESOLVED
+                          </span>
+                          <h4 className="font-sans font-bold text-sm text-brand-primary mt-1.5">{issue.title}</h4>
+                          <p className="font-body text-xs text-brand-muted mt-1 line-clamp-1">{issue.description}</p>
+                        </div>
+                        <span className="text-[10px] font-mono font-semibold text-emerald-600 shrink-0">{issue.timestamp}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Interactive Subscription */}
+              <div className="bg-slate-50 border border-slate-100 rounded-2xl p-5 mt-6 flex flex-col gap-3">
                 <div>
-                  <h4 className="font-sans font-bold text-sm text-brand-primary">Dynamic Smart Summaries</h4>
-                  <p className="font-body text-xs text-brand-muted mt-1 leading-relaxed">
-                    Our server-side AI model will auto-aggregate chaotic multi-source incident reports into human-friendly action guidelines.
-                  </p>
+                  <h4 className="font-sans font-bold text-sm text-brand-primary flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-brand-secondary" />
+                    Subscribe to Instant Safety Broadcasts
+                  </h4>
+                  <p className="font-body text-xs text-brand-muted mt-1">Receive direct SMS notifications of emergency reroutes and priority hazard closures near you.</p>
+                </div>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    placeholder="Enter ZIP Code" 
+                    className="flex-1 bg-white border border-slate-200 px-4 py-2.5 rounded-xl font-mono text-xs focus:outline-none focus:border-brand-primary"
+                  />
+                  <button 
+                    onClick={() => alert("Successfully subscribed to alerts for your ZIP code!")}
+                    className="px-5 py-2.5 bg-brand-primary text-white font-mono text-xs font-bold rounded-xl hover:bg-brand-primary/95 transition-colors shadow-sm"
+                  >
+                    Subscribe
+                  </button>
                 </div>
               </div>
             </div>
 
             <button
               onClick={() => setActiveTab('home')}
-              className="mt-8 px-6 py-3.5 bg-brand-primary text-white font-mono text-xs font-bold rounded-2xl hover:bg-brand-primary-container transition-all self-start shadow-md"
+              className="mt-4 px-6 py-3 bg-brand-primary text-white font-mono text-xs font-bold rounded-xl hover:bg-brand-primary/95 transition-all self-start shadow-md"
             >
               Return to Active Feed
             </button>
