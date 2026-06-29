@@ -1,4 +1,4 @@
-import { db, isFirebaseConfigured, handleFirestoreError, OperationType, collection, doc, getDocs, updateDoc, query, where, orderBy, setDoc } from '../firebase/firestore';
+import { db, isFirebaseConfigured, handleFirestoreError, OperationType, collection, doc, getDocs, updateDoc, query, where, orderBy, setDoc, onSnapshot } from '../firebase/firestore';
 import { Notification } from '../models';
 
 const defaultNotifications: Notification[] = [
@@ -62,6 +62,50 @@ export const NotificationRepository = {
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, 'notifications');
       return [];
+    }
+  },
+
+  /**
+   * Subscribe to notifications for a user in real-time
+   */
+  subscribeByUserId(userId: string, callback: (notifications: Notification[]) => void): () => void {
+    if (!isFirebaseConfigured) {
+      callback([...defaultNotifications]);
+      return () => {};
+    }
+
+    ensureNotificationSeedData();
+    const ref = collection(db, 'notifications');
+    const q = query(ref, where('userId', '==', userId));
+    return onSnapshot(q, (snapshot: any) => {
+      const list = snapshot.docs.map((doc: any) => ({ ...doc.data(), id: doc.id } as Notification));
+      callback(list);
+    }, (err: any) => {
+      console.error('Error listening to notifications:', err);
+    });
+  },
+
+  /**
+   * Create a new notification
+   */
+  async create(notification: Omit<Notification, 'id'>): Promise<Notification> {
+    const id = `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const newNotif: Notification = {
+      ...notification,
+      id,
+    };
+
+    if (!isFirebaseConfigured) {
+      defaultNotifications.unshift(newNotif);
+      return newNotif;
+    }
+
+    try {
+      await setDoc(doc(db, 'notifications', id), newNotif);
+      return newNotif;
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, `notifications/${id}`);
+      throw err;
     }
   },
 

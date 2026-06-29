@@ -1,4 +1,5 @@
 import { IssueRepository } from '../repositories/issueRepository';
+import { NotificationRepository } from '../repositories/notificationRepository';
 import { Issue, Comment } from '../models';
 
 export const IssueService = {
@@ -49,8 +50,46 @@ export const IssueService = {
       id,
       'status_update',
       `Status updated to ${status}`,
-      `The issue status was changed to ${status}.`
+      `The issue status was changed to ${status} by ${actor}.`
     ));
+
+    // Create notifications inside Firestore
+    try {
+      if (status === 'In Progress') {
+        await NotificationRepository.create({
+          userId: 'citizen-admin-1',
+          title: 'Work Started',
+          message: `Public Works has started working on: "${issue.title}".`,
+          type: 'status_update',
+          isRead: false,
+          timestamp: 'Just now',
+          relatedIssueId: id,
+        });
+      } else if (status === 'Resolved') {
+        await NotificationRepository.create({
+          userId: 'citizen-admin-1',
+          title: 'Issue Resolved',
+          message: `Hurrah! The issue "${issue.title}" is now marked as Resolved. Please verify!`,
+          type: 'status_update',
+          isRead: false,
+          timestamp: 'Just now',
+          relatedIssueId: id,
+        });
+        // Create Admin notification for resolution and trust updates
+        await NotificationRepository.create({
+          userId: 'admin-1',
+          title: 'Trust Changes Recorded',
+          message: `Issue "${issue.title}" was resolved. Social trust metrics updated.`,
+          type: 'system',
+          isRead: false,
+          timestamp: 'Just now',
+          relatedIssueId: id,
+        });
+      }
+    } catch (err) {
+      console.error('Error creating status notification:', err);
+    }
+
     return issue;
   },
 
@@ -65,6 +104,33 @@ export const IssueService = {
       `Assigned to ${department}`,
       `The issue has been assigned to the ${department} department for resolution.`
     ));
+
+    // Create assigned notifications
+    try {
+      await NotificationRepository.create({
+        userId: 'citizen-admin-1',
+        title: 'Department Assigned',
+        message: `Your report "${issue.title}" has been routed to the ${department} department.`,
+        type: 'status_update',
+        isRead: false,
+        timestamp: 'Just now',
+        relatedIssueId: id,
+      });
+
+      // Admin notification
+      await NotificationRepository.create({
+        userId: 'admin-1',
+        title: 'Workforce Assignment',
+        message: `Issue "${issue.title}" assigned to department: ${department}.`,
+        type: 'system',
+        isRead: false,
+        timestamp: 'Just now',
+        relatedIssueId: id,
+      });
+    } catch (err) {
+      console.error('Error creating assignment notification:', err);
+    }
+
     return issue;
   },
 

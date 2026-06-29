@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion } from 'motion/react';
 import { MapPin, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { DESIGN_TOKENS } from '@/lib/designTokens';
-import { getPriorityClasses, getStatusClasses, formatTimestamp } from '@/lib/helpers';
+import { getPriorityClasses, getStatusClasses, formatTimestamp, getIssueDescription } from '@/lib/helpers';
 import { Issue } from '@/lib/models';
 import { getPlaceholderImage } from '@/lib/utils';
 
@@ -145,7 +145,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
           </h3>
 
           <p className="font-body text-xs sm:text-sm text-brand-muted leading-relaxed mb-4">
-            {report.description}
+            {getIssueDescription(report.description, report.aiSummary)}
           </p>
         </div>
 

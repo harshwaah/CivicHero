@@ -83,3 +83,78 @@ export function formatLocation(loc: string): string {
   if (!loc) return 'Unknown Location';
   return loc.trim();
 }
+
+/**
+ * Resolves the issue description based on the priority:
+ * User description -> AI Summary -> Fallback text
+ * And filters out any empty or placeholder string.
+ */
+export function getIssueDescription(
+  description: string | undefined,
+  aiSummary: any,
+  fallbackText = 'No additional description provided.'
+): string {
+  if (description && description.trim() !== '' && description !== 'No secondary details provided.') {
+    return description;
+  }
+  
+  // aiSummary can be a string or an object with a summary property
+  const aiSummaryText = aiSummary && typeof aiSummary === 'object' ? aiSummary.summary : aiSummary;
+  if (aiSummaryText && aiSummaryText.trim() !== '') {
+    return aiSummaryText;
+  }
+  
+  return fallbackText;
+}
+
+/**
+ * Calculates a sort score based on the issue's id and timestamp
+ * to enable consistent "Newest first" sorting.
+ */
+export function getSortScore(issue: any): number {
+  if (!issue) return 0;
+  
+  // 1. If the ID is a Date-based string (e.g., issue-1719600000000)
+  if (issue.id && typeof issue.id === 'string' && issue.id.startsWith('issue-')) {
+    const tsStr = issue.id.replace('issue-', '');
+    const ts = parseInt(tsStr, 10);
+    if (!isNaN(ts)) return ts;
+  }
+  
+  // 2. If the ID is a sequential mock report (e.g., report-1)
+  if (issue.id && typeof issue.id === 'string' && issue.id.startsWith('report-')) {
+    const numStr = issue.id.replace('report-', '');
+    const num = parseInt(numStr, 10);
+    if (!isNaN(num)) {
+      // Scale sequential IDs (report-1 oldest, report-10 newer)
+      return num * 10000000;
+    }
+  }
+
+  // 3. Fallback to parsing relative/absolute timestamp strings
+  if (issue.timestamp) {
+    if (typeof issue.timestamp === 'string') {
+      const lower = issue.timestamp.toLowerCase();
+      if (lower === 'just now') {
+        return Date.now();
+      }
+      if (lower.includes('mins ago') || lower.includes('min ago')) {
+        const mins = parseInt(lower, 10) || 0;
+        return Date.now() - mins * 60 * 1000;
+      }
+      if (lower.includes('hours ago') || lower.includes('hour ago')) {
+        const hours = parseInt(lower, 10) || 0;
+        return Date.now() - hours * 60 * 60 * 1000;
+      }
+      if (lower.includes('days ago') || lower.includes('day ago')) {
+        const days = parseInt(lower, 10) || 0;
+        return Date.now() - days * 24 * 60 * 60 * 1000;
+      }
+      
+      const parsed = Date.parse(issue.timestamp);
+      if (!isNaN(parsed)) return parsed;
+    }
+  }
+  
+  return 0;
+}

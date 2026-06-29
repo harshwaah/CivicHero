@@ -9,6 +9,7 @@ import EvidenceCard from './EvidenceCard';
 import { IssueService } from '../lib/services/issueService';
 import { Issue } from '../lib/models';
 import { Skeleton } from './Skeleton';
+import { getIssueDescription } from '@/lib/helpers';
 
 interface CitizenFeedProps {
   onOpenReportPlaceholder: () => void;
@@ -194,7 +195,7 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
                       {featuredIssue.title}
                     </h2>
                     <p className="font-body text-xs text-slate-200 mt-2 leading-relaxed line-clamp-2">
-                      {featuredIssue.description}
+                      {getIssueDescription(featuredIssue.description, featuredIssue.aiSummary)}
                     </p>
                   </div>
 

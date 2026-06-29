@@ -18,6 +18,7 @@ import {
 import CitizenNav from '../../components/CitizenNav';
 import CitizenFeed from '../../components/CitizenFeed';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
+import { getIssueDescription } from '../../lib/helpers';
 import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { IssueService } from '../../lib/services/issueService';
 import { Issue } from '../../lib/models';
@@ -158,7 +159,7 @@ export default function CitizenPage() {
                             <span className="font-mono text-[10px] text-slate-400">{issue.location}</span>
                           </div>
                           <h4 className="font-sans font-bold text-sm text-brand-primary mt-1.5">{issue.title}</h4>
-                          <p className="font-body text-xs text-brand-muted mt-1 line-clamp-1">{issue.description}</p>
+                          <p className="font-body text-xs text-brand-muted mt-1 line-clamp-1">{getIssueDescription(issue.description, issue.aiSummary)}</p>
                         </div>
                         <span className="text-[10px] font-mono font-semibold text-slate-400 shrink-0">{issue.timestamp}</span>
                       </div>
@@ -259,7 +260,7 @@ export default function CitizenPage() {
                             RESOLVED
                           </span>
                           <h4 className="font-sans font-bold text-sm text-brand-primary mt-1.5">{issue.title}</h4>
-                          <p className="font-body text-xs text-brand-muted mt-1 line-clamp-1">{issue.description}</p>
+                          <p className="font-body text-xs text-brand-muted mt-1 line-clamp-1">{getIssueDescription(issue.description, issue.aiSummary)}</p>
                         </div>
                         <span className="text-[10px] font-mono font-semibold text-emerald-600 shrink-0">{issue.timestamp}</span>
                       </div>

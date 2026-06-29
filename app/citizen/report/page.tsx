@@ -34,6 +34,7 @@ import { PresetOption, PRESET_OPTIONS, CATEGORIES, URGENCY_LEVELS } from '@/lib/
 // Import Real Firebase & Agent Repositories
 import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
 import { IssueRepository } from '@/lib/repositories/issueRepository';
+import { NotificationRepository } from '@/lib/repositories/notificationRepository';
 import { CommunityIntegrityAgent } from '@/lib/providers/ai/communityIntegrityAgent';
 import { CommunityIntelligenceAgent } from '@/lib/providers/ai/communityIntelligenceAgent';
 import { Issue } from '@/lib/models';
@@ -545,7 +546,7 @@ export default function CitizenReportFlowPage() {
       // Prepare in-memory text payload for the AI agents (does NOT block on image upload)
       const tempIssueForAI = {
         title: title || 'Custom Incident Report',
-        description: description || 'No secondary details provided.',
+        description: description || '',
         category: category,
         urgency: urgency,
         location: locationValue || 'Unknown Location Point',
@@ -594,7 +595,7 @@ export default function CitizenReportFlowPage() {
 
       const issuePayload: Omit<Issue, 'id'> = {
         title: title || 'Custom Incident Report',
-        description: description || 'No secondary details provided.',
+        description: description || '',
         category: intelligenceResult.categoryMatch || category,
         urgency: (intelligenceResult.severityMatch || urgency) as any,
         status: 'Reported',
@@ -644,6 +645,56 @@ export default function CitizenReportFlowPage() {
       const newIssue = await IssueRepository.create(issuePayload);
       setMockReportId(newIssue.id);
       addLog(`Report saved under Reference Code: ${newIssue.id}`, `[LEDGER] Created secure incident entry with ID: ${newIssue.id}`);
+
+      // Create real-time notification records in Firestore
+      try {
+        // 1. Citizen: Report received
+        await NotificationRepository.create({
+          userId: 'citizen-admin-1',
+          title: 'Report Received',
+          message: `Your report "${newIssue.title}" has been successfully logged on the ledger.`,
+          type: 'community',
+          isRead: false,
+          timestamp: 'Just now',
+          relatedIssueId: newIssue.id,
+        });
+
+        // 2. Citizen: AI completed
+        await NotificationRepository.create({
+          userId: 'citizen-admin-1',
+          title: 'AI Inspection Completed',
+          message: `AI Agents have parsed your submission. Routing: ${intelligenceResult.routingTo}.`,
+          type: 'ai',
+          isRead: false,
+          timestamp: 'Just now',
+          relatedIssueId: newIssue.id,
+        });
+
+        // 3. Admin: Critical report notification if applicable, or Duplicate Check
+        if (newIssue.urgency === 'Critical' || newIssue.urgency === 'High') {
+          await NotificationRepository.create({
+            userId: 'admin-1',
+            title: 'Critical Report Logged',
+            message: `[CRITICAL] "${newIssue.title}" has been flagged at ${newIssue.location}.`,
+            type: 'system',
+            isRead: false,
+            timestamp: 'Just now',
+            relatedIssueId: newIssue.id,
+          });
+        } else {
+          await NotificationRepository.create({
+            userId: 'admin-1',
+            title: 'New Incident Logged',
+            message: `New issue "${newIssue.title}" logged in ${newIssue.category}.`,
+            type: 'system',
+            isRead: false,
+            timestamp: 'Just now',
+            relatedIssueId: newIssue.id,
+          });
+        }
+      } catch (err) {
+        console.error('Error creating report notifications:', err);
+      }
 
       // Finalize scan results
       setRealAiResults({
@@ -767,7 +818,7 @@ export default function CitizenReportFlowPage() {
       return {
         id: 'real-ai-case',
         title: title || 'Custom Incident Report',
-        description: description || 'No secondary details provided.',
+        description: description || '',
         location: locationValue || 'Unknown Location Point',
         category: category,
         urgency: realAiResults.severityMatch as any,
@@ -790,7 +841,7 @@ export default function CitizenReportFlowPage() {
     const result: PresetOption = {
       id: 'custom-case',
       title: title || 'Custom Incident Report',
-      description: description || 'No secondary details provided.',
+      description: description || '',
       location: locationValue || 'Unknown Location Point',
       category: category,
       urgency: urgency,
