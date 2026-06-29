@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import firebaseConfig from '../../../../firebase-applet-config.json';
+import { aiMetrics } from '../../../../lib/ai-server/orchestrator';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,6 +11,9 @@ export async function GET(req: NextRequest) {
     // Check if Firebase is configured in config json or env
     const hasAppletConfig = !!(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.projectId);
     const hasFirebaseEnv = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+    // Server-side memory usage
+    const memory = typeof process !== 'undefined' ? process.memoryUsage() : null;
     
     return NextResponse.json({
       success: true,
@@ -25,7 +29,25 @@ export async function GET(req: NextRequest) {
         projectId: hasAppletConfig ? firebaseConfig.projectId : (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'missing'),
         databaseId: hasAppletConfig ? firebaseConfig.firestoreDatabaseId : 'default',
         authDomain: hasAppletConfig ? firebaseConfig.authDomain : (process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'missing'),
-      }
+      },
+      aiMetrics: {
+        totalRequests: aiMetrics.totalRequests,
+        totalLatency: aiMetrics.totalLatency,
+        averageLatency: aiMetrics.totalRequests > 0 ? (aiMetrics.totalLatency / aiMetrics.totalRequests) : 0,
+        totalTokens: aiMetrics.totalTokens,
+        averageTokens: aiMetrics.totalRequests > 0 ? (aiMetrics.totalTokens / aiMetrics.totalRequests) : 0,
+        cacheHits: aiMetrics.cacheHits,
+        cacheMisses: aiMetrics.cacheMisses,
+        fallbackCount: aiMetrics.fallbackCount,
+        fallbackFrequency: aiMetrics.totalRequests > 0 ? (aiMetrics.fallbackCount / aiMetrics.totalRequests) : 0,
+        requestHistory: aiMetrics.requestHistory
+      },
+      memoryUsage: memory ? {
+        rss: Math.round(memory.rss / 1024 / 1024) + ' MB',
+        heapTotal: Math.round(memory.heapTotal / 1024 / 1024) + ' MB',
+        heapUsed: Math.round(memory.heapUsed / 1024 / 1024) + ' MB',
+        external: Math.round(memory.external / 1024 / 1024) + ' MB',
+      } : null
     });
   } catch (err: any) {
     return NextResponse.json({

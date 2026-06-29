@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AIOrchestrator } from "../../../../lib/ai-server/orchestrator";
+import { AIOrchestrator, aiMetrics } from "../../../../lib/ai-server/orchestrator";
 import { Type } from "@google/genai";
 import { db, isFirebaseConfigured, doc, getDoc, setDoc } from "../../../../lib/firebase/firestore";
 
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
             } else {
               useCache = true;
               cacheData = data;
+              aiMetrics.cacheHits += 1;
               const remainingSec = Math.max(0, Math.round((TTL_MS - age) / 1000));
               console.log(`[COPILOT CACHE] Cache Hit (Firestore). Returning cached briefing. TTL remaining: ${remainingSec}s. Event-invalidated: false`);
             }
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
           } else {
             useCache = true;
             cacheData = serverMemoryCache;
+            aiMetrics.cacheHits += 1;
             const remainingSec = Math.max(0, Math.round((TTL_MS - age) / 1000));
             console.log(`[COPILOT CACHE] Cache Hit (Server Memory). Returning cached briefing. TTL remaining: ${remainingSec}s.`);
           }
@@ -80,6 +82,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Cache miss - log the reason
+    aiMetrics.cacheMisses += 1;
     console.log(`[COPILOT CACHE] Cache Miss. Reason: ${cacheMissReason}. Generating new briefing using AI Router...`);
 
     const schema = {

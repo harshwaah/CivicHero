@@ -1,5 +1,36 @@
 import { GoogleGenAI } from '@google/genai';
 
+export interface AIMetrics {
+  totalRequests: number;
+  totalLatency: number;
+  totalTokens: number;
+  cacheHits: number;
+  cacheMisses: number;
+  fallbackCount: number;
+  requestHistory: Array<{
+    timestamp: string;
+    model: string;
+    latency: number;
+    tokens: number;
+    fallback: boolean;
+  }>;
+}
+
+// Persist metrics across server rebuilds if needed
+const globalForMetrics = global as unknown as { aiMetrics?: AIMetrics };
+export const aiMetrics: AIMetrics = globalForMetrics.aiMetrics || {
+  totalRequests: 0,
+  totalLatency: 0,
+  totalTokens: 0,
+  cacheHits: 0,
+  cacheMisses: 0,
+  fallbackCount: 0,
+  requestHistory: []
+};
+if (!globalForMetrics.aiMetrics) {
+  globalForMetrics.aiMetrics = aiMetrics;
+}
+
 let aiInstance: GoogleGenAI | null = null;
 
 function getAIClient(): GoogleGenAI {
@@ -116,6 +147,10 @@ export const AIOrchestrator = {
     // 4. Nemotron Nano VL
     // 5. Graceful Fallback
     
+    const startTime = Date.now();
+    aiMetrics.totalRequests += 1;
+    let baseTokens = Math.round((prompt.length + JSON.stringify(schema).length) / 4);
+
     const hasGeminiKey = !!(process.env.APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
     const hasNemotronKey = !!(process.env.NEMOTRON_API_KEY || process.env.OPENROUTER_API_KEY || process.env.NVIDIA_API_KEY);
 
@@ -171,7 +206,21 @@ export const AIOrchestrator = {
 
           if (response.text) {
             const parsed = JSON.parse(response.text);
-            console.log(`[AIROUTER] Success with ${model.name}`);
+            const latency = Date.now() - startTime;
+            const respTokens = Math.round(response.text.length / 4);
+            const totalTokensUsed = baseTokens + respTokens;
+
+            aiMetrics.totalLatency += latency;
+            aiMetrics.totalTokens += totalTokensUsed;
+            aiMetrics.requestHistory.push({
+              timestamp: new Date().toISOString(),
+              model: model.name,
+              latency,
+              tokens: totalTokensUsed,
+              fallback: false
+            });
+
+            console.log(`[AIROUTER] Success with ${model.name} in ${latency}ms`);
             return parsed;
           }
         } else if (model.provider === 'nemotron') {
@@ -202,7 +251,21 @@ export const AIOrchestrator = {
           const data = await response.json();
           const content = data.choices?.[0]?.message?.content;
           if (content) {
-            console.log(`[AIROUTER] Success with Nemotron Nano VL`);
+            const latency = Date.now() - startTime;
+            const respTokens = Math.round(content.length / 4);
+            const totalTokensUsed = baseTokens + respTokens;
+
+            aiMetrics.totalLatency += latency;
+            aiMetrics.totalTokens += totalTokensUsed;
+            aiMetrics.requestHistory.push({
+              timestamp: new Date().toISOString(),
+              model: 'nemotron-nano-vl',
+              latency,
+              tokens: totalTokensUsed,
+              fallback: false
+            });
+
+            console.log(`[AIROUTER] Success with Nemotron Nano VL in ${latency}ms`);
             return JSON.parse(content);
           }
         }
@@ -213,7 +276,23 @@ export const AIOrchestrator = {
     }
 
     console.warn(`[AIROUTER] All model options exhausted. Engaging graceful high-fidelity fallback.`);
-    return getGracefulFallback(prompt, schema);
+    const fallbackResponse = getGracefulFallback(prompt, schema);
+    const latency = Date.now() - startTime;
+    const respTokens = Math.round(JSON.stringify(fallbackResponse).length / 4);
+    const totalTokensUsed = baseTokens + respTokens;
+
+    aiMetrics.fallbackCount += 1;
+    aiMetrics.totalLatency += latency;
+    aiMetrics.totalTokens += totalTokensUsed;
+    aiMetrics.requestHistory.push({
+      timestamp: new Date().toISOString(),
+      model: 'fallback',
+      latency,
+      tokens: totalTokensUsed,
+      fallback: true
+    });
+
+    return fallbackResponse;
   },
 
   async evaluateImage(prompt: string, imageUrl: string, schema: any) {

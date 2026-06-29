@@ -1,8 +1,9 @@
 import { storage, isFirebaseConfigured } from './firebase';
+import { dbMetrics } from './firestore';
 import { 
   ref, 
-  uploadBytes, 
-  uploadBytesResumable,
+  uploadBytes as firebaseUploadBytes, 
+  uploadBytesResumable as firebaseUploadBytesResumable,
   getDownloadURL, 
   deleteObject, 
   listAll,
@@ -35,12 +36,20 @@ export function handleStorageError(error: unknown, operationType: StorageOperati
   throw new Error(JSON.stringify(errInfo));
 }
 
+export async function uploadBytes(reference: any, data: any, metadata?: any) {
+  dbMetrics.storageUploads += 1;
+  return firebaseUploadBytes(reference, data, metadata);
+}
+
+export function uploadBytesResumable(reference: any, data: any, metadata?: any) {
+  dbMetrics.storageUploads += 1;
+  return firebaseUploadBytesResumable(reference, data, metadata);
+}
+
 export { 
   storage, 
   isFirebaseConfigured, 
   ref, 
-  uploadBytes, 
-  uploadBytesResumable,
   getDownloadURL, 
   deleteObject, 
   listAll 

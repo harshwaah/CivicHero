@@ -30,7 +30,7 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
   const [activeCategory, setActiveCategory] = useState('All Activity');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [reports, setReports] = useState<Issue[]>([]);
+  const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Quick Filters State
@@ -41,84 +41,79 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
   const [sortOption, setSortOption] = useState<'Most Recent' | 'Highest Risk' | 'Most Confirmed'>('Most Recent');
 
   useEffect(() => {
-    let unsubscribe = () => {};
-
-    async function setupSubscription() {
-      const handleIssuesUpdate = (issues: Issue[]) => {
-        let list = [...issues];
-        
-        // 1. Category Filter
-        if (activeCategory && activeCategory !== 'All Activity') {
-          list = list.filter((item) => item.category.toLowerCase() === activeCategory.toLowerCase());
-        }
-        
-        // 2. Search Query Filter
-        if (searchQuery) {
-          const lower = searchQuery.toLowerCase();
-          list = list.filter(
-            (item) =>
-              item.title.toLowerCase().includes(lower) ||
-              item.description.toLowerCase().includes(lower) ||
-              item.location.toLowerCase().includes(lower)
-          );
-        }
-
-        // 3. Quick Filter (Status)
-        if (quickFilter === 'Open') {
-          list = list.filter(item => item.status !== 'Resolved');
-        } else if (quickFilter === 'Resolved') {
-          list = list.filter(item => item.status === 'Resolved');
-        }
-
-        // 4. Severity Filter
-        if (severityFilter && severityFilter !== 'All') {
-          list = list.filter(item => item.urgency?.toLowerCase() === severityFilter.toLowerCase());
-        }
-
-        // 5. Distance Filter
-        if (distanceFilter === 'Nearby') {
-          list = list.filter(item => {
-            if (!item.distance) return true;
-            const num = parseFloat(item.distance);
-            return isNaN(num) || num <= 1.0;
-          });
-        } else if (distanceFilter === 'Further') {
-          list = list.filter(item => {
-            if (!item.distance) return false;
-            const num = parseFloat(item.distance);
-            return !isNaN(num) && num > 1.0;
-          });
-        }
-
-        // 6. Sorting
-        if (sortOption === 'Highest Risk') {
-          const urgencyOrder: Record<string, number> = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
-          list.sort((a, b) => {
-            const pA = urgencyOrder[a.urgency] || 0;
-            const pB = urgencyOrder[b.urgency] || 0;
-            if (pB !== pA) return pB - pA;
-            return getSortScore(b) - getSortScore(a);
-          });
-        } else if (sortOption === 'Most Confirmed') {
-          list.sort((a, b) => (b.verifiedByCount || 0) - (a.verifiedByCount || 0));
-        } else {
-          // Default: Most Recent
-          list.sort((a, b) => getSortScore(b) - getSortScore(a));
-        }
-
-        setReports(list);
-        setIsLoading(false);
-      };
-
-      unsubscribe = IssueService.subscribe(handleIssuesUpdate);
-    }
-    
-    setupSubscription();
-
+    const unsubscribe = IssueService.subscribe((issues) => {
+      setAllIssues(issues);
+      setIsLoading(false);
+    });
     return () => {
       unsubscribe();
     };
-  }, [activeCategory, searchQuery, quickFilter, severityFilter, distanceFilter, sortOption]);
+  }, []);
+
+  const reports = React.useMemo(() => {
+    let list = [...allIssues];
+    
+    // 1. Category Filter
+    if (activeCategory && activeCategory !== 'All Activity') {
+      list = list.filter((item) => item.category.toLowerCase() === activeCategory.toLowerCase());
+    }
+    
+    // 2. Search Query Filter
+    if (searchQuery) {
+      const lower = searchQuery.toLowerCase();
+      list = list.filter(
+        (item) =>
+          item.title.toLowerCase().includes(lower) ||
+          item.description.toLowerCase().includes(lower) ||
+          item.location.toLowerCase().includes(lower)
+      );
+    }
+
+    // 3. Quick Filter (Status)
+    if (quickFilter === 'Open') {
+      list = list.filter(item => item.status !== 'Resolved');
+    } else if (quickFilter === 'Resolved') {
+      list = list.filter(item => item.status === 'Resolved');
+    }
+
+    // 4. Severity Filter
+    if (severityFilter && severityFilter !== 'All') {
+      list = list.filter(item => item.urgency?.toLowerCase() === severityFilter.toLowerCase());
+    }
+
+    // 5. Distance Filter
+    if (distanceFilter === 'Nearby') {
+      list = list.filter(item => {
+        if (!item.distance) return true;
+        const num = parseFloat(item.distance);
+        return isNaN(num) || num <= 1.0;
+      });
+    } else if (distanceFilter === 'Further') {
+      list = list.filter(item => {
+        if (!item.distance) return false;
+        const num = parseFloat(item.distance);
+        return !isNaN(num) && num > 1.0;
+      });
+    }
+
+    // 6. Sorting
+    if (sortOption === 'Highest Risk') {
+      const urgencyOrder: Record<string, number> = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+      list.sort((a, b) => {
+        const pA = urgencyOrder[a.urgency] || 0;
+        const pB = urgencyOrder[b.urgency] || 0;
+        if (pB !== pA) return pB - pA;
+        return getSortScore(b) - getSortScore(a);
+      });
+    } else if (sortOption === 'Most Confirmed') {
+      list.sort((a, b) => (b.verifiedByCount || 0) - (a.verifiedByCount || 0));
+    } else {
+      // Default: Most Recent
+      list.sort((a, b) => getSortScore(b) - getSortScore(a));
+    }
+
+    return list;
+  }, [allIssues, activeCategory, searchQuery, quickFilter, severityFilter, distanceFilter, sortOption]);
 
   return (
     <div className="flex-1 flex flex-col gap-6">
