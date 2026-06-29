@@ -18,6 +18,10 @@ import {
 import CitizenNav from '../../components/CitizenNav';
 import CitizenFeed from '../../components/CitizenFeed';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
+import CivicPassport from '../../components/CivicPassport';
+import NotificationCenter from '../../components/NotificationCenter';
+import GlobalSearch from '../../components/GlobalSearch';
+import SettingsPanel from '../../components/SettingsPanel';
 import { getIssueDescription, getSortScore } from '../../lib/helpers';
 import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { IssueService } from '../../lib/services/issueService';
@@ -306,6 +310,14 @@ export default function CitizenPage() {
             </button>
           </motion.div>
         );
+      case 'search':
+        return <GlobalSearch />;
+      case 'notifications':
+        return <NotificationCenter />;
+      case 'passport':
+        return <CivicPassport />;
+      case 'settings':
+        return <SettingsPanel />;
       default:
         return null;
     }

@@ -1,8 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Home, Compass, ShieldCheck, Bell, Sparkles } from 'lucide-react';
+import { 
+  Home, 
+  Compass, 
+  ShieldCheck, 
+  Megaphone, 
+  Search, 
+  Bell, 
+  User, 
+  Settings, 
+  Sparkles 
+} from 'lucide-react';
+import { NotificationRepository } from '../lib/repositories/notificationRepository';
 
 interface CitizenNavProps {
   activeTab: string;
@@ -10,18 +21,33 @@ interface CitizenNavProps {
 }
 
 export default function CitizenNav({ activeTab, onTabChange }: CitizenNavProps) {
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const unsubscribe = NotificationRepository.subscribeByUserId('citizen-admin-1', (notifs) => {
+      // Exclude archived and read ones
+      const count = notifs.filter(n => !n.isRead && !n.isArchived).length;
+      setUnreadCount(count);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const tabs = [
     { id: 'home', label: 'HOME', icon: Home },
     { id: 'map', label: 'MAP', icon: Compass },
     { id: 'safety', label: 'SAFETY', icon: ShieldCheck },
-    { id: 'alerts', label: 'ALERTS', icon: Bell },
+    { id: 'alerts', label: 'ALERTS', icon: Megaphone },
+    { id: 'search', label: 'SEARCH', icon: Search },
+    { id: 'notifications', label: 'NOTIFS', icon: Bell, badge: true },
+    { id: 'passport', label: 'PASSPORT', icon: User },
+    { id: 'settings', label: 'SETTINGS', icon: Settings },
   ];
 
   return (
     <>
-      {/* 1. MOBILE BOTTOM NAVIGATION (Persistent Floating Glassmorphic bar) */}
+      {/* 1. MOBILE BOTTOM NAVIGATION (Horizontal swipe bar with blur) */}
       <div className="md:hidden fixed bottom-6 left-4 right-4 z-40">
-        <div className="bg-[#f8f9fa]/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-[28px] px-6 py-3 flex items-center justify-between">
+        <div className="bg-[#f8f9fa]/90 backdrop-blur-xl border border-white/40 shadow-xl rounded-[28px] px-4 py-3 flex items-center gap-4 overflow-x-auto scrollbar-none snap-x">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -30,7 +56,7 @@ export default function CitizenNav({ activeTab, onTabChange }: CitizenNavProps) 
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className="relative flex flex-col items-center gap-1.5 flex-1 py-1 group focus:outline-none"
+                className="relative flex flex-col items-center gap-1.5 shrink-0 min-w-[56px] py-1 group focus:outline-none snap-center"
               >
                 {/* Active indicator dot */}
                 {isActive && (
@@ -41,11 +67,18 @@ export default function CitizenNav({ activeTab, onTabChange }: CitizenNavProps) 
                   />
                 )}
 
-                <Icon
-                  className={`w-5 h-5 transition-transform duration-200 group-hover:scale-110 ${
-                    isActive ? 'text-brand-primary' : 'text-slate-400'
-                  }`}
-                />
+                <div className="relative">
+                  <Icon
+                    className={`w-5 h-5 transition-transform duration-200 group-hover:scale-110 ${
+                      isActive ? 'text-brand-primary' : 'text-slate-400'
+                    }`}
+                  />
+                  {tab.badge && unreadCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white font-mono font-bold text-[8px] h-4 w-4 rounded-full flex items-center justify-center border border-white animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
 
                 <span
                   className={`text-[9px] font-mono font-bold tracking-wider transition-colors duration-200 ${
@@ -80,7 +113,7 @@ export default function CitizenNav({ activeTab, onTabChange }: CitizenNavProps) 
             </div>
 
             {/* Navigation links */}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 max-h-[420px] overflow-y-auto pr-1">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -89,7 +122,7 @@ export default function CitizenNav({ activeTab, onTabChange }: CitizenNavProps) 
                   <button
                     key={tab.id}
                     onClick={() => onTabChange(tab.id)}
-                    className={`relative w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl font-sans text-xs font-bold tracking-wider transition-all duration-200 group ${
+                    className={`relative w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl font-sans text-xs font-bold tracking-wider transition-all duration-200 group ${
                       isActive
                         ? 'bg-brand-primary text-white shadow-sm'
                         : 'text-slate-500 hover:bg-slate-50 hover:text-brand-primary'
@@ -103,8 +136,15 @@ export default function CitizenNav({ activeTab, onTabChange }: CitizenNavProps) 
                       />
                     )}
 
-                    <Icon className="w-4 h-4 transition-transform group-hover:scale-110" />
-                    <span>{tab.label}</span>
+                    <div className="relative">
+                      <Icon className="w-4 h-4 transition-transform group-hover:scale-110" />
+                      {tab.badge && unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white font-mono font-bold text-[8px] h-4.5 w-4.5 rounded-full flex items-center justify-center border border-white">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <span>{tab.label === 'NOTIFS' ? 'NOTIFICATIONS' : tab.label}</span>
                   </button>
                 );
               })}

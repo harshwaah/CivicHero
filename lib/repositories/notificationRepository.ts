@@ -129,4 +129,54 @@ export const NotificationRepository = {
       return false;
     }
   },
+
+  /**
+   * Archive a notification
+   */
+  async archive(id: string): Promise<boolean> {
+    if (!isFirebaseConfigured) {
+      const notif = defaultNotifications.find((n) => n.id === id);
+      if (notif) {
+        notif.isArchived = true;
+      }
+      return true;
+    }
+
+    try {
+      await updateDoc(doc(db, 'notifications', id), { isArchived: true });
+      return true;
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `notifications/${id}`);
+      return false;
+    }
+  },
+
+  /**
+   * Mark all notifications as read for a user
+   */
+  async markAllRead(userId: string): Promise<boolean> {
+    if (!isFirebaseConfigured) {
+      defaultNotifications.forEach(n => {
+        if (n.userId === userId) {
+          n.isRead = true;
+        }
+      });
+      return true;
+    }
+
+    try {
+      const ref = collection(db, 'notifications');
+      const q = query(ref, where('userId', '==', userId));
+      const snap = await getDocs(q);
+      for (const d of snap.docs) {
+        if (!d.data().isRead) {
+          await updateDoc(doc(db, 'notifications', d.id), { isRead: true });
+        }
+      }
+      return true;
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, 'notifications/all');
+      return false;
+    }
+  },
 };
