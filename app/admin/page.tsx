@@ -181,12 +181,24 @@ export default function AdminPage() {
 
     // 3. Status Filter: Reported, Verified, Assigned, In Progress, Resolved
     if (statusFilter && statusFilter !== 'All') {
-      list = list.filter(issue => issue.status?.toLowerCase() === statusFilter.toLowerCase());
+      list = list.filter(issue => {
+        const status = issue.status?.toLowerCase();
+        const filter = statusFilter.toLowerCase();
+        if (filter === 'reported') {
+          return status === 'reported' || status === 'live';
+        }
+        return status === filter;
+      });
     }
 
     // 4. Department Filter: Roads, Utilities, Sanitation, Emergency
     if (departmentFilter && departmentFilter !== 'All') {
-      list = list.filter(issue => issue.routingDepartment?.toLowerCase() === departmentFilter.toLowerCase());
+      list = list.filter(issue => {
+        const dept = issue.routingDepartment || (
+          issue.category === 'Safety' ? 'Emergency' : issue.category
+        );
+        return dept?.toLowerCase() === departmentFilter.toLowerCase();
+      });
     }
 
     // 5. Date Filter: Today, Week, Month
@@ -291,7 +303,17 @@ export default function AdminPage() {
           </button>
         </div>
         <div className="divide-y divide-slate-100">
-          {issues.filter(i => i.status !== 'Resolved').slice(0, 4).map(issue => (
+          {[...issues]
+            .filter(i => i.status !== 'Resolved')
+            .sort((a, b) => {
+              const urgencyOrder: Record<string, number> = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+              const pA = urgencyOrder[a.urgency] || 0;
+              const pB = urgencyOrder[b.urgency] || 0;
+              if (pB !== pA) return pB - pA;
+              return getSortScore(b) - getSortScore(a);
+            })
+            .slice(0, 4)
+            .map(issue => (
             <Link key={issue.id} href={`/admin/issues/${issue.id}`} className="flex items-start md:items-center justify-between p-4 md:p-6 hover:bg-slate-50 transition-colors group">
               <div className="flex items-start gap-4 flex-1">
                 <div className={`w-2 h-2 mt-2 rounded-full ${getStatusColor(issue.status)}`} />

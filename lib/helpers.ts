@@ -94,7 +94,7 @@ export function getIssueDescription(
   aiSummary: any,
   fallbackText = 'No additional description provided.'
 ): string {
-  if (description && description.trim() !== '' && description !== 'No secondary details provided.') {
+  if (description && description.trim() !== '' && description !== 'No secondary details provided.' && description !== 'No additional description provided.') {
     return description;
   }
   
@@ -121,38 +121,41 @@ export function getSortScore(issue: any): number {
     if (!isNaN(ts)) return ts;
   }
   
-  // 2. If the ID is a sequential mock report (e.g., report-1)
+  // 2. Try parsing relative/absolute timestamp strings first to get real date/time
+  if (issue.timestamp && typeof issue.timestamp === 'string') {
+    const lower = issue.timestamp.toLowerCase();
+    if (lower === 'just now' || lower === 'recent') {
+      return Date.now();
+    }
+    if (lower.includes('mins ago') || lower.includes('min ago')) {
+      const mins = parseInt(lower, 10) || 0;
+      return Date.now() - mins * 60 * 1000;
+    }
+    if (lower.includes('hours ago') || lower.includes('hour ago')) {
+      const hours = parseInt(lower, 10) || 0;
+      return Date.now() - hours * 60 * 60 * 1000;
+    }
+    if (lower.includes('days ago') || lower.includes('day ago')) {
+      const days = parseInt(lower, 10) || 0;
+      return Date.now() - days * 24 * 60 * 60 * 1000;
+    }
+    if (lower.includes('today')) {
+      return Date.now() - 2 * 60 * 60 * 1000; // assume 2 hours ago today
+    }
+    
+    const parsed = Date.parse(issue.timestamp);
+    if (!isNaN(parsed)) return parsed;
+  }
+
+  // 3. Fallback to sequential mock report (e.g., report-1)
   if (issue.id && typeof issue.id === 'string' && issue.id.startsWith('report-')) {
     const numStr = issue.id.replace('report-', '');
     const num = parseInt(numStr, 10);
     if (!isNaN(num)) {
       // Scale sequential IDs (report-1 oldest, report-10 newer)
-      return num * 10000000;
-    }
-  }
-
-  // 3. Fallback to parsing relative/absolute timestamp strings
-  if (issue.timestamp) {
-    if (typeof issue.timestamp === 'string') {
-      const lower = issue.timestamp.toLowerCase();
-      if (lower === 'just now') {
-        return Date.now();
-      }
-      if (lower.includes('mins ago') || lower.includes('min ago')) {
-        const mins = parseInt(lower, 10) || 0;
-        return Date.now() - mins * 60 * 1000;
-      }
-      if (lower.includes('hours ago') || lower.includes('hour ago')) {
-        const hours = parseInt(lower, 10) || 0;
-        return Date.now() - hours * 60 * 60 * 1000;
-      }
-      if (lower.includes('days ago') || lower.includes('day ago')) {
-        const days = parseInt(lower, 10) || 0;
-        return Date.now() - days * 24 * 60 * 60 * 1000;
-      }
-      
-      const parsed = Date.parse(issue.timestamp);
-      if (!isNaN(parsed)) return parsed;
+      // Add it to a baseline time (e.g., 3 days ago) so it's a valid recent timestamp
+      const baseline = Date.now() - 3 * 24 * 60 * 60 * 1000; // 3 days ago
+      return baseline + num * 60 * 60 * 1000; // each step is 1 hour
     }
   }
   

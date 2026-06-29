@@ -9,7 +9,7 @@ import EvidenceCard from './EvidenceCard';
 import { IssueService } from '../lib/services/issueService';
 import { Issue } from '../lib/models';
 import { Skeleton } from './Skeleton';
-import { getIssueDescription } from '@/lib/helpers';
+import { getIssueDescription, getSortScore } from '@/lib/helpers';
 
 interface CitizenFeedProps {
   onOpenReportPlaceholder: () => void;
@@ -33,15 +33,26 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
   const [reports, setReports] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Quick Filters State
+  const [showFilters, setShowFilters] = useState(false);
+  const [quickFilter, setQuickFilter] = useState<'All' | 'Open' | 'Resolved'>('All');
+  const [severityFilter, setSeverityFilter] = useState<string>('All');
+  const [distanceFilter, setDistanceFilter] = useState<string>('All');
+  const [sortOption, setSortOption] = useState<'Most Recent' | 'Highest Risk' | 'Most Confirmed'>('Most Recent');
+
   useEffect(() => {
     let unsubscribe = () => {};
 
     async function setupSubscription() {
       const handleIssuesUpdate = (issues: Issue[]) => {
-        let list = issues;
+        let list = [...issues];
+        
+        // 1. Category Filter
         if (activeCategory && activeCategory !== 'All Activity') {
           list = list.filter((item) => item.category.toLowerCase() === activeCategory.toLowerCase());
         }
+        
+        // 2. Search Query Filter
         if (searchQuery) {
           const lower = searchQuery.toLowerCase();
           list = list.filter(
@@ -51,6 +62,50 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
               item.location.toLowerCase().includes(lower)
           );
         }
+
+        // 3. Quick Filter (Status)
+        if (quickFilter === 'Open') {
+          list = list.filter(item => item.status !== 'Resolved');
+        } else if (quickFilter === 'Resolved') {
+          list = list.filter(item => item.status === 'Resolved');
+        }
+
+        // 4. Severity Filter
+        if (severityFilter && severityFilter !== 'All') {
+          list = list.filter(item => item.urgency?.toLowerCase() === severityFilter.toLowerCase());
+        }
+
+        // 5. Distance Filter
+        if (distanceFilter === 'Nearby') {
+          list = list.filter(item => {
+            if (!item.distance) return true;
+            const num = parseFloat(item.distance);
+            return isNaN(num) || num <= 1.0;
+          });
+        } else if (distanceFilter === 'Further') {
+          list = list.filter(item => {
+            if (!item.distance) return false;
+            const num = parseFloat(item.distance);
+            return !isNaN(num) && num > 1.0;
+          });
+        }
+
+        // 6. Sorting
+        if (sortOption === 'Highest Risk') {
+          const urgencyOrder: Record<string, number> = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
+          list.sort((a, b) => {
+            const pA = urgencyOrder[a.urgency] || 0;
+            const pB = urgencyOrder[b.urgency] || 0;
+            if (pB !== pA) return pB - pA;
+            return getSortScore(b) - getSortScore(a);
+          });
+        } else if (sortOption === 'Most Confirmed') {
+          list.sort((a, b) => (b.verifiedByCount || 0) - (a.verifiedByCount || 0));
+        } else {
+          // Default: Most Recent
+          list.sort((a, b) => getSortScore(b) - getSortScore(a));
+        }
+
         setReports(list);
         setIsLoading(false);
       };
@@ -63,7 +118,7 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
     return () => {
       unsubscribe();
     };
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, quickFilter, severityFilter, distanceFilter, sortOption]);
 
   return (
     <div className="flex-1 flex flex-col gap-6">
@@ -120,13 +175,105 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
           </div>
 
           <button 
-            className="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center justify-center transition-colors text-brand-primary md:flex hidden"
-            onClick={() => onOpenMilestone('Advanced Filters', 'Phase 1.2', 'Configure custom distance ranges, category hierarchies, and sorting metrics.')}
+            className="w-10 h-10 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-100 flex items-center justify-center transition-colors text-brand-primary"
+            onClick={() => setShowFilters(!showFilters)}
+            title="Toggle Quick Filters"
           >
             <SlidersHorizontal className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      {/* QUICK FILTERS COLLAPSIBLE PANEL */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="bg-white border border-slate-100 rounded-[24px] p-6 shadow-sm overflow-hidden flex flex-col gap-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h4 className="font-sans font-bold text-xs text-brand-primary uppercase tracking-wider">Quick Filters & Tuning</h4>
+              <button 
+                onClick={() => {
+                  setQuickFilter('All');
+                  setSeverityFilter('All');
+                  setDistanceFilter('All');
+                  setSortOption('Most Recent');
+                }}
+                className="font-mono text-[9px] text-brand-secondary hover:underline uppercase font-bold"
+              >
+                Reset Filters
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {/* 1. Status Filter */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">Status</span>
+                <div className="flex gap-1">
+                  {(['All', 'Open', 'Resolved'] as const).map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setQuickFilter(f)}
+                      className={`flex-1 py-1.5 px-2 rounded-lg font-sans text-[11px] font-semibold border transition-all ${quickFilter === f ? 'bg-brand-primary text-white border-brand-primary' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-100'}`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Severity Filter */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">Urgency</span>
+                <select
+                  value={severityFilter}
+                  onChange={(e) => setSeverityFilter(e.target.value)}
+                  className="w-full py-1.5 px-3 bg-slate-50 border border-slate-100 rounded-lg font-sans text-[11px] font-semibold text-slate-600 focus:outline-none"
+                >
+                  <option value="All">All Levels</option>
+                  <option value="Critical">Critical Only</option>
+                  <option value="High">High Only</option>
+                  <option value="Medium">Medium Only</option>
+                  <option value="Low">Low Only</option>
+                </select>
+              </div>
+
+              {/* 3. Distance Filter */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">Distance</span>
+                <div className="flex gap-1">
+                  {(['All', 'Nearby', 'Further'] as const).map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setDistanceFilter(f)}
+                      className={`flex-1 py-1.5 px-2 rounded-lg font-sans text-[11px] font-semibold border transition-all ${distanceFilter === f ? 'bg-brand-primary text-white border-brand-primary' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-100'}`}
+                    >
+                      {f === 'Nearby' ? 'Nearby (<1mi)' : f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Sorting Option */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[9px] font-mono font-bold text-slate-400 uppercase tracking-wider">Sort Order</span>
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value as any)}
+                  className="w-full py-1.5 px-3 bg-slate-50 border border-slate-100 rounded-lg font-sans text-[11px] font-semibold text-slate-600 focus:outline-none"
+                >
+                  <option value="Most Recent">Most Recent</option>
+                  <option value="Highest Risk">Highest Risk First</option>
+                  <option value="Most Confirmed">Most Confirmed</option>
+                </select>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 2. HORIZONTAL CATEGORY NAVIGATION */}
       <div className="w-full">

@@ -18,7 +18,7 @@ import {
 import CitizenNav from '../../components/CitizenNav';
 import CitizenFeed from '../../components/CitizenFeed';
 import IncidentsMapPreview from '../../components/IncidentsMapPreview';
-import { getIssueDescription } from '../../lib/helpers';
+import { getIssueDescription, getSortScore } from '../../lib/helpers';
 import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { IssueService } from '../../lib/services/issueService';
 import { Issue } from '../../lib/models';
@@ -109,7 +109,9 @@ export default function CitizenPage() {
           </motion.div>
         );
       case 'safety':
-        const criticalSafetyIssues = issues.filter(i => i.urgency === 'Critical' || i.urgency === 'High');
+        const criticalSafetyIssues = [...issues]
+          .filter(i => i.urgency === 'Critical' || i.urgency === 'High')
+          .sort((a, b) => getSortScore(b) - getSortScore(a));
         return (
           <motion.div 
             initial={{ opacity: 0, y: 16 }}
@@ -215,7 +217,9 @@ export default function CitizenPage() {
           </motion.div>
         );
       case 'alerts':
-        const resolvedIssues = issues.filter(i => i.status === 'Resolved');
+        const resolvedIssues = [...issues]
+          .filter(i => i.status === 'Resolved')
+          .sort((a, b) => getSortScore(b) - getSortScore(a));
         return (
           <motion.div 
             initial={{ opacity: 0, y: 16 }}
