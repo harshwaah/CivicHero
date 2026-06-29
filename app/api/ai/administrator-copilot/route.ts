@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AIOrchestrator } from "../../../../lib/ai-server/orchestrator";
 import { Type } from "@google/genai";
-import { db, isFirebaseConfigured } from "../../../../lib/firebase/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db, isFirebaseConfigured, doc, getDoc, setDoc } from "../../../../lib/firebase/firestore";
 
 // Server memory fallback cache if Firebase is not active
 let serverMemoryCache: any = null;

@@ -141,6 +141,7 @@ export interface Issue {
   trustMetrics?: TrustMetrics;
   routingDepartment?: string;
   relatedIssues?: string[];
+  evidenceStatus?: 'PENDING' | 'UPLOADING' | 'AVAILABLE' | 'FAILED' | 'RETRY_REQUIRED';
 }
 
 export interface Notification {

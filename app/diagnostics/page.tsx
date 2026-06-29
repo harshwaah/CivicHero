@@ -20,7 +20,7 @@ import {
   Sliders
 } from 'lucide-react';
 import { db, isFirebaseConfigured, storage } from '@/lib/firebase/firebase';
-import { collection, addDoc, getDocs, onSnapshot, doc, getDoc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, getDocs, onSnapshot, doc, getDoc, updateDoc, deleteDoc, setDoc } from '@/lib/firebase/firestore';
 import { IssueRepository } from '@/lib/repositories/issueRepository';
 import { IssueService } from '@/lib/services/issueService';
 import { GeminiProvider } from '@/lib/providers/ai/geminiProvider';
@@ -33,6 +33,8 @@ interface SubsystemState {
   lastTestTime: string;
   lastError: string;
 }
+
+const getUniqueStoragePath = () => `issues/evidence/${Date.now()}_img.jpg`;
 
 export default function DiagnosticsPage() {
   const [subsystems, setSubsystems] = useState<SubsystemState[]>([
@@ -58,6 +60,106 @@ export default function DiagnosticsPage() {
   });
   const [serverCheckResult, setServerCheckResult] = useState<any>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
+
+  // Decoupled Retry States
+  const [retryIssues, setRetryIssues] = useState<any[]>([]);
+  const [selectedIssueId, setSelectedIssueId] = useState<string>('');
+  const [diagnosticRetrying, setDiagnosticRetrying] = useState(false);
+  const [diagnosticProgress, setDiagnosticProgress] = useState(0);
+
+  useEffect(() => {
+    // Fetch issues for the retry selector
+    IssueRepository.getAll().then((data) => {
+      setRetryIssues(data || []);
+      if (data && data.length > 0) {
+        setSelectedIssueId(data[0].id);
+      }
+    }).catch(err => console.error('Failed to load diagnostics retry issues:', err));
+  }, []);
+
+  const runDiagnosticRetry = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedIssueId) return;
+
+    setDiagnosticRetrying(true);
+    setDiagnosticProgress(0);
+    addLog(`[RETRY TEST] Starting retry diagnostic pipeline for Issue: ${selectedIssueId}...`);
+
+    if (!isFirebaseConfigured) {
+      addLog(`[RETRY TEST] Storage unconfigured. Simulating decoupled upload completion...`);
+      let progress = 0;
+      const interval = setInterval(async () => {
+        progress += 25;
+        setDiagnosticProgress(progress);
+        addLog(`[RETRY TEST] Upload progress: ${progress}%`);
+        if (progress >= 100) {
+          clearInterval(interval);
+          try {
+            const localUrl = URL.createObjectURL(file);
+            await IssueRepository.update(selectedIssueId, {
+              imageUrl: localUrl,
+              evidenceStatus: 'AVAILABLE'
+            });
+            addLog(`[RETRY TEST] Success! Patch complete. Document status updated to AVAILABLE.`);
+            setDiagnosticRetrying(false);
+            // Refresh issues list
+            const updated = await IssueRepository.getAll();
+            setRetryIssues(updated || []);
+          } catch (err: any) {
+            addLog(`[RETRY TEST] Error patching document: ${err.message}`);
+            setDiagnosticRetrying(false);
+          }
+        }
+      }, 150);
+      return;
+    }
+
+    try {
+      const { ref, uploadBytesResumable, getDownloadURL } = await import('@/lib/firebase/storage');
+      const storagePath = getUniqueStoragePath();
+      const storageRef = ref(storage, storagePath);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setDiagnosticProgress(progress);
+          addLog(`[RETRY TEST] Live upload progress: ${progress}%`);
+        },
+        async (error) => {
+          addLog(`[RETRY TEST] Upload aborted: ${error.message}`);
+          setDiagnosticRetrying(false);
+          await IssueRepository.update(selectedIssueId, {
+            evidenceStatus: 'FAILED'
+          });
+        },
+        async () => {
+          try {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            addLog(`[RETRY TEST] Media uploaded successfully! Patching Firestore document...`);
+            
+            await IssueRepository.update(selectedIssueId, {
+              imageUrl: downloadUrl,
+              evidenceStatus: 'AVAILABLE'
+            });
+
+            addLog(`[RETRY TEST] Success! Issue document ${selectedIssueId} patched with new URL.`);
+            setDiagnosticRetrying(false);
+            
+            // Refresh list
+            const updated = await IssueRepository.getAll();
+            setRetryIssues(updated || []);
+          } catch (err: any) {
+            addLog(`[RETRY TEST] Failed to patch issue: ${err.message}`);
+            setDiagnosticRetrying(false);
+          }
+        }
+      );
+    } catch (err: any) {
+      addLog(`[RETRY TEST] Setup failed: ${err.message}`);
+      setDiagnosticRetrying(false);
+    }
+  };
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -486,6 +588,57 @@ export default function DiagnosticsPage() {
                   })
                 )}
                 <div ref={terminalEndRef} />
+              </div>
+            </div>
+
+            {/* Manual Media Upload Retry Diagnostic Tool */}
+            <div className="p-6 rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <HardDrive className="w-5 h-5 text-indigo-500 animate-pulse" />
+                <h3 className="font-sans font-bold text-sm text-slate-900">Media Retry Pipeline Sandbox</h3>
+              </div>
+              <p className="font-body text-xs text-slate-500 mb-4">
+                Test the decoupled upload pipeline. Choose any active issue (especially those marked as FAILED or RETRY_REQUIRED), pick an image, and verify instant Firestore patching.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5 font-bold">Select Active Case Docket:</label>
+                  <select 
+                    value={selectedIssueId}
+                    onChange={(e) => setSelectedIssueId(e.target.value)}
+                    className="w-full text-xs font-mono bg-slate-50 border border-slate-200 rounded-xl p-2.5 outline-none focus:border-indigo-500 focus:bg-white text-slate-800"
+                  >
+                    {retryIssues.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        [{item.id.substring(0, 6)}] {item.title.substring(0, 25)}... ({item.evidenceStatus || 'AVAILABLE'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-mono uppercase tracking-wider text-slate-500 mb-1.5 font-bold">Select Evidence Payload:</label>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={runDiagnosticRetry}
+                    disabled={diagnosticRetrying || !selectedIssueId}
+                    className="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-2.5 file:mr-4 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-mono file:font-bold file:uppercase file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer disabled:opacity-50 text-slate-700"
+                  />
+                </div>
+
+                {diagnosticRetrying && (
+                  <div className="bg-slate-50 border border-slate-100 p-3 rounded-xl">
+                    <div className="flex items-center justify-between mb-1.5 text-[10px] font-mono text-slate-500 font-bold">
+                      <span>UPLOADING RETRY BATCH...</span>
+                      <span>{diagnosticProgress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                      <div className="bg-indigo-600 h-full transition-all duration-300" style={{ width: `${diagnosticProgress}%` }} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

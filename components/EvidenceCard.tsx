@@ -3,10 +3,11 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'motion/react';
-import { MapPin, ArrowRight, Check } from 'lucide-react';
+import { MapPin, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { DESIGN_TOKENS } from '@/lib/designTokens';
 import { getPriorityClasses, getStatusClasses, formatTimestamp } from '@/lib/helpers';
 import { Issue } from '@/lib/models';
+import { getPlaceholderImage } from '@/lib/utils';
 
 interface EvidenceCardProps {
   report: Issue;
@@ -49,6 +50,12 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
 
   const badge = getStatusBadge();
 
+  // Handle media decoupling fallback
+  const isEvidenceAvailable = !report.evidenceStatus || report.evidenceStatus === 'AVAILABLE';
+  const displayImage = isEvidenceAvailable 
+    ? (report.imageUrl || getPlaceholderImage(report.category, report.title, report.description)) 
+    : getPlaceholderImage(report.category, report.title, report.description);
+
   return (
     <motion.div
       className={`bg-white ${DESIGN_TOKENS.radius.xl} overflow-hidden border border-slate-100 ${DESIGN_TOKENS.shadows.sm} hover:${DESIGN_TOKENS.shadows.md} ${DESIGN_TOKENS.transitions.default} flex flex-col h-full group`}
@@ -57,15 +64,39 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
       {/* Visual Top Image Stage */}
       <div className="relative aspect-[16/10] overflow-hidden bg-slate-900">
         <Image
-          src={report.imageUrl || 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=640&q=80'}
+          src={displayImage}
           alt={report.title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out opacity-90"
           referrerPolicy="no-referrer"
         />
         {/* Soft dark vignette gradient on bottom of image to protect overlay text */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+
+        {/* Evidence Status Overlay if pending, uploading or failed */}
+        {report.evidenceStatus && report.evidenceStatus !== 'AVAILABLE' && (
+          <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-[1px] flex flex-col items-center justify-center text-center p-3">
+            {report.evidenceStatus === 'UPLOADING' && (
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="w-5 h-5 border-2 border-brand-secondary border-t-transparent rounded-full animate-spin" />
+                <span className="font-mono text-[9px] font-bold text-white tracking-widest uppercase bg-slate-950/75 px-2 py-1 rounded border border-white/5">
+                  Uploading Evidence...
+                </span>
+              </div>
+            )}
+            {(report.evidenceStatus === 'FAILED' || report.evidenceStatus === 'RETRY_REQUIRED') && (
+              <div className="flex flex-col items-center gap-1">
+                <span className="font-mono text-[9px] font-bold text-red-400 tracking-widest uppercase bg-red-950/80 px-2.5 py-1 rounded border border-red-500/20 shadow-sm">
+                  Upload Interrupted
+                </span>
+                <span className="text-[10px] text-slate-300">
+                  Placeholder active (Retry available)
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Top Badges overlay */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none">

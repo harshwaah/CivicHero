@@ -157,6 +157,27 @@ The Administrator Portal relies entirely on the exact same `IssueRepository` and
 
 ---
 
+## 6. Secure Persistence Sanitization (`cleanUndefined`)
+
+In Cloud Firestore, attempting to save an explicit field with a value of `undefined` is strictly forbidden and results in write termination errors. To make our persistence layers highly resilient, we implement a defensive **`cleanUndefined`** sanitization pattern directly in the `IssueRepository` layer:
+
+1. **Automatic Filtering**: Before executing any `setDoc()` or `updateDoc()` database operation, payloads are recursively scanned and stripped of any properties containing `undefined` values.
+2. **Support for Asynchronous Fields**: This allows optional or late-attaching properties (e.g., `imageUrl` or `evidenceStatus` when media is still uploading) to coexist inside payload declarations without risk of halting database transactions.
+
+---
+
+## 7. Decoupled Media Retry Strategy
+
+To guarantee zero data loss and flawless civic filings under unstable network conditions, the platform implements a decentralized, state-driven retry strategy:
+
+1. **State Isolation**: When a submission contains an incomplete or failed upload, the incident is logged with `evidenceStatus: 'FAILED'` or `evidenceStatus: 'RETRY_REQUIRED'`.
+2. **Self-Service Portals**: 
+   * **Citizen Issue Detail Page**: Features an action banner enabling immediate file upload and database patching.
+   * **Admin Issue Detail Page**: Enables public works operators to manually upload missing photos.
+   * **Diagnostics Panel Sandbox**: Provides developers with an interactive testing tool to run end-to-end retry pipeline simulations and observe live telemetry logs.
+
+---
+
 ## Setup Instructions
 
 For full setup instructions regarding environment variables, Firebase setup, Google Maps setup, Gemini API, and synchronization validation, please refer to the [Setup Guide](./setup.md).

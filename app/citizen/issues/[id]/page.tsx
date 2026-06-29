@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -30,6 +30,9 @@ import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import AISummaryCard from '@/components/AISummaryCard';
 import VerificationBar from '@/components/VerificationBar';
 import { Skeleton } from '@/components/Skeleton';
+import { getPlaceholderImage } from '@/lib/utils';
+import { IssueRepository } from '@/lib/repositories/issueRepository';
+import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
 
 export default function IssueDetailPage() {
   const params = useParams();
@@ -45,6 +48,97 @@ export default function IssueDetailPage() {
   const [commentInput, setCommentInput] = useState('');
   const [commentsList, setCommentsList] = useState<any[]>([]);
   const [isShareOpen, setIsShareOpen] = useState(false);
+
+  // Retry states
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [retryProgress, setRetryProgress] = useState(0);
+  const [retryError, setRetryError] = useState<string | null>(null);
+  const retryFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleRetryUpload = async (file: File) => {
+    setIsRetrying(true);
+    setRetryProgress(0);
+    setRetryError(null);
+
+    // If Firebase is not configured, simulate it and patch
+    if (!isFirebaseConfigured) {
+      console.warn('[RETRY] Firebase Storage is absent. Using simulated retry upload.');
+      let currentProgress = 0;
+      const interval = setInterval(async () => {
+        currentProgress += 20;
+        if (currentProgress >= 100) {
+          clearInterval(interval);
+          setRetryProgress(100);
+          
+          const localUrl = URL.createObjectURL(file);
+          try {
+            await IssueRepository.update(id, {
+              imageUrl: localUrl,
+              evidenceStatus: 'AVAILABLE'
+            });
+            setIsRetrying(false);
+            setToastMessage('Evidence media uploaded successfully (Fallback/Simulation)!');
+          } catch (err: any) {
+            setRetryError(err.message || 'Failed to update database');
+            setIsRetrying(false);
+          }
+        } else {
+          setRetryProgress(currentProgress);
+        }
+      }, 150);
+      return;
+    }
+
+    try {
+      const storagePath = `issues/evidence/${Date.now()}_img.jpg`;
+      const storageRef = ref(storage, storagePath);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+          setRetryProgress(progress);
+        },
+        async (error) => {
+          console.error('[RETRY] Firebase Storage error:', error);
+          setRetryError(error.message);
+          setIsRetrying(false);
+          await IssueRepository.update(id, {
+            evidenceStatus: 'FAILED'
+          });
+        },
+        async () => {
+          try {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            await IssueRepository.update(id, {
+              imageUrl: downloadUrl,
+              evidenceStatus: 'AVAILABLE',
+              timeline: [
+                ...(report?.timeline || []),
+                {
+                  id: `tl-media-retry-${Date.now()}`,
+                  type: 'update',
+                  title: 'Evidence Media Secured (Retry)',
+                  description: 'Verification photo uploaded and attached successfully.',
+                  timestamp: 'Just now'
+                }
+              ]
+            });
+            setIsRetrying(false);
+            setToastMessage('Evidence media uploaded and attached successfully!');
+          } catch (err: any) {
+            console.error('[RETRY] Failed to get url or patch:', err);
+            setRetryError(err.message);
+            setIsRetrying(false);
+          }
+        }
+      );
+    } catch (err: any) {
+      console.error('[RETRY] Initialization failed:', err);
+      setRetryError(err.message);
+      setIsRetrying(false);
+    }
+  };
 
   useEffect(() => {
     let unsubscribeIssue = () => {};
@@ -309,19 +403,91 @@ export default function IssueDetailPage() {
           {/* LEFT COLUMN: PRIMARY NARRATIVE & MAP (8 Cols on Desktop) */}
           <section className="lg:col-span-7 flex flex-col gap-6 md:gap-8">
             
+            {/* Hidden Retry Input */}
+            <input 
+              type="file" 
+              ref={retryFileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleRetryUpload(file);
+              }} 
+            />
+
+            {/* Evidence Upload Status Banner */}
+            {report.evidenceStatus && report.evidenceStatus !== 'AVAILABLE' && (
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-slate-800 text-brand-secondary border border-slate-700 shrink-0">
+                    <AlertTriangle className="w-5 h-5 text-amber-500 animate-pulse" />
+                  </div>
+                  <div>
+                    <h4 className="font-sans font-bold text-sm text-white">
+                      {report.evidenceStatus === 'UPLOADING' ? 'Uploading Verification Photo...' : 'Evidence Media Upload Interrupted'}
+                    </h4>
+                    <p className="font-body text-xs text-slate-400 mt-0.5">
+                      {report.evidenceStatus === 'UPLOADING' 
+                        ? 'Your civic report is logged safely. We are finalizing media attachments.' 
+                        : 'Your civic report was created successfully, but your evidence photo failed to secure. Please retry below.'}
+                    </p>
+                    {isRetrying && (
+                      <div className="mt-2.5 w-full max-w-[240px] bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-brand-secondary h-full transition-all duration-300" style={{ width: `${retryProgress}%` }} />
+                      </div>
+                    )}
+                    {retryError && <p className="text-[10px] text-red-400 mt-1">Error: {retryError}</p>}
+                  </div>
+                </div>
+
+                {report.evidenceStatus !== 'UPLOADING' && (
+                  <button
+                    onClick={() => retryFileInputRef.current?.click()}
+                    disabled={isRetrying}
+                    className="px-4 py-2.5 bg-brand-secondary hover:bg-brand-secondary/95 disabled:opacity-50 text-slate-950 font-sans font-bold text-xs uppercase tracking-wider rounded-xl transition-all self-start sm:self-auto shrink-0"
+                  >
+                    {isRetrying ? `Uploading (${retryProgress}%)` : 'Retry Upload'}
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* Visual Header Banner Stage */}
             <div className="relative aspect-[16/10] sm:aspect-[21/10] lg:aspect-[16/9] rounded-[32px] overflow-hidden bg-slate-950 border border-slate-100 shadow-sm group">
               <Image
-                src={report.imageUrl || 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=640&q=80'}
+                src={(!report.evidenceStatus || report.evidenceStatus === 'AVAILABLE') ? (report.imageUrl || getPlaceholderImage(report.category, report.title, report.description)) : getPlaceholderImage(report.category, report.title, report.description)}
                 alt={report.title}
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 800px"
-                className="object-cover group-hover:scale-102 transition-transform duration-700 ease-out"
+                className="object-cover group-hover:scale-102 transition-transform duration-700 ease-out opacity-90"
                 referrerPolicy="no-referrer"
               />
               {/* Vignette Layer */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+
+              {/* Status and Retry overlays for incomplete evidence */}
+              {report.evidenceStatus && report.evidenceStatus !== 'AVAILABLE' && (
+                <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex flex-col items-center justify-center p-4">
+                  {report.evidenceStatus === 'UPLOADING' ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="w-8 h-8 border-3 border-brand-secondary border-t-transparent rounded-full animate-spin" />
+                      <span className="font-mono text-[10px] font-bold text-white tracking-widest uppercase bg-slate-950/80 px-3 py-1.5 rounded-lg border border-white/10">
+                        Securing Photo...
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-center max-w-sm">
+                      <span className="font-mono text-[10px] font-bold text-red-400 tracking-widest uppercase bg-red-950/80 px-3 py-1.5 rounded-lg border border-red-500/20">
+                        Missing Evidence Media
+                      </span>
+                      <p className="text-xs text-slate-300">
+                        Representative {report.category} placeholder is currently active.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Float overlays */}
               <div className="absolute top-6 left-6 right-6 flex items-center justify-between pointer-events-none">

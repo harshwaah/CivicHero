@@ -20,6 +20,7 @@ This workspace represents the completion of **Phase 6**, which transforms CivicH
 │   ├── backend.md              # [NEW] Backend implementation guide (Firestore, Storage, Maps, Gemini)
 │   ├── maps.md                 # [NEW] Google Maps Platform implementation & architecture manual
 │   ├── setup.md                # [NEW] Developer platform setup guide (Env, Firebase, Diagnostics)
+│   ├── firestore.md            # [NEW] Persistence, lifecycles, and decoupled upload manuals
 │   └── conventions.md          # Institutional Engineering Handbook
 ├── lib/                        # Core utility packages and data contracts
 │   ├── firebase/               # [NEW] Firebase Web SDK configurations

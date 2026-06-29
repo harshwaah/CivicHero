@@ -35,15 +35,12 @@ CivicHero minimizes continuous background API polling through a smart, cached br
 
 ## Background Upload Pipeline Lifecycle
 
-To deliver a friction-free citizen submission workflow, CivicHero decouples image uploads from report generation:
+To deliver an instant, friction-free citizen submission workflow, CivicHero completely decouples image uploads from report generation and AI scanning:
 
-1. **Immediate Parallelization**: When a citizen captures/selects an image, the upload to Firebase Storage begins **immediately** in the background while the user continues to:
-   - Choose a category
-   - Select urgency level
-   - Set the GPS location coordinates
-   - Fill in description/title
-2. **Non-Blocking Flow**: The citizen never blocks waiting for a slow upload step on final submission.
-3. **Smart Awaiting**: When "Submit" is pressed, if the upload is already complete, the pipeline starts the Integrity/Intelligence Agents instantly. If the upload is still completing, the pipeline elegantly awaits the background promise with friendly progress indicators.
+1. **Immediate Parallelization**: When a citizen captures/selects an image, the upload to Firebase Storage begins **immediately** in the background while the user continues to fill out description, choose category, select urgency, and set GPS locations.
+2. **Non-Blocking Submission**: The citizen never blocks waiting for a slow upload step on final submission. Clicking "Submit" triggers instant document creation in Firestore with `evidenceStatus: 'UPLOADING'`.
+3. **Asynchronous Resolution**: If the upload is already complete upon clicking "Submit", the pipeline writes the final `imageUrl` and sets `evidenceStatus: 'AVAILABLE'`. If the upload is still active, the transaction is logged instantly to prevent data loss. Once the upload promise finishes in the background, it silently patches the Firestore document with the finalized URL.
+4. **Graceful Failure & Recovery**: If the network drops or the background thread fails, the issue status transitions to `FAILED` or `RETRY_REQUIRED`. Users and Admins can then trigger manual, one-click re-uploads on the issue details pages to complete the evidence attachment safely.
 
 ---
 

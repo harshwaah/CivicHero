@@ -95,6 +95,20 @@ export async function invalidateCopilotBriefing() {
   }
 }
 
+function cleanUndefined(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(cleanUndefined);
+  } else if (obj !== null && typeof obj === 'object') {
+    return Object.keys(obj).reduce((acc: any, key: string) => {
+      if (obj[key] !== undefined) {
+        acc[key] = cleanUndefined(obj[key]);
+      }
+      return acc;
+    }, {});
+  }
+  return obj;
+}
+
 export const IssueRepository = {
   subscribe(callback: Subscriber): () => void {
     subscribers.push(callback);
@@ -228,7 +242,8 @@ export const IssueRepository = {
     }
 
     try {
-      await setDoc(doc(db, 'issues', newId), createdIssue);
+      const cleanedIssue = cleanUndefined(createdIssue);
+      await setDoc(doc(db, 'issues', newId), cleanedIssue);
       invalidateCopilotBriefing();
       return createdIssue;
     } catch (err) {
@@ -260,7 +275,8 @@ export const IssueRepository = {
 
     try {
       const issueRef = doc(db, 'issues', id);
-      await updateDoc(issueRef, updates);
+      const cleanedUpdates = cleanUndefined(updates);
+      await updateDoc(issueRef, cleanedUpdates);
       
       const updatedSnap = await getDoc(issueRef);
       return updatedSnap.data() as Issue;

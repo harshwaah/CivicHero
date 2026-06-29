@@ -16,5 +16,8 @@ service cloud.firestore {
     match /diagnostics_runs/{runId} {
       allow read, write: if true;
     }
+    match /copilot_briefings/{briefingId} {
+      allow read, write: if true;
+    }
   }
 }

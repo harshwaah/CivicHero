@@ -150,58 +150,65 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
         </div>
       </div>
 
-      {/* 3. CIVIC HERO BROADCAST SPOTLIGHT (Urgent/Live Hero card if "All Activity" or "Safety" is selected) */}
-      {(activeCategory === 'All Activity' || activeCategory === 'Safety') && !searchQuery && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-[28px] overflow-hidden bg-slate-950 border border-slate-900 group"
-        >
-          {/* Hero background image */}
-          <Image
-            src="https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80"
-            alt="Safety Area Broadcast"
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
-            className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
-            referrerPolicy="no-referrer"
-            priority
-          />
-          {/* Smooth color wash overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-
-          {/* Broadcast labels */}
-          <div className="absolute top-6 left-6 flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-            </span>
-            <span className="font-mono text-[10px] font-extrabold text-white tracking-widest uppercase bg-red-600/90 backdrop-blur-md px-3 py-1 rounded-md border border-white/10">
-              CRITICAL EMERGENCY
-            </span>
-          </div>
-
-          {/* Broadcast Content */}
-          <div className="absolute bottom-6 left-6 right-6 text-white flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div className="max-w-xl">
-              <span className="font-mono text-[10px] text-white/70">5TH AVE METRO TERMINAL • ACTIVE CORRIDOR</span>
-              <h2 className="font-sans font-extrabold text-lg sm:text-2xl text-white tracking-tight mt-1">
-                Downtown Corridor Smoke Report Under Control
-              </h2>
-              <p className="font-body text-xs text-slate-200 mt-2 leading-relaxed">
-                Emergency crews have established a safety parameter. Evacuations completed. Follow public bulletins for live route deviations.
-              </p>
-            </div>
-
-            <button 
-              onClick={() => onOpenMilestone('Live Stream Broadcast', 'Phase 1.3', 'Access realtime dispatch streams and authorized telemetry logs directly.')}
-              className="bg-white hover:bg-slate-100 text-brand-primary font-sans font-bold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 shadow-md self-start md:self-auto transition-all shrink-0"
+      {/* 3. CIVIC LIVE BULLETIN SPOTLIGHT (Featured high-priority issue from real Firestore data) */}
+      {(activeCategory === 'All Activity' || activeCategory === 'Safety') && !searchQuery && reports.length > 0 && (
+        (() => {
+          const featuredIssue = reports.find(r => r.urgency === 'Critical') || reports.find(r => r.urgency === 'High') || reports[0];
+          if (!featuredIssue) return null;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-[28px] overflow-hidden bg-slate-950 border border-slate-900 group"
             >
-              <span>Tune In</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
+              <Link href={`/citizen/issues/${featuredIssue.id}`} className="block w-full h-full">
+                {/* Hero background image */}
+                <Image
+                  src={featuredIssue.imageUrl || "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80"}
+                  alt={featuredIssue.title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"
+                  className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700 ease-out"
+                  referrerPolicy="no-referrer"
+                  priority
+                />
+                {/* Smooth color wash overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+
+                {/* Live / Bulletin Label */}
+                <div className="absolute top-6 left-6 flex items-center gap-2">
+                  <span className="flex h-2.5 w-2.5 relative">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  </span>
+                  <span className="font-mono text-[10px] font-extrabold text-white tracking-widest uppercase bg-red-600/90 backdrop-blur-md px-3 py-1 rounded-md border border-white/10">
+                    CIVIC LIVE • {featuredIssue.urgency?.toUpperCase() || 'HIGH'} PRIORITY
+                  </span>
+                </div>
+
+                {/* Broadcast Content */}
+                <div className="absolute bottom-6 left-6 right-6 text-white flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div className="max-w-xl">
+                    <span className="font-mono text-[10px] text-white/70">{featuredIssue.location?.toUpperCase() || 'NEIGHBORHOOD CORE'}</span>
+                    <h2 className="font-sans font-extrabold text-lg sm:text-2xl text-white tracking-tight mt-1 line-clamp-1">
+                      {featuredIssue.title}
+                    </h2>
+                    <p className="font-body text-xs text-slate-200 mt-2 leading-relaxed line-clamp-2">
+                      {featuredIssue.description}
+                    </p>
+                  </div>
+
+                  <div 
+                    className="bg-white hover:bg-slate-100 text-brand-primary font-sans font-bold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 shadow-md self-start md:self-auto transition-all shrink-0"
+                  >
+                    <span>View Details</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          );
+        })()
       )}
 
       {/* 4. MAIN EVIDENCE FEED */}
