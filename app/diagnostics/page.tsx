@@ -60,6 +60,12 @@ export default function DiagnosticsPage() {
   });
   const [serverCheckResult, setServerCheckResult] = useState<any>(null);
   const terminalEndRef = useRef<HTMLDivElement>(null);
+  const [demoMode, setDemoMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('civichero_demo_mode') === 'true';
+    }
+    return false;
+  });
 
   // Render Tracking & Performance Telemetry
   const [renderCount, setRenderCount] = useState(0);
@@ -440,6 +446,32 @@ export default function DiagnosticsPage() {
   return (
     <div className="min-h-screen bg-[#fafbfc] text-slate-950 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
+        {demoMode && (
+          <div className="mb-6 p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className="p-2 bg-amber-100 rounded-xl text-amber-800 text-lg">⚠️</span>
+              <div>
+                <h4 className="font-sans font-extrabold text-sm uppercase tracking-wide text-amber-800">Demo Sandbox Environment Active</h4>
+                <p className="font-body text-xs text-amber-700">
+                  All write actions are currently sandboxed in memory (`IssueRepository.getIsSandbox() === true`). Accidentally writing to the live database has been securely deactivated for judges.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (confirm('Deactivate Demo Mode and return to production Firestore?')) {
+                  localStorage.removeItem('civichero_demo_mode');
+                  setDemoMode(false);
+                  window.location.reload();
+                }
+              }}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-mono text-[10px] font-bold uppercase tracking-wider rounded-xl transition-colors shrink-0 shadow-sm"
+            >
+              Return to Prod
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 border-b border-slate-200 pb-6">
           <div className="flex items-center gap-4">

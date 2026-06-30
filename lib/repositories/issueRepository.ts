@@ -22,8 +22,16 @@ let subscribers: Subscriber[] = [];
 const issueSubscribers: Map<string, IssueSubscriber[]> = new Map();
 
 let globalUnsubscribe: (() => void) | null = null;
-let currentIssues: Issue[] = [];
+let currentIssues: Issue[] = [...mockReports]; // pre-seeded for immediate sandboxing/demo mode
 let isSeeding = false;
+
+// Determine sandbox mode (either Firebase is unconfigured OR Demo Mode is explicitly active)
+export function getIsSandbox(): boolean {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('civichero_demo_mode') === 'true' || !isFirebaseConfigured;
+  }
+  return !isFirebaseConfigured;
+}
 
 async function optionalDelay() {
   if (typeof window !== 'undefined') {
@@ -38,7 +46,7 @@ async function optionalDelay() {
 }
 
 async function ensureSeedData() {
-  if (!isFirebaseConfigured || isSeeding) return;
+  if (getIsSandbox() || isSeeding) return;
   
   try {
     const snapshot = await getDocs(collection(db, 'issues'));
@@ -58,7 +66,7 @@ async function ensureSeedData() {
 }
 
 function startGlobalListener() {
-  if (!isFirebaseConfigured || globalUnsubscribe) return;
+  if (getIsSandbox() || globalUnsubscribe) return;
   
   globalUnsubscribe = onSnapshot(collection(db, 'issues'), (snapshot: any) => {
     const issues = snapshot.docs.map((doc: any) => ({ ...doc.data(), id: doc.id } as Issue));
@@ -79,7 +87,7 @@ function stopGlobalListener() {
 const issueUnsubscribes: Map<string, () => void> = new Map();
 
 export async function invalidateCopilotBriefing() {
-  if (isFirebaseConfigured) {
+  if (!getIsSandbox()) {
     try {
       const briefingRef = doc(db, 'copilot_briefings', 'latest');
       await setDoc(briefingRef, { invalidated: true }, { merge: true });
@@ -110,6 +118,15 @@ function cleanUndefined(obj: any): any {
 }
 
 export const IssueRepository = {
+  getIsSandbox,
+
+  resetDemoData() {
+    currentIssues = JSON.parse(JSON.stringify(mockReports)); // deep copy fresh list
+    subscribers.forEach(sub => sub([...currentIssues]));
+    console.log('[DEMO MODE] Sandbox memory data reset successfully to curated defaults.');
+    return true;
+  },
+
   subscribe(callback: Subscriber): () => void {
     subscribers.push(callback);
     
@@ -125,7 +142,7 @@ export const IssueRepository = {
       callback([...currentIssues]);
     }
 
-    if (subscribers.length === 1 && isFirebaseConfigured) {
+    if (subscribers.length === 1 && !getIsSandbox()) {
       ensureSeedData().then(() => {
         startGlobalListener();
       });
@@ -159,7 +176,7 @@ export const IssueRepository = {
       callback(issue ? { ...issue } : null);
     }
     
-    if (issueSubscribers.get(id)!.length === 1 && isFirebaseConfigured) {
+    if (issueSubscribers.get(id)!.length === 1 && !getIsSandbox()) {
       const unsub = onSnapshot(doc(db, 'issues', id), (snapshot: any) => {
         const data = snapshot.exists() ? ({ ...snapshot.data(), id: snapshot.id } as Issue) : null;
         const subs = issueSubscribers.get(id) || [];
@@ -190,7 +207,7 @@ export const IssueRepository = {
    */
   async getAll(): Promise<Issue[]> {
     await optionalDelay();
-    if (!isFirebaseConfigured) {
+    if (getIsSandbox()) {
       return [...currentIssues];
     }
 
@@ -210,7 +227,7 @@ export const IssueRepository = {
    */
   async getById(id: string): Promise<Issue | null> {
     await optionalDelay();
-    if (!isFirebaseConfigured) {
+    if (getIsSandbox()) {
       const issue = currentIssues.find((r) => r.id === id);
       return issue ? { ...issue } : null;
     }
@@ -234,7 +251,7 @@ export const IssueRepository = {
       id: newId,
     };
 
-    if (!isFirebaseConfigured) {
+    if (getIsSandbox()) {
       currentIssues = [createdIssue, ...currentIssues];
       subscribers.forEach(sub => sub([...currentIssues]));
       invalidateCopilotBriefing();
@@ -262,7 +279,7 @@ export const IssueRepository = {
       invalidateCopilotBriefing();
     }
 
-    if (!isFirebaseConfigured) {
+    if (getIsSandbox()) {
       const idx = currentIssues.findIndex((r) => r.id === id);
       if (idx === -1) throw new Error(`Issue ${id} not found.`);
       const updatedIssue = { ...currentIssues[idx], ...updates };
@@ -290,7 +307,7 @@ export const IssueRepository = {
    * Delete an issue report
    */
   async delete(id: string): Promise<boolean> {
-    if (!isFirebaseConfigured) {
+    if (getIsSandbox()) {
       const originalLength = currentIssues.length;
       currentIssues = currentIssues.filter((r) => r.id !== id);
       const success = currentIssues.length < originalLength;
@@ -325,7 +342,7 @@ export const IssueRepository = {
       likes: 0,
     };
 
-    if (!isFirebaseConfigured) {
+    if (getIsSandbox()) {
       const idx = currentIssues.findIndex((r) => r.id === issueId);
       if (idx !== -1) {
         const issue = { ...currentIssues[idx] };
@@ -361,7 +378,7 @@ export const IssueRepository = {
    * Upvote a report
    */
   async upvote(id: string): Promise<number> {
-    if (!isFirebaseConfigured) {
+    if (getIsSandbox()) {
       const idx = currentIssues.findIndex((r) => r.id === id);
       if (idx === -1) throw new Error(`Issue ${id} not found.`);
       const issue = { ...currentIssues[idx] };

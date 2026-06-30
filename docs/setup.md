@@ -75,6 +75,12 @@ The diagnostic dashboard will display:
 - The Gemini API is implemented securely via Next.js API Routes / Server Actions.
 - Ensure `GEMINI_API_KEY` is present. If it is exposed to the client, Next.js will strip it. It must be read on the server.
 
-## 5. Next Steps
+## 5. Phase 11 Production Hardening & Demo Sandbox
 
-With the setup complete and the shared architecture verified, you are ready to begin implementing the Administrator Application screens in Phase 3.
+In Phase 11, the platform has been hardened for production deployment and seamless judging evaluation:
+
+*   **Config Security**: No build files are committed to the repository. The Firebase Web SDK reads parameters exclusively from `.env`.
+*   **Secure Sandbox**: Toggle **Demo Mode** in Settings (Developer Mode) to activate a sandboxed in-memory environment, preventing database pollution. Run "Reset Demo Data" to restore initial curated reports instantly.
+*   **High-Visibility Indicators**: When Sandbox Mode is active, a clear banner is displayed on the Diagnostics workspace (`/diagnostics`).
+*   **Isolated Error Recovery**: Individual parts of the Citizen Dashboard are wrapped in `ErrorBoundary` widgets, ensuring that localized component issues never bring down the entire portal.
+

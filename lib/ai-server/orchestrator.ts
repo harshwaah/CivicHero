@@ -158,8 +158,7 @@ export const AIOrchestrator = {
     if (hasGeminiKey) {
       models.push({ name: 'gemini-3.1-flash-lite', provider: 'google' });
       models.push({ name: 'gemini-3.5-flash', provider: 'google' });
-      models.push({ name: 'gemini-2.5-pro', provider: 'google' });
-      models.push({ name: 'gemini-1.5-pro', provider: 'google' });
+      models.push({ name: 'gemini-3.1-pro-preview', provider: 'google' });
     } else {
       console.log('[AIROUTER] Gemini API key is absent. Skipping Google Gemini models.');
     }
