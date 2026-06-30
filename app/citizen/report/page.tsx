@@ -648,12 +648,11 @@ export default function CitizenReportFlowPage() {
 
       // Create real-time notification records in Firestore
       try {
-        const savedName = (typeof window !== 'undefined' && localStorage.getItem('civichero_display_name')) || 'Citizen';
         // 1. Citizen: Report received
         await NotificationRepository.create({
           userId: 'citizen-admin-1',
           title: 'Report Received',
-          message: `Thank you, ${savedName}! Your report "${newIssue.title}" has been successfully logged on the ledger.`,
+          message: `Your report "${newIssue.title}" has been successfully logged on the ledger.`,
           type: 'community',
           isRead: false,
           timestamp: 'Just now',
@@ -664,7 +663,7 @@ export default function CitizenReportFlowPage() {
         await NotificationRepository.create({
           userId: 'citizen-admin-1',
           title: 'AI Inspection Completed',
-          message: `Dear ${savedName}, AI Agents have parsed your submission. Routing: ${intelligenceResult.routingTo}.`,
+          message: `AI Agents have parsed your submission. Routing: ${intelligenceResult.routingTo}.`,
           type: 'ai',
           isRead: false,
           timestamp: 'Just now',
@@ -1748,10 +1747,10 @@ export default function CitizenReportFlowPage() {
                     Ledger Registered
                   </span>
                   <h2 className="font-sans font-extrabold text-2xl sm:text-3xl text-brand-primary tracking-tight leading-none pt-1">
-                    Thank you, {typeof window !== 'undefined' ? (localStorage.getItem('civichero_display_name') || 'Citizen') : 'Citizen'}!
+                    Report Anchored Successfully
                   </h2>
                   <p className="font-body text-xs sm:text-sm text-slate-500 leading-relaxed">
-                    Your report of <span className="font-semibold text-slate-700">{title || 'Custom Incident'}</span> has been securely logged as reference <span className="font-mono font-bold text-brand-primary">{mockReportId}</span> and locked into the neighborhood feed.
+                    Case file entry <span className="font-mono font-bold text-brand-primary">{mockReportId}</span> has been securely created and locked into the neighborhood feed.
                   </p>
                 </div>
 

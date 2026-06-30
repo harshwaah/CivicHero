@@ -21,34 +21,13 @@ import { Skeleton } from './Skeleton';
 export default function GlobalSearch() {
   const [query, setQuery] = useState('');
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [results, setResults] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
-  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('civichero_recent_searches');
-      return stored ? JSON.parse(stored) : [];
-    }
-    return [];
-  });
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Save query to recent list
-  const saveSearchToHistory = React.useCallback((searchQuery: string) => {
-    const clean = searchQuery.trim();
-    if (!clean) return;
-    
-    let updated = [clean, ...recentSearches.filter(q => q !== clean)];
-    updated = updated.slice(0, 5); // Max 5 items
-    setRecentSearches(updated);
-    localStorage.setItem('civichero_recent_searches', JSON.stringify(updated));
-  }, [recentSearches]);
-
-  const triggerSelectIssue = React.useCallback((issue: Issue) => {
-    setSelectedIssue(issue);
-    saveSearchToHistory(query || issue.category);
-  }, [query, saveSearchToHistory]);
 
   // 1. Load initial issues and search history
   useEffect(() => {
@@ -64,16 +43,23 @@ export default function GlobalSearch() {
       }
     }
     fetchAll();
+
+    const stored = localStorage.getItem('civichero_recent_searches');
+    if (stored) {
+      setRecentSearches(JSON.parse(stored));
+    }
   }, []);
 
-  // 2. Perform search matches dynamically using useMemo (avoiding setState in effect)
-  const results = React.useMemo(() => {
+  // 2. Perform search matches whenever query or issues list changes
+  useEffect(() => {
     if (!query.trim()) {
-      return [];
+      setResults([]);
+      setSelectedIndex(-1);
+      return;
     }
 
     const lower = query.toLowerCase();
-    return issues.filter(issue => {
+    const matched = issues.filter(issue => {
       const matchTitle = issue.title.toLowerCase().includes(lower);
       const matchSummary = issue.aiSummary?.summary?.toLowerCase().includes(lower) || false;
       const matchCategory = issue.category.toLowerCase().includes(lower);
@@ -84,14 +70,10 @@ export default function GlobalSearch() {
 
       return matchTitle || matchSummary || matchCategory || matchDept || matchLocation || matchUrgency;
     });
-  }, [query, issues]);
 
-  // Sync selected index when query / results change
-  const [prevQuery, setPrevQuery] = useState(query);
-  if (query !== prevQuery) {
-    setPrevQuery(query);
-    setSelectedIndex(results.length > 0 ? 0 : -1);
-  }
+    setResults(matched);
+    setSelectedIndex(matched.length > 0 ? 0 : -1);
+  }, [query, issues]);
 
   // 3. Handle Keyboard Navigation (Up, Down, Enter, Escape)
   useEffect(() => {
@@ -116,11 +98,27 @@ export default function GlobalSearch() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [results, selectedIndex, triggerSelectIssue]);
+  }, [results, selectedIndex]);
+
+  // Save query to recent list
+  const saveSearchToHistory = (searchQuery: string) => {
+    const clean = searchQuery.trim();
+    if (!clean) return;
+    
+    let updated = [clean, ...recentSearches.filter(q => q !== clean)];
+    updated = updated.slice(0, 5); // Max 5 items
+    setRecentSearches(updated);
+    localStorage.setItem('civichero_recent_searches', JSON.stringify(updated));
+  };
 
   const handleClearHistory = () => {
     setRecentSearches([]);
     localStorage.removeItem('civichero_recent_searches');
+  };
+
+  const triggerSelectIssue = (issue: Issue) => {
+    setSelectedIssue(issue);
+    saveSearchToHistory(query || issue.category);
   };
 
   // Group matched results by category
@@ -216,7 +214,7 @@ export default function GlobalSearch() {
           <div>
             <h3 className="font-sans font-bold text-lg text-brand-primary">Explore Civic Index</h3>
             <p className="font-body text-xs text-brand-muted max-w-sm mt-1">
-              Search the live city grid database. Try looking up <span className="font-bold text-brand-primary">&quot;pothole&quot;</span>, <span className="font-bold text-brand-primary">&quot;Broadway&quot;</span>, or specific sectors like <span className="font-bold text-brand-primary">&quot;Utilities&quot;</span> or <span className="font-bold text-brand-primary">&quot;Safety&quot;</span>.
+              Search the live city grid database. Try looking up <span className="font-bold text-brand-primary">"pothole"</span>, <span className="font-bold text-brand-primary">"Broadway"</span>, or specific sectors like <span className="font-bold text-brand-primary">"Utilities"</span> or <span className="font-bold text-brand-primary">"Safety"</span>.
             </p>
           </div>
         </div>
@@ -229,7 +227,7 @@ export default function GlobalSearch() {
           <div>
             <h3 className="font-sans font-bold text-lg text-brand-primary">No Matching Records Found</h3>
             <p className="font-body text-xs text-brand-muted max-w-sm mt-1">
-              Your query <span className="font-mono bg-slate-50 border border-slate-100 px-1 rounded">&quot;{query}&quot;</span> did not return any matches. Try adjusting spelling or using broader terms like &quot;Roads&quot; or &quot;Water&quot;.
+              Your query <span className="font-mono bg-slate-50 border border-slate-100 px-1 rounded">"{query}"</span> did not return any matches. Try adjusting spelling or using broader terms like "Roads" or "Water".
             </p>
           </div>
         </div>

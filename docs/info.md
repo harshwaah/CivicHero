@@ -170,19 +170,3 @@ CivicHero is built on the philosophy of "Trust Through Transparency." The Citize
 *   **Configurable TTL**: A cached briefing expires based on `process.env.COPILOT_TTL_MS` (defaulting to 15 minutes).
 *   **Automated Invalidations**: Any new citizen report creation or critical-level status modification invalidates the active cache, forcing a refresh of the briefings on the next request.
 *   **Manual On-Demand Refresh**: Administrators can trigger manual briefing generation via the on-screen **"Refresh Briefing"** button, instantly bypassing active caches and updating Firestore.
-
----
-
-## 8. Phase 11 Hardening, Security, and Demo Readiness
-
-Phase 11 focuses on secure operation, resilient execution, and demonstration-friendly evaluation layers:
-
-### 8.1 Sandbox Data Redirection
-All data CRUD queries routed through `IssueRepository` check `IssueRepository.getIsSandbox()`. If active, queries bypass live Firebase instances entirely and direct reads and writes to a sandboxed in-memory cache populated with initial curated demonstration reports. This protects the production Firestore databases from unwanted evaluation mock records.
-
-### 8.2 Client Isolated Error Isolation
-Reusable Error Boundary wrappers are wrapped around major modular components in `/app/citizen/page.tsx` (such as `CitizenFeed`, `CivicMap`, `SettingsPanel`). This confines runtime component issues within the affected block, renders elegant and highly readable human-friendly recovery alerts, and prevents localized exceptions from compromising the overall page state.
-
-### 8.3 Contextual Single-Run Onboarding
-An animated, step-by-step onboarding wizard guides new users across the layout coordinates of active tabs. Completion state is committed locally to prevent repeat displays, while replay trigger buttons are provided inside Developer Settings.
-

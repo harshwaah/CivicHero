@@ -22,6 +22,7 @@ export default function NotificationCenter() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     const unsubscribe = NotificationRepository.subscribeByUserId('citizen-admin-1', (notifs) => {
       // Filter out archived notifications
       const visible = notifs.filter(n => !n.isArchived);

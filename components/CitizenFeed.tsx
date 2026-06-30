@@ -32,12 +32,6 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [allIssues, setAllIssues] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [displayName, setDisplayName] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_display_name') || 'Citizen Hero';
-    }
-    return 'Citizen Hero';
-  });
 
   // Quick Filters State
   const [showFilters, setShowFilters] = useState(false);
@@ -130,17 +124,20 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center font-sans font-extrabold text-brand-primary">
-              {displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'CH'}
+              JD
             </div>
             {/* Online/Verified badge */}
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
           </div>
 
           <div className="flex flex-col">
-            <span className="font-sans font-extrabold text-xs text-brand-primary">Welcome, {displayName}!</span>
             <div className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => onOpenMilestone('Location Editor', 'Phase 1.5', 'This allows users to change their active coverage zone.')}>
-              <span className="font-sans font-semibold text-[10px] text-slate-400">Park Slope, Brooklyn</span>
-              <MapPin className="w-3 h-3 text-brand-secondary" />
+              <span className="font-sans font-bold text-xs text-brand-primary">Park Slope, Brooklyn</span>
+              <MapPin className="w-3.5 h-3.5 text-brand-secondary" />
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-mono text-[9px] font-bold text-brand-secondary uppercase tracking-wider">SECURE AREA</span>
             </div>
           </div>
         </div>

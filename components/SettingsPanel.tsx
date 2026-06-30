@@ -17,102 +17,72 @@ import {
   Check
 } from 'lucide-react';
 import { Skeleton } from './Skeleton';
-import { IssueRepository } from '../lib/repositories/issueRepository';
 
 export default function SettingsPanel() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Core Settings States
-  const [developerMode, setDeveloperMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_dev_mode') === 'true';
-    }
-    return false;
-  });
-  const [demoMode, setDemoMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_demo_mode') === 'true';
-    }
-    return false;
-  });
-  const [highContrast, setHighContrast] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_high_contrast') === 'true';
-    }
-    return false;
-  });
-  const [largeText, setLargeText] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_large_text') === 'true';
-    }
-    return false;
-  });
-  const [reducedMotion, setReducedMotion] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_reduced_motion') === 'true';
-    }
-    return false;
-  });
+  const [developerMode, setDeveloperMode] = useState(false);
+  const [highContrast, setHighContrast] = useState(false);
+  const [largeText, setLargeText] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   // Notification states
-  const [smsAlerts, setSmsAlerts] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_sms_alerts') !== 'false';
-    }
-    return true;
-  });
-  const [emailSummaries, setEmailSummaries] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_email_summaries') === 'true';
-    }
-    return false;
-  });
-  const [pushNotifs, setPushNotifs] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_push_notifs') !== 'false';
-    }
-    return true;
-  });
+  const [smsAlerts, setSmsAlerts] = useState(true);
+  const [emailSummaries, setEmailSummaries] = useState(false);
+  const [pushNotifs, setPushNotifs] = useState(true);
 
   // Privacy states
-  const [anonymousReports, setAnonymousReports] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_anonymous_reports') === 'true';
-    }
-    return false;
-  });
-  const [preciseLocation, setPreciseLocation] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_precise_location') !== 'false';
-    }
-    return true;
-  });
+  const [anonymousReports, setAnonymousReports] = useState(false);
+  const [preciseLocation, setPreciseLocation] = useState(true);
 
   // Theme & Language states
-  const [activeTheme, setActiveTheme] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_theme_preset') || 'slate';
-    }
-    return 'slate';
-  });
-  const [activeLang, setActiveLang] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('civichero_language_selection') || 'en';
-    }
-    return 'en';
-  });
+  const [activeTheme, setActiveTheme] = useState('slate');
+  const [activeLang, setActiveLang] = useState('en');
 
   // Simulated DB Metrics
   const [dbReads, setDbReads] = useState(142);
   const [dbWrites, setDbWrites] = useState(38);
 
-  // 1. Randomize simulated metrics slightly on mount to look extremely live
+  // 1. Load preferences from localStorage on mount
   useEffect(() => {
-    const handle = setTimeout(() => {
+    try {
+      setLoading(true);
+      const dev = localStorage.getItem('civichero_dev_mode') === 'true';
+      const contrast = localStorage.getItem('civichero_high_contrast') === 'true';
+      const large = localStorage.getItem('civichero_large_text') === 'true';
+      const motionPref = localStorage.getItem('civichero_reduced_motion') === 'true';
+
+      const sms = localStorage.getItem('civichero_sms_alerts') !== 'false';
+      const email = localStorage.getItem('civichero_email_summaries') === 'true';
+      const push = localStorage.getItem('civichero_push_notifs') !== 'false';
+
+      const anon = localStorage.getItem('civichero_anonymous_reports') === 'true';
+      const loc = localStorage.getItem('civichero_precise_location') !== 'false';
+
+      const theme = localStorage.getItem('civichero_theme_preset') || 'slate';
+      const lang = localStorage.getItem('civichero_language_selection') || 'en';
+
+      setDeveloperMode(dev);
+      setHighContrast(contrast);
+      setLargeText(large);
+      setReducedMotion(motionPref);
+      setSmsAlerts(sms);
+      setEmailSummaries(email);
+      setPushNotifs(push);
+      setAnonymousReports(anon);
+      setPreciseLocation(loc);
+      setActiveTheme(theme);
+      setActiveLang(lang);
+
+      // Randomize simulated metrics slightly to look extremely live
       setDbReads(Math.floor(Math.random() * 50) + 120);
       setDbWrites(Math.floor(Math.random() * 20) + 30);
-    }, 0);
-    return () => clearTimeout(handle);
+    } catch (err) {
+      console.error('Error loading settings:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   // 2. State Toggles & Persist functions
@@ -124,23 +94,6 @@ export default function SettingsPanel() {
     const next = !developerMode;
     setDeveloperMode(next);
     saveSetting('civichero_dev_mode', next);
-  };
-
-  const handleDemoToggle = () => {
-    const next = !demoMode;
-    setDemoMode(next);
-    localStorage.setItem('civichero_demo_mode', String(next));
-    if (next) {
-      alert('Demo Mode Enabled! All database interactions are now fully sandboxed in local memory to prevent data pollution. Curated seed data loaded.');
-    } else {
-      alert('Demo Mode Disabled! Reverting back to production Firestore synchronization.');
-    }
-    window.location.reload();
-  };
-
-  const handleResetDemo = () => {
-    IssueRepository.resetDemoData();
-    alert('Demo database sandbox cleared and reset successfully to curated defaults!');
   };
 
   const handleContrastToggle = () => {
@@ -179,9 +132,7 @@ export default function SettingsPanel() {
 
   // Onboarding replay
   const handleReplayOnboarding = () => {
-    localStorage.removeItem('civichero_onboard_completed');
-    localStorage.removeItem('civichero_display_name');
-    alert('Onboarding tour reset successfully! Return to the main Citizen portal to configure your display name and start the guided tour.');
+    alert('Onboarding tips re-initialized! Return to the Home feed to see welcome tooltips.');
   };
 
   const themes = [
@@ -240,59 +191,19 @@ export default function SettingsPanel() {
           <motion.div 
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
-            className="border-t border-slate-100 pt-4 flex flex-col gap-4"
+            className="border-t border-slate-100 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs text-brand-muted"
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs text-brand-muted">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Firestore Reads</span>
-                <span className="font-sans font-extrabold text-lg text-brand-primary">{dbReads} hits</span>
-              </div>
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Firestore Writes</span>
-                <span className="font-sans font-extrabold text-lg text-brand-primary">{dbWrites} actions</span>
-              </div>
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Dev Delay Overhead</span>
-                <span className="font-sans font-extrabold text-lg text-brand-primary">150ms synthetic</span>
-              </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Firestore Reads</span>
+              <span className="font-sans font-extrabold text-lg text-brand-primary">{dbReads} hits</span>
             </div>
-
-            {/* DEMO MODE CONTROL BOX */}
-            <div className="bg-brand-primary/[0.03] border border-brand-primary/10 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <h4 className="font-sans font-extrabold text-xs text-brand-primary uppercase tracking-wide flex items-center gap-1.5">
-                    <span className="text-amber-500">⚠️</span> Demo Sandbox Mode
-                  </h4>
-                  <p className="font-body text-[11px] text-brand-muted">
-                    Isolate session operations into secure local memory to prevent polluting the live production database during judging.
-                  </p>
-                </div>
-                <button 
-                  onClick={handleDemoToggle}
-                  className={`w-11 h-6 rounded-full p-0.5 transition-colors focus:outline-none shrink-0 ${
-                    demoMode ? 'bg-amber-500' : 'bg-slate-200'
-                  }`}
-                >
-                  <div className={`bg-white w-5 h-5 rounded-full shadow-md transform transition-transform duration-200 ${
-                    demoMode ? 'translate-x-5' : 'translate-x-0'
-                  }`} />
-                </button>
-              </div>
-
-              {demoMode && (
-                <div className="flex flex-col sm:flex-row items-center gap-2 pt-2.5 border-t border-brand-primary/10">
-                  <span className="font-mono text-[9px] text-amber-600 font-extrabold bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-md uppercase tracking-wider">
-                    DEMO ACTIVE • ISOLATED MEMORY
-                  </span>
-                  <button
-                    onClick={handleResetDemo}
-                    className="sm:ml-auto px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-mono text-[10px] font-bold uppercase tracking-wider rounded-lg transition-colors shadow-sm"
-                  >
-                    Reset Curated Data
-                  </button>
-                </div>
-              )}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Firestore Writes</span>
+              <span className="font-sans font-extrabold text-lg text-brand-primary">{dbWrites} actions</span>
+            </div>
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Dev Delay Overhead</span>
+              <span className="font-sans font-extrabold text-lg text-brand-primary">150ms synthetic</span>
             </div>
           </motion.div>
         )}

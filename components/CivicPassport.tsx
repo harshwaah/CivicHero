@@ -30,22 +30,13 @@ export default function CivicPassport() {
         setLoading(true);
         // Load live profile
         const profile = await UserRepository.getByUid('citizen-admin-1');
-        const savedName = localStorage.getItem('civichero_display_name');
-        if (profile && savedName) {
-          profile.name = savedName;
-        }
         setCitizen(profile);
 
         // Load all issues to filter the ones reported by this citizen or co-signed
         const allIssues = await IssueRepository.getAll();
-        const currentName = savedName || 'Marcus Vance';
         const filtered = allIssues.filter(
           issue => 
-            issue.reporterName === currentName || 
-            issue.reporter?.name === currentName ||
-            issue.reporterName?.includes(currentName.split(' ')[0]) ||
-            issue.reporter?.name?.includes(currentName.split(' ')[0]) ||
-            issue.reporterName === 'Marcus Vance' ||
+            issue.reporterName === 'Marcus Vance' || 
             issue.reporter?.name === 'Marcus Vance' ||
             issue.reporterName?.includes('Marcus') ||
             issue.reporter?.name?.includes('Marcus')
