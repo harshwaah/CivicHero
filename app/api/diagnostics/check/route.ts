@@ -1,34 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
-import firebaseConfig from '../../../../firebase-applet-config.json';
-import { aiMetrics } from '../../../../lib/ai-server/orchestrator';
+import { firebaseConfig, validateEnvironment } from '@/lib/config';
+import { aiMetrics } from '@/lib/ai-server/orchestrator';
 
 export async function GET(req: NextRequest) {
   try {
-    const hasGeminiKey = !!process.env.GEMINI_API_KEY;
-    const mapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
-    const hasMapsKey = !!mapsKey;
-    
-    // Check if Firebase is configured in config json or env
-    const hasAppletConfig = !!(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.projectId);
-    const hasFirebaseEnv = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-
-    // Server-side memory usage
+    const diagnosticReport = validateEnvironment();
     const memory = typeof process !== 'undefined' ? process.memoryUsage() : null;
-    
+
     return NextResponse.json({
       success: true,
-      timestamp: new Date().toISOString(),
+      timestamp: diagnosticReport.timestamp,
+      isFullyConfigured: diagnosticReport.isFullyConfigured,
+      diagnostics: diagnosticReport,
       environment: {
-        GEMINI_API_KEY_PRESENT: hasGeminiKey,
-        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY_PRESENT: hasMapsKey,
-        NEXT_PUBLIC_FIREBASE_API_KEY_PRESENT: hasFirebaseEnv,
-        FIREBASE_APPLET_CONFIG_PRESENT: hasAppletConfig,
+        GEMINI_API_KEY_PRESENT: diagnosticReport.subsystems.geminiAI.status !== 'Missing',
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY_PRESENT: diagnosticReport.subsystems.googleMaps.status !== 'Missing',
+        NEXT_PUBLIC_FIREBASE_API_KEY_PRESENT: diagnosticReport.subsystems.firebase.status === 'Present',
+        CENTRALIZED_CONFIG_ACTIVE: true,
+        FIREBASE_APPLET_CONFIG_PRESENT: false, // Retired in Phase 8.2 in favor of centralized env variables
         NODE_ENV: process.env.NODE_ENV || 'development',
       },
       firebase: {
-        projectId: hasAppletConfig ? firebaseConfig.projectId : (process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'missing'),
-        databaseId: hasAppletConfig ? firebaseConfig.firestoreDatabaseId : 'default',
-        authDomain: hasAppletConfig ? firebaseConfig.authDomain : (process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'missing'),
+        projectId: firebaseConfig.projectId,
+        databaseId: firebaseConfig.databaseId,
+        authDomain: firebaseConfig.authDomain,
+        isConfigured: firebaseConfig.isConfigured,
       },
       aiMetrics: {
         totalRequests: aiMetrics.totalRequests,

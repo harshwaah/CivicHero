@@ -2,7 +2,7 @@
 
 CivicHero is a high-fidelity, highly polished, next-generation civic engagement portal where citizens can capture, verify, and track neighborhood infrastructure concerns. This application empowers local agency by mapping local crowd-vetted reports directly into municipal public works queues.
 
-This workspace represents the completion of **Phase 6**, which transforms CivicHero into an AI-native civic operating system leveraging Google Gemini via autonomous operational agents.
+This workspace represents the completion of **Phase 8.2 (Configuration Migration & Secret Hardening)**, establishing a centralized configuration single source of truth, isolating server-side secrets, and eliminating legacy configuration artifacts.
 
 ---
 
@@ -11,23 +11,31 @@ This workspace represents the completion of **Phase 6**, which transforms CivicH
 ```
 /
 ├── app/                        # Next.js App Router (pages and routing)
+│   ├── admin/                  # Mission Control Admin dashboard & controls
+│   ├── api/                    # Server-side API Routes (AI orchestrators, diagnostics, sync)
 │   ├── citizen/                # Citizen Workspace views and portals
+│   ├── diagnostics/            # Live platform configuration & subsystem verification
 │   ├── layout.tsx              # HTML root layout & font loading
 │   └── page.tsx                # Public Landings & Hero entrypoints
 ├── components/                 # Shareable UI atomic React components
 ├── docs/                       # Architectural design manuals & guides
 │   ├── info.md                 # Technical system manual (Architecture, files, structures)
-│   ├── backend.md              # [NEW] Backend implementation guide (Firestore, Storage, Maps, Gemini)
-│   ├── maps.md                 # [NEW] Google Maps Platform implementation & architecture manual
-│   ├── setup.md                # [NEW] Developer platform setup guide (Env, Firebase, Diagnostics)
-│   ├── firestore.md            # [NEW] Persistence, lifecycles, and decoupled upload manuals
+│   ├── security.md             # Security audit & configuration hardening manual
+│   ├── setup.md                # Developer platform setup guide (Canonical env, diagnostics)
+│   ├── backend.md              # Backend implementation guide (Firestore, Storage, Maps, Gemini)
+│   ├── maps.md                 # Google Maps Platform implementation & architecture manual
+│   ├── firestore.md            # Persistence, lifecycles, and decoupled upload manuals
 │   └── conventions.md          # Institutional Engineering Handbook
 ├── lib/                        # Core utility packages and data contracts
-│   ├── firebase/               # [NEW] Firebase Web SDK configurations
-│   ├── repositories/           # [NEW] Decoupled Repository Data Access Layer
-│   ├── services/               # [NEW] Service Business Logic Layer
-│   ├── providers/              # [NEW] AI Provider & Map Provider Context Layers
-│   ├── models.ts               # [NEW] Centralized Canonical Data Models
+│   ├── config/                 # Centralized Configuration & Environment Validation
+│   │   ├── index.ts            # Canonical single source of truth for all subsystems
+│   │   └── validation.ts       # Non-crashing diagnostic validation utility
+│   ├── firebase/               # Firebase Web SDK configurations & Firestore helpers
+│   ├── repositories/           # Decoupled Repository Data Access Layer
+│   ├── services/               # Service Business Logic Layer
+│   ├── providers/              # AI Provider & Map Provider Context Layers
+│   ├── ai-server/              # Server-side AI Multi-Model Orchestration Engine
+│   ├── models.ts               # Centralized Canonical Data Models
 │   ├── designTokens.ts         # Visual constants (radii, colors, shadows)
 │   ├── animations.ts           # Framer Motion transitions and variants
 │   ├── helpers.ts              # Formatting functions and styling maps
@@ -38,31 +46,40 @@ This workspace represents the completion of **Phase 6**, which transforms CivicH
 
 ---
 
-## 2. Environment Setup
+## 2. Centralized Configuration & Environment Architecture
 
-All backend settings and secrets are read dynamically from standard environment variables, keeping credentials safely hidden from client browsers.
+All configuration is strictly governed through `/lib/config/index.ts`. Secrets and public variables are validated through non-crashing diagnostic helpers.
 
-For detailed setup instructions, troubleshooting, and synchronization validation, refer to the **[CivicHero Platform Setup Guide](docs/setup.md)**.
-
-Create a `.env` file in the root directory (matching the keys in `.env.example`):
+### Canonical Environment Variables
 
 ```env
-# Firebase Web SDK Configuration
-NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-messaging-sender-id
-NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+# ==============================================================================
+# CivicHero Canonical Environment Configuration
+# ==============================================================================
 
-# Google Maps Platform Configuration
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-key
+# --- Firebase Web SDK (Client-Side Public) ---
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_DATABASE_ID=(default)
 
-# Gemini API Key (Server-Side Only Secret)
-GEMINI_API_KEY=your-gemini-key
+# --- Google Maps Platform (Client-Side Public) ---
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=
+
+# --- AI & Intelligence Services (Server-Side Confidential Secrets) ---
+GEMINI_API_KEY=
+NEMOTRON_API_KEY=
+COPILOT_TTL_MS=900000
 ```
 
-*Note: The application is designed to boot and run flawlessly using local simulation fallbacks even if environment variables are temporarily absent. Developer-friendly warnings will be logged in the console.*
+### Deterministic Fallback Hierarchy
+- **Firebase / Firestore**: When environment credentials are missing or invalid, the data layer transparently falls back to in-memory datasets (`data_backup.json` / `mockReports.ts`) with zero application crashes.
+- **Google Maps Platform**: Falls back to an informative vector placeholder with full pan/zoom state simulation if the API key is not supplied.
+- **AI Orchestrator**: Uses multi-model fallback across Gemini 3.1 Flash Lite -> Gemini 3.5 Flash -> Gemini 2.5 Pro -> Nemotron Nano VL -> deterministic local semantic simulation stubs.
+- **Client Bundle Isolation**: Zero `@google/genai` imports exist in client-side bundles; all inferences are proxied exclusively through server-side `/api/ai/*` routes.
 
 ---
 
@@ -123,6 +140,8 @@ Hosts central context bindings for maps and AI agents:
 
 ## 5. Upcoming Implementation Roadmaps
 
+*   **Phase 8.1 (Secret & Configuration Audit) [COMPLETED]**: Comprehensive read-only audit of all secrets, environment parameters, duplicate initialization logic, and git-exposure surfaces. Documented in `docs/security.md` and `CHANGELOG.md`.
+*   **Phase 8.2 (Configuration Migration & Secret Hardening) [PLANNED]**: Centralize all environment parameters, decouple client code from SDK secrets, remove inline configuration redundancies, and sanitize console output.
 *   **Phase 6 (AI-Native Integration) [COMPLETED]**: Replaced generic AI stubs with fully autonomous AI agents (Community Intelligence, Administrator Copilot, Community Integrity) leveraging the server-side `@google/genai` SDK and Gemini 3.5. Automated urgency classification, department routing, and heatmap generation are now driven by AI.
 *   **Phase 5 (Google Maps Platform Integration) [COMPLETED]**: Replaced all map placeholder components with fully interactive, unified Google Maps, supporting user geolocations, real-time spatial heatmaps via deck.gl, clustered markers, custom priority styling, and interactive report point selection.
 *   **Phase 2.3 (Cloud Persistence) [COMPLETED]**: Hooked all Repository methods directly into live Firestore collections and set up real-time `onSnapshot` collections synchronization.

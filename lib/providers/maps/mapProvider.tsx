@@ -5,6 +5,7 @@ import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-goo
 import { DeckGlOverlay } from '@/components/DeckGlOverlay';
 import { ClusteredMarkers } from '@/components/ClusteredMarkers';
 import { MapPin, Layers } from 'lucide-react';
+import { mapsConfig } from '@/lib/config';
 
 interface MapMarkerType {
   lat: number;
@@ -41,7 +42,7 @@ export function MapProvider({ children }: { children: ReactNode }) {
   const [mapStyle, setMapStyle] = useState<'streets' | 'satellite' | 'terrain'>('streets');
   const [registeredMarkers, setRegisteredMarkers] = useState<MapMarkerType[]>([]);
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_PLATFORM_KEY || '';
+  const apiKey = mapsConfig.apiKey;
 
   const registerMarker = useCallback((marker: MapMarkerType) => {
     setRegisteredMarkers((prev) => [...prev, marker]);

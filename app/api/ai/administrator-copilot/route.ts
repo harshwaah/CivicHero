@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { AIOrchestrator, aiMetrics } from "../../../../lib/ai-server/orchestrator";
 import { Type } from "@google/genai";
 import { db, isFirebaseConfigured, doc, getDoc, setDoc } from "../../../../lib/firebase/firestore";
+import { serverAiConfig } from "../../../../lib/config";
 
 // Server memory fallback cache if Firebase is not active
 let serverMemoryCache: any = null;
@@ -12,10 +13,8 @@ export async function POST(req: NextRequest) {
   try {
     const { issues, forceRefresh } = await req.json();
     
-    // Configurable TTL in milliseconds (default 15 minutes)
-    const TTL_MS = process.env.COPILOT_TTL_MS 
-      ? parseInt(process.env.COPILOT_TTL_MS, 10) 
-      : 15 * 60 * 1000;
+    // Configurable TTL in milliseconds (from centralized config, default 15 minutes)
+    const TTL_MS = serverAiConfig.copilotTtlMs;
 
     let useCache = false;
     let cacheData: any = null;

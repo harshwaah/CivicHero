@@ -1,7 +1,8 @@
 import { db, isFirebaseConfigured, handleFirestoreError, OperationType, collection, doc, getDocs, updateDoc, query, where, orderBy, setDoc, onSnapshot } from '../firebase/firestore';
 import { Notification } from '../models';
+import { allBackupNotifications } from '../backupData';
 
-const defaultNotifications: Notification[] = [
+const defaultNotifications: Notification[] = allBackupNotifications && allBackupNotifications.length > 0 ? allBackupNotifications : [
   {
     id: 'notif-1',
     userId: 'citizen-admin-1',
@@ -58,10 +59,10 @@ export const NotificationRepository = {
       const q = query(ref, where('userId', '==', userId));
       const snapshot = await getDocs(q);
       const notifications = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Notification));
-      return notifications;
+      return notifications.length > 0 ? notifications : defaultNotifications.filter(n => n.userId === userId || !n.userId);
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, 'notifications');
-      return [];
+      console.warn('Firestore getByUserId fallback:', err);
+      return defaultNotifications.filter(n => n.userId === userId || !n.userId);
     }
   },
 

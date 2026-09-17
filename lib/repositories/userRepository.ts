@@ -1,8 +1,9 @@
 import { db, isFirebaseConfigured, handleFirestoreError, OperationType, collection, doc, getDoc, getDocs, setDoc } from '../firebase/firestore';
 import { Citizen } from '../models';
+import { allBackupUsers } from '../backupData';
 
 // Default simulation active profile
-const defaultCitizen: Citizen = {
+const defaultCitizen: Citizen = (allBackupUsers.find(u => u.uid === 'citizen-admin-1') || allBackupUsers[0]) || {
   uid: 'citizen-admin-1',
   name: 'Marcus Vance',
   email: 'marcus.vance@civichero.org',
@@ -14,7 +15,7 @@ const defaultCitizen: Citizen = {
   joinedAt: 'Feb 2026',
 };
 
-const defaultLeaderboard: Citizen[] = [
+const defaultLeaderboard: Citizen[] = allBackupUsers && allBackupUsers.length > 0 ? allBackupUsers : [
   defaultCitizen,
   {
     uid: 'citizen-2',
@@ -71,10 +72,10 @@ export const UserRepository = {
     try {
       await ensureUserSeedData();
       const snap = await getDoc(doc(db, 'users', uid));
-      return snap.exists() ? (snap.data() as Citizen) : null;
+      return snap.exists() ? (snap.data() as Citizen) : (defaultLeaderboard.find(u => u.uid === uid) || (uid === defaultCitizen.uid ? defaultCitizen : null));
     } catch (err) {
-      handleFirestoreError(err, OperationType.GET, `users/${uid}`);
-      return null;
+      console.warn(`Firestore getByUid for ${uid} fallback:`, err);
+      return defaultLeaderboard.find(u => u.uid === uid) || (uid === defaultCitizen.uid ? defaultCitizen : null);
     }
   },
 
@@ -113,9 +114,10 @@ export const UserRepository = {
     try {
       await ensureUserSeedData();
       const snapshot = await getDocs(collection(db, 'users'));
+      if (snapshot.empty) return defaultLeaderboard;
       return snapshot.docs.map(doc => ({ ...(doc.data() as any), id: doc.id } as Citizen)).sort((a, b) => b.trustScore - a.trustScore);
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, `users`);
+      console.warn('Firestore getLeaderboard fallback:', err);
       return defaultLeaderboard;
     }
   },

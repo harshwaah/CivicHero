@@ -1,0 +1,1612 @@
+{
+  "issues": [
+    {
+      "id": "issue-1782656976430",
+      "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+      "status": "Resolved",
+      "description": "The public waste bins are overflowing with trash bags, loose plastics, and cardboard. Wind is spreading litter across the lawn and towards the storm drain.",
+      "timestamp": "Just now",
+      "location": "Civic Plaza Boulevard",
+      "reporterBadge": "First-time Reporter",
+      "upvotes": 0,
+      "category": "Environment",
+      "verifiedByCount": 1,
+      "coordinates": {
+        "lat": 37.7749,
+        "lng": -122.4194
+      },
+      "trustMetrics": {
+        "verificationConfidence": 95,
+        "isVerified": true,
+        "coSigningCount": 1,
+        "communityFlagsCount": 0,
+        "accuracyRating": 100
+      },
+      "comments": [],
+      "timeline": [
+        {
+          "type": "reported",
+          "id": "tl-init-1782656976430",
+          "title": "Report Submitted",
+          "description": "Neighborhood concern logged into the ledger.",
+          "timestamp": "Just now"
+        },
+        {
+          "description": "The report is highly credible, detailing a specific civic issue with environmental impacts like wind-blown litter and potential storm drain blockages. No signs of spam or malicious intent are present.",
+          "title": "AI Integrity Check",
+          "type": "update",
+          "id": "tl-ai-int-1782657009316",
+          "timestamp": "Just now"
+        },
+        {
+          "id": "tl-ai-intel-1782657009316",
+          "timestamp": "Just now",
+          "description": "Routed to Parks and Recreation Department. Public waste bins at Civic Plaza Boulevard are overflowing, causing litter to spread across the lawn and towards a storm drain.",
+          "type": "update",
+          "title": "AI Intelligence Routing"
+        },
+        {
+          "id": "timeline-1782668426371",
+          "description": "The issue status was changed to Resolved.",
+          "type": "status_update",
+          "title": "Status updated to Resolved",
+          "timestamp": "Just now"
+        }
+      ],
+      "title": "Overflowing park garbage bin",
+      "commentsCount": 0,
+      "reporterName": "Citizen Hero",
+      "urgency": "Medium"
+    },
+    {
+      "id": "issue-1782662275661",
+      "routingDepartment": "Water & Sanitation",
+      "urgency": "Critical",
+      "trustMetrics": {
+        "accuracyRating": 100,
+        "communityFlagsCount": 0,
+        "isVerified": true,
+        "verificationConfidence": 95,
+        "coSigningCount": 1
+      },
+      "category": "Water Infrastructure",
+      "reporterBadge": "First-time Reporter",
+      "description": "Water is bubbling up rapidly from under the sidewalk pavement, creating a mini geyser and flooding the pedestrian walkway. Water is starting to flow into adjacent basements.",
+      "location": "18.9220, 72.8347",
+      "reporterName": "Citizen Hero",
+      "coordinates": {
+        "lng": 72.83465087413788,
+        "lat": 18.92198782946431
+      },
+      "imageUrl": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=640&q=80",
+      "timestamp": "Just now",
+      "upvotes": 0,
+      "title": "Water main spraying onto walkway",
+      "commentsCount": 0,
+      "verifiedByCount": 1,
+      "timeline": [
+        {
+          "type": "reported",
+          "description": "Neighborhood concern logged into the ledger.",
+          "title": "Report Submitted",
+          "timestamp": "Just now",
+          "id": "tl-init-1782662275661"
+        },
+        {
+          "title": "AI Integrity Check",
+          "id": "tl-ai-int-1782662292725",
+          "description": "The report provides a credible, clear, and urgent description of a water main break causing localized flooding. No signs of spam, profanity, or malicious behavior are present.",
+          "timestamp": "Just now",
+          "type": "update"
+        },
+        {
+          "id": "tl-ai-intel-1782662292725",
+          "type": "update",
+          "description": "Routed to Municipal Water and Sanitation Department. A severe water main break is causing rapid flooding on a sidewalk, creating a geyser and actively flooding adjacent basements.",
+          "timestamp": "Just now",
+          "title": "AI Intelligence Routing"
+        },
+        {
+          "title": "Assigned to Water & Sanitation",
+          "type": "department_assigned",
+          "description": "The issue has been assigned to the Water & Sanitation department for resolution.",
+          "timestamp": "Just now",
+          "id": "timeline-1782750802520"
+        }
+      ],
+      "status": "Reported",
+      "comments": []
+    },
+    {
+      "id": "issue-1782668065270",
+      "trustMetrics": {
+        "isVerified": true,
+        "communityFlagsCount": 0,
+        "accuracyRating": 100,
+        "verificationConfidence": 95,
+        "coSigningCount": 1
+      },
+      "urgency": "Medium",
+      "category": "Sanitation and Waste Management",
+      "description": "The public waste bins are overflowing with trash bags, loose plastics, and cardboard. Wind is spreading litter across the lawn and towards the storm drain.",
+      "reporterBadge": "First-time Reporter",
+      "location": "Civic Plaza Boulevard",
+      "reporterName": "Citizen Hero",
+      "coordinates": {
+        "lng": -73.9932,
+        "lat": 40.6952
+      },
+      "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+      "timestamp": "Just now",
+      "upvotes": 0,
+      "title": "Overflowing park garbage bin",
+      "commentsCount": 0,
+      "verifiedByCount": 1,
+      "timeline": [
+        {
+          "title": "Report Submitted",
+          "timestamp": "Just now",
+          "description": "Neighborhood concern logged into the ledger.",
+          "id": "tl-init-1782668065270",
+          "type": "reported"
+        },
+        {
+          "title": "AI Integrity Check",
+          "timestamp": "Just now",
+          "type": "update",
+          "id": "tl-ai-int-1782668083752",
+          "description": "The report provides a clear, objective description of an environmental maintenance issue. The location and specific nature of the problem are well-defined, indicating high reporting quality and authenticity."
+        },
+        {
+          "timestamp": "Just now",
+          "id": "tl-ai-intel-1782668083752",
+          "description": "Routed to Department of Public Works. Public waste bins at Civic Plaza Boulevard are overflowing, causing litter to spread into the environment and storm drains, requiring urgent cleanup and waste collection services.",
+          "type": "update",
+          "title": "AI Intelligence Routing"
+        }
+      ],
+      "status": "Reported",
+      "comments": []
+    },
+    {
+      "id": "issue-1782668098082",
+      "comments": [],
+      "status": "Reported",
+      "timestamp": "Just now",
+      "description": "The public waste bins are overflowing with trash bags, loose plastics, and cardboard. Wind is spreading litter across the lawn and towards the storm drain.",
+      "timeline": [
+        {
+          "timestamp": "Just now",
+          "title": "Report Submitted",
+          "description": "Neighborhood concern logged into the ledger.",
+          "id": "tl-init-1782668098082",
+          "type": "reported"
+        },
+        {
+          "timestamp": "Just now",
+          "type": "update",
+          "description": "The report provides a clear, objective description of a common urban maintenance issue with specific details regarding the nature of the waste and potential environmental impact.",
+          "id": "tl-ai-int-1782668117444",
+          "title": "AI Integrity Check"
+        },
+        {
+          "id": "tl-ai-intel-1782668117444",
+          "title": "AI Intelligence Routing",
+          "description": "Routed to Public Works Department. Overflowing waste bins at Civic Plaza Boulevard are causing litter scatter, creating a potential pollution hazard for nearby storm drains.",
+          "type": "update",
+          "timestamp": "Just now"
+        }
+      ],
+      "reporterBadge": "First-time Reporter",
+      "coordinates": {
+        "lat": 40.6952,
+        "lng": -73.9932
+      },
+      "upvotes": 0,
+      "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+      "trustMetrics": {
+        "verificationConfidence": 95,
+        "communityFlagsCount": 0,
+        "accuracyRating": 100,
+        "isVerified": true,
+        "coSigningCount": 1
+      },
+      "title": "Overflowing park garbage bin",
+      "location": "Civic Plaza Boulevard",
+      "commentsCount": 0,
+      "reporterName": "Citizen Hero",
+      "category": "Sanitation",
+      "urgency": "Medium",
+      "verifiedByCount": 1
+    },
+    {
+      "id": "issue-1782672811984",
+      "comments": [],
+      "status": "Reported",
+      "timeline": [
+        {
+          "id": "tl-init-1782672811984",
+          "timestamp": "Just now",
+          "title": "Report Submitted",
+          "type": "reported",
+          "description": "Neighborhood concern logged into the ledger."
+        },
+        {
+          "title": "AI Integrity Check",
+          "type": "update",
+          "description": "The report is highly underspecified, lacking location data, visual evidence, or specific descriptions of the waste, making it impossible to take actionable steps.",
+          "id": "tl-ai-int-1782672811984",
+          "timestamp": "Just now"
+        },
+        {
+          "type": "update",
+          "title": "AI Intelligence Routing",
+          "timestamp": "Just now",
+          "id": "tl-ai-intel-1782672811984",
+          "description": "Routed to Department of Sanitation. Report regarding accumulation of garbage on the road at coordinates 40.7128, -74.0060 with no further descriptive details provided."
+        }
+      ],
+      "urgency": "Low",
+      "reporterBadge": "First-time Reporter",
+      "timestamp": "Just now",
+      "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/7c842d3b-b171-4f24-afe4-292d7dfa81af",
+      "coordinates": {
+        "lat": 40.7128,
+        "lng": -74.006
+      },
+      "title": "garbage on road",
+      "location": "40.7128, -74.0060",
+      "reporterName": "Citizen Hero",
+      "verifiedByCount": 1,
+      "description": "No secondary details provided.",
+      "trustMetrics": {
+        "accuracyRating": 100,
+        "isVerified": false,
+        "verificationConfidence": 25,
+        "coSigningCount": 1,
+        "communityFlagsCount": 0
+      },
+      "category": "Sanitation/Waste Management",
+      "commentsCount": 0,
+      "upvotes": 0
+    },
+    {
+      "id": "issue-1782726655169",
+      "status": "Reported",
+      "description": "No secondary details provided.",
+      "urgency": "Medium",
+      "title": "broken road",
+      "reporterBadge": "First-time Reporter",
+      "timeline": [
+        {
+          "description": "Neighborhood concern logged into the ledger.",
+          "timestamp": "Just now",
+          "id": "tl-init-1782726655169",
+          "type": "reported",
+          "title": "Report Submitted"
+        },
+        {
+          "id": "tl-ai-int-1782726655169",
+          "description": "The report lacks essential information such as specific location, impact, or descriptive context regarding the road damage, rendering it unactionable.",
+          "timestamp": "Just now",
+          "type": "update",
+          "title": "AI Integrity Check"
+        },
+        {
+          "id": "tl-ai-intel-1782726655169",
+          "timestamp": "Just now",
+          "title": "AI Intelligence Routing",
+          "type": "update",
+          "description": "Routed to Department of Transportation. Report of a broken road at coordinates 40.7128, -74.0060 with no further descriptive details provided."
+        }
+      ],
+      "coordinates": {
+        "lng": -74.006,
+        "lat": 40.7128
+      },
+      "verifiedByCount": 1,
+      "comments": [],
+      "category": "Roads",
+      "upvotes": 0,
+      "reporterName": "Citizen Hero",
+      "trustMetrics": {
+        "verificationConfidence": 15.5,
+        "accuracyRating": 100,
+        "communityFlagsCount": 0,
+        "coSigningCount": 1,
+        "isVerified": false
+      },
+      "commentsCount": 0,
+      "evidenceStatus": "UPLOADING",
+      "location": "40.7128, -74.0060",
+      "timestamp": "Just now"
+    },
+    {
+      "id": "issue-1782726666725",
+      "status": "Reported",
+      "description": "",
+      "urgency": "Medium",
+      "title": "broken road",
+      "reporterBadge": "First-time Reporter",
+      "coordinates": {
+        "lng": -74.006,
+        "lat": 40.7128
+      },
+      "timeline": [
+        {
+          "id": "tl-init-1782726666725",
+          "title": "Report Submitted",
+          "type": "reported",
+          "description": "Neighborhood concern logged into the ledger.",
+          "timestamp": "Just now"
+        },
+        {
+          "description": "The report is highly insufficient as it lacks any specific location data or details regarding the nature of the road damage. The description field is empty, making it impossible to categorize or prioritize the issue.",
+          "type": "update",
+          "timestamp": "Just now",
+          "id": "tl-ai-int-1782726670919",
+          "title": "AI Integrity Check"
+        },
+        {
+          "timestamp": "Just now",
+          "title": "AI Intelligence Routing",
+          "description": "Routed to Department of Transportation. Report of a broken road surface at coordinates 40.7128, -74.0060 requiring maintenance assessment.",
+          "type": "update",
+          "id": "tl-ai-intel-1782726670919"
+        }
+      ],
+      "verifiedByCount": 1,
+      "comments": [],
+      "category": "Roads",
+      "upvotes": 0,
+      "reporterName": "Citizen Hero",
+      "commentsCount": 0,
+      "trustMetrics": {
+        "verificationConfidence": 25.5,
+        "communityFlagsCount": 0,
+        "coSigningCount": 1,
+        "isVerified": false,
+        "accuracyRating": 100
+      },
+      "location": "40.7128, -74.0060",
+      "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/cd027536-acd3-42ac-b4fe-796d2db336c7",
+      "timestamp": "Just now"
+    },
+    {
+      "id": "issue-1782735078370",
+      "urgency": "Low",
+      "category": "Sanitation",
+      "reporterBadge": "First-time Reporter",
+      "location": "40.7128, -74.0060",
+      "status": "Reported",
+      "imageUrl": "blob:https://ais-pre-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/684cc598-18c9-476e-a1cd-c8e8816e8382",
+      "evidenceStatus": "AVAILABLE",
+      "reporterName": "Citizen Hero",
+      "title": "garbage on road",
+      "upvotes": 0,
+      "coordinates": {
+        "lat": 40.7128,
+        "lng": -74.006
+      },
+      "verifiedByCount": 1,
+      "commentsCount": 0,
+      "description": "",
+      "timeline": [
+        {
+          "id": "tl-init-1782735078370",
+          "title": "Report Submitted",
+          "type": "reported",
+          "description": "Neighborhood concern logged into the ledger.",
+          "timestamp": "Just now"
+        },
+        {
+          "timestamp": "Just now",
+          "title": "AI Integrity Check",
+          "id": "tl-ai-int-1782735078370",
+          "description": "The report provides insufficient information to address the issue. The description field is empty, making it impossible to identify the specific location or nature of the garbage pile.",
+          "type": "update"
+        },
+        {
+          "id": "tl-ai-intel-1782735078370",
+          "title": "AI Intelligence Routing",
+          "timestamp": "Just now",
+          "description": "Routed to Department of Sanitation. Report of garbage accumulation on the road at coordinates 40.7128, -74.0060 requiring cleanup.",
+          "type": "update"
+        }
+      ],
+      "timestamp": "Just now",
+      "trustMetrics": {
+        "coSigningCount": 1,
+        "communityFlagsCount": 0,
+        "verificationConfidence": 35.5,
+        "accuracyRating": 100,
+        "isVerified": false
+      },
+      "comments": []
+    },
+    {
+      "id": "issue-1782735087134",
+      "comments": [],
+      "trustMetrics": {
+        "accuracyRating": 100,
+        "isVerified": false,
+        "communityFlagsCount": 0,
+        "coSigningCount": 1,
+        "verificationConfidence": 35.5
+      },
+      "reporterBadge": "First-time Reporter",
+      "timeline": [
+        {
+          "timestamp": "Just now",
+          "description": "Neighborhood concern logged into the ledger.",
+          "type": "reported",
+          "title": "Report Submitted",
+          "id": "tl-init-1782735087134"
+        },
+        {
+          "title": "AI Integrity Check",
+          "type": "update",
+          "description": "The report provides minimal information. It lacks specific location details, photo evidence, or a description of the severity of the issue, making it difficult to verify or prioritize.",
+          "id": "tl-ai-int-1782735089916",
+          "timestamp": "Just now"
+        },
+        {
+          "description": "Routed to Department of Sanitation. Report of garbage accumulation on the road at coordinates 40.7128, -74.0060 requiring cleanup.",
+          "id": "tl-ai-intel-1782735089916",
+          "timestamp": "Just now",
+          "type": "update",
+          "title": "AI Intelligence Routing"
+        }
+      ],
+      "urgency": "Low",
+      "reporterName": "Citizen Hero",
+      "timestamp": "Just now",
+      "imageUrl": "blob:https://ais-pre-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/4d51aa46-8f0c-4166-b506-c09a74ff33f8",
+      "status": "Reported",
+      "coordinates": {
+        "lng": -74.006,
+        "lat": 40.7128
+      },
+      "commentsCount": 0,
+      "location": "40.7128, -74.0060",
+      "verifiedByCount": 1,
+      "title": "garbage on road",
+      "upvotes": 0,
+      "category": "Sanitation",
+      "description": ""
+    },
+    {
+      "id": "issue-1782825949754",
+      "title": "road",
+      "timeline": [
+        {
+          "id": "tl-init-1782825949754",
+          "timestamp": "Just now",
+          "description": "Neighborhood concern logged into the ledger.",
+          "type": "reported",
+          "title": "Report Submitted"
+        },
+        {
+          "id": "tl-ai-int-1782825949754",
+          "title": "AI Integrity Check",
+          "type": "update",
+          "timestamp": "Just now",
+          "description": "The report is highly inadequate; it lacks a descriptive title, contains no explanatory content, and provides insufficient information to initiate any civic maintenance or investigation."
+        },
+        {
+          "description": "Routed to Department of Transportation. The report indicates a generic issue regarding a road located at 40.7128, -74.0060, but lacks specific details describing the nature of the damage or hazard.",
+          "type": "update",
+          "id": "tl-ai-intel-1782825949754",
+          "title": "AI Intelligence Routing",
+          "timestamp": "Just now"
+        }
+      ],
+      "upvotes": 0,
+      "reporterName": "Citizen Hero",
+      "evidenceStatus": "UPLOADING",
+      "comments": [],
+      "commentsCount": 0,
+      "verifiedByCount": 1,
+      "status": "Reported",
+      "trustMetrics": {
+        "verificationConfidence": 15.5,
+        "isVerified": false,
+        "communityFlagsCount": 0,
+        "accuracyRating": 100,
+        "coSigningCount": 1
+      },
+      "location": "40.7128, -74.0060",
+      "coordinates": {
+        "lng": -74.006,
+        "lat": 40.7128
+      },
+      "urgency": "Low",
+      "timestamp": "Just now",
+      "reporterBadge": "First-time Reporter",
+      "category": "Roads",
+      "description": ""
+    },
+    {
+      "id": "issue-1782825963447",
+      "reporterBadge": "First-time Reporter",
+      "title": "road",
+      "category": "Roads",
+      "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/778ce0ab-40aa-4200-8aef-aa69ecebf435",
+      "urgency": "Low",
+      "location": "40.7128, -74.0060",
+      "verifiedByCount": 1,
+      "commentsCount": 0,
+      "description": "",
+      "trustMetrics": {
+        "isVerified": false,
+        "accuracyRating": 100,
+        "communityFlagsCount": 0,
+        "coSigningCount": 1,
+        "verificationConfidence": 10
+      },
+      "status": "Resolved",
+      "routingDepartment": "Public Works",
+      "coordinates": {
+        "lat": 40.7128,
+        "lng": -74.006
+      },
+      "comments": [],
+      "timestamp": "Just now",
+      "upvotes": 0,
+      "reporterName": "Citizen Hero",
+      "timeline": [
+        {
+          "description": "Neighborhood concern logged into the ledger.",
+          "timestamp": "Just now",
+          "id": "tl-init-1782825963447",
+          "type": "reported",
+          "title": "Report Submitted"
+        },
+        {
+          "id": "tl-ai-int-1782825966285",
+          "description": "The report lacks essential information, including a description of the specific road issue. It is deemed non-actionable due to missing context and location details.",
+          "type": "update",
+          "title": "AI Integrity Check",
+          "timestamp": "Just now"
+        },
+        {
+          "title": "AI Intelligence Routing",
+          "timestamp": "Just now",
+          "type": "update",
+          "id": "tl-ai-intel-1782825966285",
+          "description": "Routed to Department of Transportation. The user reported a road-related issue at the specified coordinates, but provided minimal details beyond the title 'road'."
+        },
+        {
+          "description": "The issue has been assigned to the Public Works department for resolution.",
+          "title": "Assigned to Public Works",
+          "timestamp": "Just now",
+          "type": "department_assigned",
+          "id": "timeline-1782826565991"
+        },
+        {
+          "description": "An administrator has manually reviewed this issue.",
+          "id": "timeline-1782826567237",
+          "type": "admin_note",
+          "timestamp": "Just now",
+          "title": "Administrative Review"
+        },
+        {
+          "type": "status_update",
+          "title": "Status updated to Resolved",
+          "id": "timeline-1782826706041",
+          "description": "The issue status was changed to Resolved by Admin User.",
+          "timestamp": "Just now"
+        }
+      ]
+    },
+    {
+      "id": "issue-1787052713426",
+      "comments": [],
+      "title": "pothole",
+      "status": "Reported",
+      "timeline": [
+        {
+          "description": "Neighborhood concern logged into the ledger.",
+          "title": "Report Submitted",
+          "timestamp": "Just now",
+          "type": "reported",
+          "id": "tl-init-1787052713426"
+        },
+        {
+          "description": "The report provides only a title and a category without any descriptive details, location context, or photographic evidence, making it impossible to verify the issue or take administrative action.",
+          "id": "tl-ai-int-1787052713426",
+          "timestamp": "Just now",
+          "type": "update",
+          "title": "AI Integrity Check"
+        },
+        {
+          "description": "Routed to Department of Transportation. A reported pothole at coordinates 40.7128, -74.0060 requires inspection and standard road maintenance.",
+          "timestamp": "Just now",
+          "type": "update",
+          "id": "tl-ai-intel-1787052713426",
+          "title": "AI Intelligence Routing"
+        }
+      ],
+      "timestamp": "Just now",
+      "upvotes": 0,
+      "reporterBadge": "First-time Reporter",
+      "description": "",
+      "reporterName": "Citizen Hero",
+      "verifiedByCount": 1,
+      "location": "40.7128, -74.0060",
+      "evidenceStatus": "UPLOADING",
+      "coordinates": {
+        "lng": -74.006,
+        "lat": 40.7128
+      },
+      "category": "Roads",
+      "commentsCount": 0,
+      "urgency": "Low",
+      "trustMetrics": {
+        "coSigningCount": 1,
+        "communityFlagsCount": 0,
+        "verificationConfidence": 25.5,
+        "accuracyRating": 100,
+        "isVerified": false
+      }
+    },
+    {
+      "id": "report-1",
+      "status": "In Progress",
+      "distance": "1.2 miles away",
+      "imageUrl": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=640&q=80",
+      "reporter": {
+        "badge": "Active Watcher",
+        "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80",
+        "name": "Marcus J."
+      },
+      "location": "5th Ave & Broadway",
+      "description": "Fire units responding to multiple reports of smoke on 12th floor. Citizens are advised to bypass Broadway. No injuries reported.",
+      "aiSummary": {
+        "summary": "Sensors and visual evidence confirm smoke plumes emanating from the mid-level floors. Platoon 4 dispatched. Traffic detours in place.",
+        "categoryMatch": "Emergency / Fire Safety",
+        "confidence": 97,
+        "severityMatch": "Critical Priority 1",
+        "routingTo": "Metro Fire Department • Platoon 4"
+      },
+      "title": "Downtown High-Rise: Smoke Detected",
+      "upvotes": 184,
+      "category": "Safety",
+      "routingDepartment": "Public Works",
+      "relatedIssues": [
+        "report-5"
+      ],
+      "timestamp": "2 mins ago",
+      "timeline": [
+        {
+          "actor": "Citizen Marcus J. & IoT Grid",
+          "title": "Initial Smoke Alarm & Citizen Reports",
+          "type": "reported",
+          "status": "Completed",
+          "id": "t1",
+          "description": "Multiple automated building sensors and street cameras flagged heavy aerosol particulates. Marcus J. submitted photographic confirmation through the portal.",
+          "timestamp": "Today, 03:48 PM"
+        },
+        {
+          "title": "CivicHero AI Automated Dispatching",
+          "timestamp": "Today, 03:48 PM",
+          "type": "ai_categorized",
+          "id": "t2",
+          "actor": "CivicHero AI Engine",
+          "description": "Visual classification evaluated report confidence at 97%. Categorized as Emergency Fire Incident. Automatically routed dispatch request to central fire command.",
+          "status": "Completed"
+        },
+        {
+          "id": "t3",
+          "status": "Active",
+          "actor": "CivicHero Portal Network",
+          "description": "Visual telemetry is actively broadcasted to 184 nearby devices. Live stream routing initiated.",
+          "timestamp": "Today, 03:49 PM",
+          "type": "community_verified",
+          "title": "Community Safety Broadcast Active"
+        },
+        {
+          "timestamp": "Just now",
+          "description": "The issue status was changed to In Progress by Admin User.",
+          "type": "status_update",
+          "title": "Status updated to In Progress",
+          "id": "timeline-1787052862349"
+        },
+        {
+          "id": "timeline-1787052863086",
+          "title": "Assigned to Public Works",
+          "type": "department_assigned",
+          "description": "The issue has been assigned to the Public Works department for resolution.",
+          "timestamp": "Just now"
+        }
+      ],
+      "discussion": [
+        {
+          "likesCount": 84,
+          "timestamp": "1 min ago",
+          "text": "Platoon 4 is on-site. The fire is localized to the commercial kitchen of the 12th-floor restaurant. Smoke venting systems are active. Please keep the street clear.",
+          "user": {
+            "isOfficial": true,
+            "badge": "Fire Chief",
+            "avatar": "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&h=100&q=80",
+            "name": "Chief Robert Miller"
+          },
+          "id": "c1"
+        },
+        {
+          "timestamp": "5 mins ago",
+          "text": "I can hear sirens from blocks away. Thank you for the rapid update, the map showed us which detour to take to avoid the block entirely!",
+          "id": "c2",
+          "likesCount": 12,
+          "user": {
+            "badge": "Local Resident",
+            "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100&q=80",
+            "name": "Sarah Jenkins"
+          }
+        }
+      ],
+      "verifiedByCount": 52,
+      "urgency": "Critical",
+      "verificationStats": {
+        "notFoundCount": 1,
+        "confirmCount": 41,
+        "spamCount": 0,
+        "alreadyFixedCount": 0
+      }
+    },
+    {
+      "id": "report-2",
+      "aiSummary": {
+        "routingTo": "Public Works - Forestry Division",
+        "categoryMatch": "Debris Removal / Obstruction",
+        "summary": "Large deciduous tree branch collapsed across southbound lanes. Blocks traffic flow. High risk of secondary motor accidents.",
+        "severityMatch": "High Priority 2",
+        "confidence": 94
+      },
+      "timeline": [
+        {
+          "id": "t1",
+          "description": "Reported large structural limb falling from municipal reserve forest directly across Cloverdale Road.",
+          "type": "reported",
+          "timestamp": "Today, 03:02 PM",
+          "title": "Debris Report Filed",
+          "actor": "Citizen David K.",
+          "status": "Completed"
+        },
+        {
+          "actor": "CivicHero AI Engine",
+          "title": "Debris & Tree Fall Categorized",
+          "status": "Completed",
+          "type": "ai_categorized",
+          "timestamp": "Today, 03:03 PM",
+          "description": "Identified deciduous tree limb blocking more than 50% of the active lane. Marked as High Priority and routed to Public Works Forestry Division.",
+          "id": "t2"
+        }
+      ],
+      "upvotes": 42,
+      "relatedIssues": [
+        "report-4"
+      ],
+      "discussion": [
+        {
+          "likesCount": 15,
+          "timestamp": "10 mins ago",
+          "text": "Cars are swerving to get around it! It is just past the blind curve, so please slow down as you approach the suspension bridge.",
+          "user": {
+            "name": "Claire Vance",
+            "avatar": "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&h=100&q=80",
+            "badge": "Commuter"
+          },
+          "id": "c1"
+        }
+      ],
+      "title": "Tree blocking Southbound Lane",
+      "status": "Reported",
+      "verifiedByCount": 18,
+      "location": "Cloverdale Rd.",
+      "imageUrl": "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=640&q=80",
+      "distance": "0.5 miles away",
+      "reporter": {
+        "badge": "Civic Guard",
+        "name": "David K.",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80"
+      },
+      "urgency": "High",
+      "category": "Roads",
+      "description": "Cloverdale Rd. Expect heavy delays near the suspension bridge. Municipal maintenance crews notified and dispatched.",
+      "timestamp": "15 mins ago",
+      "verificationStats": {
+        "spamCount": 0,
+        "alreadyFixedCount": 0,
+        "confirmCount": 18,
+        "notFoundCount": 0
+      }
+    },
+    {
+      "id": "report-3",
+      "relatedIssues": [
+        "report-6"
+      ],
+      "timestamp": "34 mins ago",
+      "title": "Gas Leak Investigation Complete",
+      "urgency": "Critical",
+      "timeline": [
+        {
+          "timestamp": "Yesterday, 02:15 PM",
+          "description": "Reported heavy rotten-egg aroma around commercial shops on 42nd Ave.",
+          "type": "reported",
+          "id": "t1",
+          "actor": "Citizen Alex Rivera",
+          "status": "Completed",
+          "title": "Methane Odor Alert"
+        },
+        {
+          "status": "Completed",
+          "actor": "CivicHero AI Engine",
+          "title": "Critical Utility Incident Triggered",
+          "id": "t2",
+          "timestamp": "Yesterday, 02:16 PM",
+          "description": "Classified as hazardous gas leak. Automated SMS blast dispatched to surrounding property managers within 500 meters.",
+          "type": "ai_categorized"
+        },
+        {
+          "timestamp": "Yesterday, 02:22 PM",
+          "title": "Emergency Area Polled & Verified",
+          "status": "Completed",
+          "type": "community_verified",
+          "id": "t3",
+          "description": "14 neighbors confirmed the distinct gas odor. Community state moved to Confirmed Threat.",
+          "actor": "Local Community Grid"
+        },
+        {
+          "id": "t4",
+          "actor": "PG&E Emergency Response",
+          "title": "Utility Response Division Dispatched",
+          "status": "Completed",
+          "type": "assigned",
+          "description": "Assigned Senior Engineer team #12 for immediate gas main shutoff and sniffer verification.",
+          "timestamp": "Yesterday, 02:30 PM"
+        },
+        {
+          "timestamp": "Yesterday, 03:00 PM",
+          "id": "t5",
+          "description": "Excavated faulty pressure-regulator diaphragm, replaced with standard ANSI class steel valve core.",
+          "actor": "PG&E Crew Team 12",
+          "type": "work_started",
+          "status": "Completed",
+          "title": "On-Site Venting & Main Replacement"
+        },
+        {
+          "title": "Pressure Testing & Sensor Verification",
+          "type": "repair_completed",
+          "description": "All atmospheric sniffer sensors recorded safe zero-ppm levels. Utility lines holding normal static operating pressures.",
+          "actor": "Municipal Safety Office",
+          "timestamp": "Today, 10:15 AM",
+          "status": "Completed",
+          "id": "t6"
+        },
+        {
+          "type": "community_confirmation",
+          "id": "t7",
+          "description": "Local store owners confirmed the mercaptan smell was completely gone. Re-entry greenlit.",
+          "status": "Completed",
+          "title": "Community Air Quality Confirmation",
+          "timestamp": "Today, 11:30 AM",
+          "actor": "Verified Neighbors"
+        },
+        {
+          "type": "closed",
+          "title": "Incident Resolved & Closed",
+          "id": "t8",
+          "actor": "Civic Safety Commission",
+          "description": "Permanent repairs certified. Project file sealed with digital blockchain hash.",
+          "timestamp": "Today, 03:10 PM",
+          "status": "Completed"
+        }
+      ],
+      "discussion": [
+        {
+          "id": "c1",
+          "user": {
+            "badge": "Bakery Owner",
+            "name": "Manager Dave",
+            "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&h=100&q=80"
+          },
+          "timestamp": "2 hrs ago",
+          "text": "The crew was absolutely professional. We were cleared to open our doors at noon, and customers are already back. Extremely relieved!",
+          "likesCount": 22
+        },
+        {
+          "id": "c2",
+          "user": {
+            "name": "Engineering Supervisor",
+            "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=100&h=100&q=80",
+            "isOfficial": true,
+            "badge": "Lead Utility Inspector"
+          },
+          "text": "Official Report: Replaced 2-inch joint sleeve with high-grade carbon steel. Verified seal integrity using dual-phase ultrasonic tests. Air is fully safe.",
+          "timestamp": "3 hrs ago",
+          "likesCount": 31
+        }
+      ],
+      "description": "Upper West Side. Commercial buildings cleared for safe citizen re-entry. All safety protocols successfully completed by regional utility engineers.",
+      "verifiedByCount": 48,
+      "aiSummary": {
+        "summary": "Report of volatile organic compounds and distinct mercaptan odors near commercial sector. Utility valve safety trip completed.",
+        "routingTo": "Pacific Gas & Utility Response",
+        "severityMatch": "Critical Priority 1",
+        "categoryMatch": "Hazardous Materials / Utilities",
+        "confidence": 99
+      },
+      "category": "Utilities",
+      "upvotes": 96,
+      "verificationStats": {
+        "notFoundCount": 0,
+        "confirmCount": 48,
+        "alreadyFixedCount": 52,
+        "spamCount": 0
+      },
+      "status": "Resolved",
+      "distance": "3.1 miles away",
+      "imageUrl": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=640&q=80",
+      "reporter": {
+        "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&h=100&q=80",
+        "name": "Alex Rivera",
+        "badge": "Verified Citizen"
+      },
+      "location": "Upper West Side"
+    },
+    {
+      "id": "report-4",
+      "verifiedByCount": 14,
+      "timeline": [
+        {
+          "status": "Completed",
+          "actor": "Citizen Marcus Chen",
+          "id": "t1",
+          "title": "Issue Reported",
+          "type": "reported",
+          "timestamp": "Today, 09:12 AM",
+          "description": "Initial report submitted via CivicHero Mobile by Marcus C."
+        },
+        {
+          "id": "t2",
+          "actor": "CivicHero AI Engine",
+          "title": "AI Categorized",
+          "status": "Completed",
+          "type": "ai_categorized",
+          "timestamp": "Today, 09:13 AM",
+          "description": "Analyzed visual evidence: detected 15cm deep pothole. Escalated priority due to proximity to Oakwood Primary school bus lane."
+        },
+        {
+          "type": "community_verified",
+          "actor": "Verified Neighbors",
+          "title": "Community Verified",
+          "status": "Completed",
+          "description": "14 neighbors confirmed the issue remains active. Priority upgraded to Critical for dispatch scheduling.",
+          "timestamp": "Today, 10:20 AM",
+          "id": "t3"
+        },
+        {
+          "timestamp": "Today, 10:45 AM",
+          "status": "Completed",
+          "description": "Public Works unit #402 has been assigned to assess structural integrity and execute safety cold-patching.",
+          "actor": "Public Works Unit #402",
+          "type": "assigned",
+          "id": "t4",
+          "title": "Inspection Team Dispatched"
+        },
+        {
+          "title": "Repair Work Started",
+          "type": "work_started",
+          "timestamp": "Today, 02:00 PM",
+          "id": "t5",
+          "actor": "Public Works Asphalt Team",
+          "description": "Asphalt truck on site. Surface cleaning and hot-mix edge preparation in active progress.",
+          "status": "Active"
+        }
+      ],
+      "urgency": "High",
+      "discussion": [
+        {
+          "timestamp": "3 hrs ago",
+          "id": "c1",
+          "likesCount": 18,
+          "user": {
+            "name": "Marcus Chen",
+            "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&h=100&q=80",
+            "badge": "Report Owner"
+          },
+          "text": "I almost hit this on my bike this morning. It’s getting much wider after the rain last night. Glad to see the repair team already out here!"
+        },
+        {
+          "timestamp": "1 hr ago",
+          "text": "The cones are helping direct traffic around it during student pickup. Thank you public works for jumping on this so quickly!",
+          "user": {
+            "badge": "School Staff",
+            "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=100&h=100&q=80",
+            "name": "Principal Davis"
+          },
+          "likesCount": 25,
+          "id": "c2"
+        }
+      ],
+      "aiSummary": {
+        "severityMatch": "High Priority 2",
+        "routingTo": "Public Works - Road Maintenance",
+        "categoryMatch": "Road Surface Defect",
+        "confidence": 98,
+        "summary": "A deep cavity posing high risk to commuters. Analysis of visual evidence suggests a 15cm depth, potentially affecting tire integrity. Priority expedited based on school-bus route proximity."
+      },
+      "timestamp": "1 hr ago",
+      "description": "Major tire hazard directly in front of Oakwood Primary main pickup gate. Temporary sandbags placed; paving team scheduled for 2 PM.",
+      "reporter": {
+        "badge": "Verified Citizen",
+        "name": "Marcus Chen",
+        "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&h=100&q=80"
+      },
+      "distance": "0.8 miles away",
+      "imageUrl": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80",
+      "location": "Oakwood Ave.",
+      "title": "Large pothole near school entrance",
+      "verificationStats": {
+        "confirmCount": 24,
+        "alreadyFixedCount": 0,
+        "notFoundCount": 0,
+        "spamCount": 1
+      },
+      "upvotes": 29,
+      "relatedIssues": [
+        "report-8"
+      ],
+      "category": "Roads",
+      "status": "In Progress"
+    },
+    {
+      "id": "report-5",
+      "title": "Water main rupture affecting footpath",
+      "discussion": [
+        {
+          "id": "c1",
+          "user": {
+            "badge": "Neighbor",
+            "avatar": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&h=100&q=80",
+            "name": "James O."
+          },
+          "text": "The water pressure on my upstairs shower dropped dramatically just as this started. Looks like they closed the feeder valve now because the spraying stopped.",
+          "likesCount": 9,
+          "timestamp": "1 hr ago"
+        }
+      ],
+      "verificationStats": {
+        "notFoundCount": 0,
+        "confirmCount": 8,
+        "spamCount": 0,
+        "alreadyFixedCount": 0
+      },
+      "category": "Water",
+      "urgency": "Medium",
+      "reporter": {
+        "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80",
+        "badge": "Active Reporter",
+        "name": "Elena R."
+      },
+      "distance": "1.5 miles away",
+      "imageUrl": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=640&q=80",
+      "timestamp": "2 hrs ago",
+      "verifiedByCount": 4,
+      "location": "Pine Crest Dr.",
+      "description": "High-pressure stream spraying onto the main walkway, creating erosion and slippery hazards. Water valves being shut off by city teams.",
+      "aiSummary": {
+        "confidence": 91,
+        "severityMatch": "Medium Priority 3",
+        "summary": "Underground hydraulic rupture creating surface spring. Liquid is clean water, indicative of potable distribution line break.",
+        "categoryMatch": "Water Main Break",
+        "routingTo": "Municipal Water & Sewerage"
+      },
+      "upvotes": 15,
+      "timeline": [
+        {
+          "id": "t1",
+          "description": "Water spraying 3 feet high from side expansion joint on Pine Crest pedestrian sidewalk.",
+          "timestamp": "Today, 01:30 PM",
+          "actor": "Citizen Elena R.",
+          "status": "Completed",
+          "title": "Pavement Geyser Reported",
+          "type": "reported"
+        },
+        {
+          "status": "Completed",
+          "actor": "CivicHero AI Engine",
+          "id": "t2",
+          "title": "Hydraulic Rupture Classification",
+          "timestamp": "Today, 01:35 PM",
+          "description": "Categorized under Potable Water Distribution System. Forwarded high-priority ticketing request to municipal water grid supervisor.",
+          "type": "ai_categorized"
+        }
+      ],
+      "status": "Reported",
+      "relatedIssues": [
+        "report-1"
+      ]
+    },
+    {
+      "id": "report-6",
+      "title": "Broken high-mast streetlight",
+      "relatedIssues": [
+        "report-3"
+      ],
+      "timestamp": "4 hrs ago",
+      "description": "Sub-station circuit breaker failure left segment of Elm street completely dark. Maintenance crews swapped the smart LED controller.",
+      "urgency": "Low",
+      "discussion": [
+        {
+          "text": "The block is bright and feels much safer again. Unbelievably fast response for a non-critical utility issue!",
+          "user": {
+            "badge": "Report Creator",
+            "avatar": "https://images.unsplash.com/photo-1500048993953-d23a436266cf?auto=format&fit=crop&w=100&h=100&q=80",
+            "name": "Tim O."
+          },
+          "id": "c1",
+          "timestamp": "2 hrs ago",
+          "likesCount": 6
+        }
+      ],
+      "timeline": [
+        {
+          "timestamp": "Yesterday, 08:30 PM",
+          "description": "Reported total failure of four streetlights on Elm and 4th block.",
+          "id": "t1",
+          "status": "Completed",
+          "actor": "Citizen Tim O.",
+          "type": "reported",
+          "title": "Lighting Segment Blackout reported"
+        },
+        {
+          "status": "Completed",
+          "title": "Smart Node Failure Categorized",
+          "actor": "CivicHero AI Engine",
+          "description": "Correlated with smart meter voltage diagnostics. Determined controller subassembly board failure.",
+          "id": "t2",
+          "type": "ai_categorized",
+          "timestamp": "Yesterday, 08:31 PM"
+        },
+        {
+          "type": "assigned",
+          "status": "Completed",
+          "description": "Assigned Truck #9 for replacement circuit board installation.",
+          "id": "t3",
+          "title": "Maintenance Fleet Scheduled",
+          "actor": "Grid Operations Depot",
+          "timestamp": "Today, 07:00 AM"
+        },
+        {
+          "description": "Replaced the fried controller card with weather-sealed Zigbee smart-mast chip.",
+          "timestamp": "Today, 08:15 AM",
+          "status": "Completed",
+          "type": "work_started",
+          "actor": "Smart Grid Tech Crew",
+          "id": "t4",
+          "title": "Microcontroller Swap Active"
+        },
+        {
+          "description": "Over-the-air system diagnostic test successful. Node response is healthy.",
+          "status": "Completed",
+          "actor": "Operations Center",
+          "type": "repair_completed",
+          "id": "t5",
+          "timestamp": "Today, 09:30 AM",
+          "title": "Lux Sensor Validation"
+        },
+        {
+          "actor": "Public Utilities Commission",
+          "title": "Completed & Verified",
+          "description": "Issue flagged resolved. Street lamp reported functional by adjacent properties.",
+          "id": "t6",
+          "type": "closed",
+          "status": "Completed",
+          "timestamp": "Today, 11:00 AM"
+        }
+      ],
+      "verifiedByCount": 14,
+      "verificationStats": {
+        "confirmCount": 14,
+        "notFoundCount": 0,
+        "spamCount": 0,
+        "alreadyFixedCount": 18
+      },
+      "category": "Utilities",
+      "status": "Resolved",
+      "reporter": {
+        "avatar": "https://images.unsplash.com/photo-1500048993953-d23a436266cf?auto=format&fit=crop&w=100&h=100&q=80",
+        "badge": "Local Resident",
+        "name": "Tim O."
+      },
+      "distance": "0.2 miles away",
+      "imageUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=640&q=80",
+      "aiSummary": {
+        "severityMatch": "Low Priority 4",
+        "routingTo": "Smart Grid & Lighting Division",
+        "categoryMatch": "Street Lighting Utility",
+        "confidence": 96,
+        "summary": "Complete blackout of smart lighting terminal #903. Corresponds with substation grid line transient breaker trip."
+      },
+      "upvotes": 8,
+      "location": "Elm St & 4th"
+    },
+    {
+      "id": "report-7",
+      "relatedIssues": [],
+      "verificationStats": {
+        "alreadyFixedCount": 0,
+        "confirmCount": 5,
+        "notFoundCount": 0,
+        "spamCount": 0
+      },
+      "verifiedByCount": 5,
+      "timestamp": "6 hrs ago",
+      "timeline": [
+        {
+          "type": "reported",
+          "timestamp": "Today, 09:30 AM",
+          "title": "Waste Overflow Reported",
+          "description": "Reported central plaza smart-bin exceeding structural capacity with lid unable to close.",
+          "id": "t1",
+          "status": "Completed",
+          "actor": "Citizen Jessica W."
+        },
+        {
+          "status": "Completed",
+          "actor": "CivicHero AI Engine",
+          "title": "Sanitation Routing Completed",
+          "description": "Flagged sanitation route #14 truck dispatcher for dynamic collection redirect.",
+          "type": "ai_categorized",
+          "id": "t2",
+          "timestamp": "Today, 09:32 AM"
+        }
+      ],
+      "upvotes": 19,
+      "title": "Overflowing garbage collection point",
+      "category": "Environment",
+      "status": "Reported",
+      "reporter": {
+        "name": "Jessica W.",
+        "badge": "Eco Advocate",
+        "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&h=100&q=80"
+      },
+      "distance": "2.2 miles away",
+      "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+      "aiSummary": {
+        "severityMatch": "Medium Priority 3",
+        "confidence": 88,
+        "summary": "Public street waste receptacle overflow. Loose plastics spreading into public storm drain due to wind.",
+        "categoryMatch": "Sanitation / Waste Management",
+        "routingTo": "Sanitation Division - Central Route"
+      },
+      "urgency": "Medium",
+      "discussion": [
+        {
+          "id": "c1",
+          "user": {
+            "badge": "Business Owner",
+            "name": "Plaza Coffee Shop",
+            "avatar": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=100&h=100&q=80"
+          },
+          "text": "The wind is blowing the bags all over our outdoor dining area. Hope the truck can swing by soon!",
+          "timestamp": "4 hrs ago",
+          "likesCount": 14
+        }
+      ],
+      "description": "Multiple bins at capacity, waste spilling onto pedestrian boulevard. Route collector notified for expedited pickup.",
+      "location": "Civic Plaza Boulevard"
+    },
+    {
+      "id": "report-8",
+      "aiSummary": {
+        "severityMatch": "High Priority 2",
+        "confidence": 93,
+        "routingTo": "Department of Transportation - Markings Unit",
+        "summary": "Deterioration of dual-pavement stripes and micro-bead reflective coating at school zone. Reduced luminance levels create night crossing safety risk.",
+        "categoryMatch": "Traffic Control Devices"
+      },
+      "timeline": [
+        {
+          "title": "Faded School Crossing Reported",
+          "type": "reported",
+          "status": "Completed",
+          "actor": "Citizen Oliver G.",
+          "description": "Reported severely faded white zebra striping and malfunctioning pedestrian warning beacon bulbs.",
+          "timestamp": "Yesterday, 07:15 PM",
+          "id": "t1"
+        },
+        {
+          "title": "Safety Warning Active",
+          "type": "ai_categorized",
+          "status": "Completed",
+          "description": "Classified as Traffic Safety Asset issue. Automatically sent priority alert to public works road markings terminal.",
+          "id": "t2",
+          "actor": "CivicHero AI Engine",
+          "timestamp": "Yesterday, 07:16 PM"
+        },
+        {
+          "id": "t3",
+          "title": "Marking Operations scheduled",
+          "type": "assigned",
+          "description": "Thermoplastic application team #24 dispatched with line paint system.",
+          "actor": "DOT Markings Dispatch",
+          "status": "Completed",
+          "timestamp": "Today, 06:15 AM"
+        },
+        {
+          "id": "t4",
+          "timestamp": "Today, 08:00 AM",
+          "title": "Hot-Melt Painting Active",
+          "actor": "DOT Paint Crew 24",
+          "description": "Swept roadway, applied hot primer, and began laying reflective glass-infused 230C thermoplastic strips.",
+          "type": "work_started",
+          "status": "Active"
+        }
+      ],
+      "upvotes": 33,
+      "status": "In Progress",
+      "relatedIssues": [
+        "report-4"
+      ],
+      "imageUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=640&q=80",
+      "distance": "1.9 miles away",
+      "reporter": {
+        "name": "Oliver G.",
+        "badge": "Parent Patrol",
+        "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&h=100&q=80"
+      },
+      "verificationStats": {
+        "notFoundCount": 0,
+        "confirmCount": 15,
+        "spamCount": 0,
+        "alreadyFixedCount": 0
+      },
+      "location": "Maple Expressway",
+      "urgency": "High",
+      "discussion": [
+        {
+          "id": "c1",
+          "user": {
+            "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&h=100&q=80",
+            "badge": "Report Creator",
+            "name": "Oliver G."
+          },
+          "likesCount": 11,
+          "text": "The crew is laying down the new reflective strips now. They look extremely bright and clean, even under direct sunlight. Amazing work!",
+          "timestamp": "9 hrs ago"
+        }
+      ],
+      "title": "Damaged school pedestrian crossing",
+      "timestamp": "12 hrs ago",
+      "description": "Reflective crossing lights and paint significantly faded. Thermal painting machine in operation on-site to restore high-visibility borders.",
+      "verifiedByCount": 15,
+      "category": "Roads"
+    }
+  ],
+  "users": [
+    {
+      "id": "citizen-2",
+      "verifiedReports": 22,
+      "trustScore": 89,
+      "email": "sarah.j@civichero.org",
+      "name": "Sarah Jenkins",
+      "joinedAt": "Mar 2026",
+      "badgeTitle": "Pavement Pioneer",
+      "completedReports": 9,
+      "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&q=80",
+      "uid": "citizen-2"
+    },
+    {
+      "id": "citizen-3",
+      "email": "carlos.m@civichero.org",
+      "verifiedReports": 12,
+      "completedReports": 5,
+      "badgeTitle": "Hydraulic Helper",
+      "trustScore": 82,
+      "name": "Carlos Mendez",
+      "joinedAt": "Jan 2026",
+      "uid": "citizen-3",
+      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80"
+    },
+    {
+      "id": "citizen-admin-1",
+      "badgeTitle": "Neighborhood Warden",
+      "trustScore": 94,
+      "email": "marcus.vance@civichero.org",
+      "name": "Marcus Vance",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+      "uid": "citizen-admin-1",
+      "completedReports": 14,
+      "joinedAt": "Feb 2026",
+      "verifiedReports": 38
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1782735079628-132",
+      "title": "Report Received",
+      "type": "community",
+      "timestamp": "Just now",
+      "relatedIssueId": "issue-1782735078370",
+      "userId": "citizen-admin-1",
+      "isRead": false,
+      "message": "Your report \"garbage on road\" has been successfully logged on the ledger."
+    },
+    {
+      "id": "notif-1782735081032-34",
+      "timestamp": "Just now",
+      "title": "AI Inspection Completed",
+      "message": "AI Agents have parsed your submission. Routing: Department of Sanitation.",
+      "relatedIssueId": "issue-1782735078370",
+      "userId": "citizen-admin-1",
+      "isRead": false,
+      "type": "ai"
+    },
+    {
+      "id": "notif-1782735081387-276",
+      "title": "New Incident Logged",
+      "timestamp": "Just now",
+      "isRead": false,
+      "userId": "admin-1",
+      "type": "system",
+      "relatedIssueId": "issue-1782735078370",
+      "message": "New issue \"garbage on road\" logged in Sanitation."
+    },
+    {
+      "id": "notif-1782750803880-410",
+      "relatedIssueId": "issue-1782662275661",
+      "type": "status_update",
+      "title": "Department Assigned",
+      "message": "Your report \"Water main spraying onto walkway\" has been routed to the Water & Sanitation department.",
+      "userId": "citizen-admin-1",
+      "isRead": false,
+      "timestamp": "Just now"
+    },
+    {
+      "id": "notif-1782750804236-646",
+      "isRead": false,
+      "userId": "admin-1",
+      "title": "Workforce Assignment",
+      "relatedIssueId": "issue-1782662275661",
+      "timestamp": "Just now",
+      "type": "system",
+      "message": "Issue \"Water main spraying onto walkway\" assigned to department: Water & Sanitation."
+    },
+    {
+      "id": "notif-1782825951560-168",
+      "userId": "citizen-admin-1",
+      "isRead": false,
+      "timestamp": "Just now",
+      "type": "community",
+      "relatedIssueId": "issue-1782825949754",
+      "message": "Your report \"road\" has been successfully logged on the ledger.",
+      "title": "Report Received"
+    },
+    {
+      "id": "notif-1782825953227-937",
+      "type": "ai",
+      "timestamp": "Just now",
+      "isRead": false,
+      "userId": "citizen-admin-1",
+      "message": "AI Agents have parsed your submission. Routing: Department of Transportation.",
+      "title": "AI Inspection Completed",
+      "relatedIssueId": "issue-1782825949754"
+    },
+    {
+      "id": "notif-1782825953537-371",
+      "userId": "admin-1",
+      "isRead": false,
+      "timestamp": "Just now",
+      "relatedIssueId": "issue-1782825949754",
+      "message": "New issue \"road\" logged in Roads.",
+      "type": "system",
+      "title": "New Incident Logged"
+    },
+    {
+      "id": "notif-1782826566413-773",
+      "userId": "citizen-admin-1",
+      "isRead": true,
+      "timestamp": "Just now",
+      "type": "status_update",
+      "relatedIssueId": "issue-1782825963447",
+      "message": "Your report \"road\" has been routed to the Public Works department.",
+      "title": "Department Assigned"
+    },
+    {
+      "id": "notif-1782826566767-290",
+      "userId": "admin-1",
+      "isRead": false,
+      "relatedIssueId": "issue-1782825963447",
+      "timestamp": "Just now",
+      "title": "Workforce Assignment",
+      "message": "Issue \"road\" assigned to department: Public Works.",
+      "type": "system"
+    },
+    {
+      "id": "notif-1782826706404-213",
+      "isArchived": true,
+      "type": "status_update",
+      "timestamp": "Just now",
+      "userId": "citizen-admin-1",
+      "message": "Hurrah! The issue \"road\" is now marked as Resolved. Please verify!",
+      "isRead": true,
+      "title": "Issue Resolved",
+      "relatedIssueId": "issue-1782825963447"
+    },
+    {
+      "id": "notif-1782826706764-930",
+      "title": "Trust Changes Recorded",
+      "type": "system",
+      "relatedIssueId": "issue-1782825963447",
+      "userId": "admin-1",
+      "isRead": false,
+      "message": "Issue \"road\" was resolved. Social trust metrics updated.",
+      "timestamp": "Just now"
+    },
+    {
+      "id": "notif-1787052714967-232",
+      "timestamp": "Just now",
+      "userId": "citizen-admin-1",
+      "isRead": true,
+      "relatedIssueId": "issue-1787052713426",
+      "message": "Your report \"pothole\" has been successfully logged on the ledger.",
+      "type": "community",
+      "title": "Report Received"
+    },
+    {
+      "id": "notif-1787052716536-593",
+      "type": "ai",
+      "timestamp": "Just now",
+      "message": "AI Agents have parsed your submission. Routing: Department of Transportation.",
+      "userId": "citizen-admin-1",
+      "isRead": false,
+      "title": "AI Inspection Completed",
+      "relatedIssueId": "issue-1787052713426"
+    },
+    {
+      "id": "notif-1787052716877-386",
+      "relatedIssueId": "issue-1787052713426",
+      "timestamp": "Just now",
+      "message": "New issue \"pothole\" logged in Roads.",
+      "userId": "admin-1",
+      "isRead": false,
+      "title": "New Incident Logged",
+      "type": "system"
+    },
+    {
+      "id": "notif-1787052862714-320",
+      "message": "Public Works has started working on: \"Downtown High-Rise: Smoke Detected\".",
+      "title": "Work Started",
+      "userId": "citizen-admin-1",
+      "isRead": false,
+      "relatedIssueId": "report-1",
+      "type": "status_update",
+      "timestamp": "Just now"
+    },
+    {
+      "id": "notif-1787052863918-469",
+      "relatedIssueId": "report-1",
+      "timestamp": "Just now",
+      "type": "status_update",
+      "userId": "citizen-admin-1",
+      "isRead": false,
+      "title": "Department Assigned",
+      "message": "Your report \"Downtown High-Rise: Smoke Detected\" has been routed to the Public Works department."
+    },
+    {
+      "id": "notif-1787052864305-759",
+      "message": "Issue \"Downtown High-Rise: Smoke Detected\" assigned to department: Public Works.",
+      "title": "Workforce Assignment",
+      "type": "system",
+      "isRead": false,
+      "userId": "admin-1",
+      "timestamp": "Just now",
+      "relatedIssueId": "report-1"
+    }
+  ],
+  "diagnostics_runs": []
+}

@@ -1,13 +1,14 @@
 {
   "name": "ai-studio-applet",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "clean": "next clean"
+    "clean": "next clean",
+    "sync-db": "node ./scripts/sync-to-new-db.mjs"
   },
   "dependencies": {
     "@deck.gl/aggregation-layers": "^9.3.5",

@@ -1,6 +1,7 @@
 import { Issue } from './models';
+import { allBackupIssues } from './backupData';
 
-export const mockReports: Issue[] = [
+export const mockReports: Issue[] = allBackupIssues && allBackupIssues.length > 0 ? allBackupIssues : [
   {
     id: 'report-1',
     title: 'Downtown High-Rise: Smoke Detected',

@@ -36,6 +36,9 @@ The project conforms to a clean, component-driven, and multi-layered architectur
 │   ├── Footer.tsx              # Standardized institutional footer layout
 │   └── MapPlaceholder.tsx      # Shared static SVG responsive map canvas (Deprecated)
 ├── lib/                        # Core utility packages and data contracts
+│   ├── config/                 # Centralized Configuration Hub & Validation
+│   │   ├── index.ts            # Canonical single source of truth for all subsystems
+│   │   └── validation.ts       # Non-crashing environment validation utility
 │   ├── firebase/               # Firebase Web SDK initialization & helpers
 │   │   ├── firebase.ts         # Base client config & lazy initializer
 │   │   ├── firestore.ts        # Firestore helpers & error handlers
@@ -170,3 +173,30 @@ CivicHero is built on the philosophy of "Trust Through Transparency." The Citize
 *   **Configurable TTL**: A cached briefing expires based on `process.env.COPILOT_TTL_MS` (defaulting to 15 minutes).
 *   **Automated Invalidations**: Any new citizen report creation or critical-level status modification invalidates the active cache, forcing a refresh of the briefings on the next request.
 *   **Manual On-Demand Refresh**: Administrators can trigger manual briefing generation via the on-screen **"Refresh Briefing"** button, instantly bypassing active caches and updating Firestore.
+
+---
+
+## 8. Secret & Configuration Architecture (Phase 8.2 Hardened)
+
+As implemented in Phase 8.2, CivicHero enforces strict boundaries between public client identifiers and private server-side secrets via a centralized configuration layer (`lib/config/index.ts`).
+
+### 8.1 Centralized Access Tier Distribution
+*   **Client-Accessible Identifiers (`NEXT_PUBLIC_*`)**:
+    *   `NEXT_PUBLIC_FIREBASE_API_KEY`: Browser Firebase SDK initialization.
+    *   `NEXT_PUBLIC_FIREBASE_PROJECT_ID`: Cloud Firestore and Storage scoping.
+    *   `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`: Firebase Authentication domain.
+    *   `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`: Asset persistence bucket.
+    *   `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` & `NEXT_PUBLIC_FIREBASE_APP_ID`: Firebase project telemetry.
+    *   `NEXT_PUBLIC_FIREBASE_DATABASE_ID`: Database instance identifier (default `(default)`).
+    *   `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`: Client-side Google Maps Platform JS SDK and deck.gl integration.
+*   **Server-Side Only Confidential Secrets**:
+    *   `GEMINI_API_KEY` / `APP_GEMINI_API_KEY`: Master keys for server-side Google Gen AI orchestration (`@google/genai`). Never exposed to browser or prefixed with `NEXT_PUBLIC_`.
+    *   `NEMOTRON_API_KEY`: Secondary LLM inference key handled exclusively inside `/api/ai/*` server endpoints.
+    *   `COPILOT_TTL_MS`: Internal cache invalidation window.
+
+### 8.2 Architectural Invariants
+1.  **Single Source of Truth**: All subsystems access configuration exclusively through `lib/config/index.ts` rather than ad-hoc `process.env` lookups or static JSON files.
+2.  **Server-Side AI Gateway**: All LLM inferences are routed through Next.js App Router API endpoints (`/api/ai/*`). Zero `@google/genai` imports exist in client bundles.
+3.  **Graceful Non-Crashing Fallbacks**: In the absence of live cloud credentials, all data repositories and AI routers activate deterministic simulation modes with clear diagnostic warnings.
+4.  **Audit Reference**: For the complete credential mapping and hardening audit, consult `docs/security.md`.
+

@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { serverAiConfig } from '@/lib/config';
 
 export interface AIMetrics {
   totalRequests: number;
@@ -35,9 +36,9 @@ let aiInstance: GoogleGenAI | null = null;
 
 function getAIClient(): GoogleGenAI {
   if (!aiInstance) {
-    const apiKey = process.env.APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const apiKey = serverAiConfig.geminiApiKey;
     if (!apiKey) {
-      throw new Error("APP_GEMINI_API_KEY environment variable is not defined. Please add it via the Settings > Secrets menu in AI Studio.");
+      throw new Error("GEMINI_API_KEY environment variable is not defined. Please configure it in your server environment.");
     }
     aiInstance = new GoogleGenAI({
       apiKey,
@@ -151,8 +152,8 @@ export const AIOrchestrator = {
     aiMetrics.totalRequests += 1;
     let baseTokens = Math.round((prompt.length + JSON.stringify(schema).length) / 4);
 
-    const hasGeminiKey = !!(process.env.APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
-    const hasNemotronKey = !!(process.env.NEMOTRON_API_KEY || process.env.OPENROUTER_API_KEY || process.env.NVIDIA_API_KEY);
+    const hasGeminiKey = serverAiConfig.hasGeminiKey;
+    const hasNemotronKey = serverAiConfig.hasNemotronKey;
 
     const models = [];
     if (hasGeminiKey) {
@@ -176,18 +177,7 @@ export const AIOrchestrator = {
       try {
         console.log(`[AIROUTER] Routing call to model: ${model.name}`);
         if (model.provider === 'google') {
-          const apiKey = process.env.APP_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-          if (!apiKey) {
-            throw new Error(`API key missing for ${model.name}`);
-          }
-          const ai = new GoogleGenAI({
-            apiKey,
-            httpOptions: {
-              headers: {
-                'User-Agent': 'aistudio-build',
-              }
-            }
-          });
+          const ai = getAIClient();
 
           const config: any = {
             responseMimeType: "application/json",
@@ -224,7 +214,7 @@ export const AIOrchestrator = {
             return parsed;
           }
         } else if (model.provider === 'nemotron') {
-          const nemotronKey = process.env.NEMOTRON_API_KEY || process.env.OPENROUTER_API_KEY || process.env.NVIDIA_API_KEY;
+          const nemotronKey = serverAiConfig.nemotronApiKey;
           if (!nemotronKey) {
             throw new Error("Nemotron API Key is not configured. Skipping...");
           }
@@ -270,7 +260,7 @@ export const AIOrchestrator = {
           }
         }
       } catch (err: any) {
-        console.warn(`[AIROUTER] Model ${model.name} failed:`, err?.message || err);
+        console.warn(`[AIROUTER] Model ${model.name} failed:`, err?.message || 'Inference error');
         lastError = err;
       }
     }

@@ -22,7 +22,7 @@ let subscribers: Subscriber[] = [];
 const issueSubscribers: Map<string, IssueSubscriber[]> = new Map();
 
 let globalUnsubscribe: (() => void) | null = null;
-let currentIssues: Issue[] = [];
+let currentIssues: Issue[] = [...mockReports];
 let isSeeding = false;
 
 async function optionalDelay() {
@@ -198,10 +198,13 @@ export const IssueRepository = {
       await ensureSeedData();
       const snapshot = await getDocs(collection(db, 'issues'));
       const issues = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Issue));
-      return issues;
+      if (issues.length > 0) {
+        currentIssues = issues;
+      }
+      return currentIssues;
     } catch (err) {
-      handleFirestoreError(err, OperationType.LIST, 'issues');
-      return [];
+      console.warn('Firestore issues list fallback to local dataset:', err);
+      return [...currentIssues];
     }
   },
 
@@ -217,10 +220,13 @@ export const IssueRepository = {
 
     try {
       const snapshot = await getDoc(doc(db, 'issues', id));
-      return snapshot.exists() ? ({ ...snapshot.data(), id: snapshot.id } as Issue) : null;
+      if (snapshot.exists()) {
+        return { ...snapshot.data(), id: snapshot.id } as Issue;
+      }
+      return currentIssues.find((r) => r.id === id) || null;
     } catch (err) {
-      handleFirestoreError(err, OperationType.GET, `issues/${id}`);
-      return null;
+      console.warn(`Firestore getDoc for issue ${id} fallback:`, err);
+      return currentIssues.find((r) => r.id === id) || null;
     }
   },
 

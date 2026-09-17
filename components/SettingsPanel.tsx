@@ -14,76 +14,98 @@ import {
   Activity, 
   ExternalLink,
   ShieldCheck,
-  Check
+  Check,
+  Database,
+  RefreshCw
 } from 'lucide-react';
 import { Skeleton } from './Skeleton';
+import { firebaseConfig } from '@/lib/config';
 
 export default function SettingsPanel() {
-  const [loading, setLoading] = useState(true);
+  const [loading] = useState(false);
 
-  // Core Settings States
-  const [developerMode, setDeveloperMode] = useState(false);
-  const [highContrast, setHighContrast] = useState(false);
-  const [largeText, setLargeText] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  // Core Settings States initialized from localStorage
+  const [developerMode, setDeveloperMode] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('civichero_dev_mode') === 'true';
+  });
+  const [highContrast, setHighContrast] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('civichero_high_contrast') === 'true';
+  });
+  const [largeText, setLargeText] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('civichero_large_text') === 'true';
+  });
+  const [reducedMotion, setReducedMotion] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('civichero_reduced_motion') === 'true';
+  });
 
   // Notification states
-  const [smsAlerts, setSmsAlerts] = useState(true);
-  const [emailSummaries, setEmailSummaries] = useState(false);
-  const [pushNotifs, setPushNotifs] = useState(true);
+  const [smsAlerts, setSmsAlerts] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('civichero_sms_alerts') !== 'false';
+  });
+  const [emailSummaries, setEmailSummaries] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('civichero_email_summaries') === 'true';
+  });
+  const [pushNotifs, setPushNotifs] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('civichero_push_notifs') !== 'false';
+  });
 
   // Privacy states
-  const [anonymousReports, setAnonymousReports] = useState(false);
-  const [preciseLocation, setPreciseLocation] = useState(true);
+  const [anonymousReports, setAnonymousReports] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('civichero_anonymous_reports') === 'true';
+  });
+  const [preciseLocation, setPreciseLocation] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('civichero_precise_location') !== 'false';
+  });
 
   // Theme & Language states
-  const [activeTheme, setActiveTheme] = useState('slate');
-  const [activeLang, setActiveLang] = useState('en');
+  const [activeTheme, setActiveTheme] = useState(() => {
+    if (typeof window === 'undefined') return 'slate';
+    return localStorage.getItem('civichero_theme_preset') || 'slate';
+  });
+  const [activeLang, setActiveLang] = useState(() => {
+    if (typeof window === 'undefined') return 'en';
+    return localStorage.getItem('civichero_language_selection') || 'en';
+  });
 
   // Simulated DB Metrics
-  const [dbReads, setDbReads] = useState(142);
-  const [dbWrites, setDbWrites] = useState(38);
+  const [dbReads] = useState(142);
+  const [dbWrites] = useState(38);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  // 1. Load preferences from localStorage on mount
-  useEffect(() => {
+  const handleSyncDatabase = async () => {
+    setIsSyncing(true);
+    setSyncStatus(`Initiating sync to ${firebaseConfig.projectId}...`);
     try {
-      setLoading(true);
-      const dev = localStorage.getItem('civichero_dev_mode') === 'true';
-      const contrast = localStorage.getItem('civichero_high_contrast') === 'true';
-      const large = localStorage.getItem('civichero_large_text') === 'true';
-      const motionPref = localStorage.getItem('civichero_reduced_motion') === 'true';
-
-      const sms = localStorage.getItem('civichero_sms_alerts') !== 'false';
-      const email = localStorage.getItem('civichero_email_summaries') === 'true';
-      const push = localStorage.getItem('civichero_push_notifs') !== 'false';
-
-      const anon = localStorage.getItem('civichero_anonymous_reports') === 'true';
-      const loc = localStorage.getItem('civichero_precise_location') !== 'false';
-
-      const theme = localStorage.getItem('civichero_theme_preset') || 'slate';
-      const lang = localStorage.getItem('civichero_language_selection') || 'en';
-
-      setDeveloperMode(dev);
-      setHighContrast(contrast);
-      setLargeText(large);
-      setReducedMotion(motionPref);
-      setSmsAlerts(sms);
-      setEmailSummaries(email);
-      setPushNotifs(push);
-      setAnonymousReports(anon);
-      setPreciseLocation(loc);
-      setActiveTheme(theme);
-      setActiveLang(lang);
-
-      // Randomize simulated metrics slightly to look extremely live
-      setDbReads(Math.floor(Math.random() * 50) + 120);
-      setDbWrites(Math.floor(Math.random() * 20) + 30);
-    } catch (err) {
-      console.error('Error loading settings:', err);
+      const res = await fetch('/api/sync-new-db', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setSyncStatus(`Sync executed: ${data.details.syncedIssues}/${data.details.totalIssues} issues, ${data.details.syncedUsers}/${data.details.totalUsers} citizens, ${data.details.syncedNotifications}/${data.details.totalNotifications} notifications.`);
+      } else {
+        setSyncStatus(`Sync status: ${data.error || 'Pending database creation'}`);
+      }
+    } catch (err: any) {
+      setSyncStatus(`Sync result: ${err.message}`);
     } finally {
-      setLoading(false);
+      setIsSyncing(false);
     }
-  }, []);
+  };
+
+  // Apply high contrast on mount if active
+  useEffect(() => {
+    if (highContrast) {
+      document.body.classList.add('high-contrast');
+    }
+  }, [highContrast]);
 
   // 2. State Toggles & Persist functions
   const saveSetting = (key: string, val: string | boolean) => {
@@ -204,6 +226,37 @@ export default function SettingsPanel() {
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
               <span className="text-[10px] text-slate-400 font-bold uppercase">Dev Delay Overhead</span>
               <span className="font-sans font-extrabold text-lg text-brand-primary">150ms synthetic</span>
+            </div>
+
+            {/* Target Firestore Database Connection */}
+            <div className="md:col-span-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <Database className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans font-bold text-xs text-brand-primary">Target Firestore Project:</span>
+                    <code className="text-[11px] bg-white px-2 py-0.5 rounded border border-slate-200 text-brand-primary font-mono font-semibold">{firebaseConfig.projectId}</code>
+                  </div>
+                  <p className="font-body text-[11px] text-slate-500 mt-0.5">
+                    Configured with 20 issues, 3 citizens, and 18 notifications ready to sync.
+                  </p>
+                  {syncStatus && (
+                    <p className="font-mono text-[10px] text-emerald-700 mt-1 bg-emerald-50 px-2 py-1 rounded border border-emerald-200">
+                      {syncStatus}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSyncDatabase}
+                disabled={isSyncing}
+                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 bg-brand-primary text-white text-xs font-sans font-bold rounded-lg hover:bg-brand-primary-container disabled:opacity-50 transition-colors shrink-0"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? 'Syncing...' : 'Push Data to New DB'}</span>
+              </button>
             </div>
           </motion.div>
         )}
