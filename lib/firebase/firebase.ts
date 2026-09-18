@@ -15,11 +15,8 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 export const auth = getAuth(app);
 
-// Use custom firestoreDatabaseId if configured in centralized config, handling '(default)' properly
-const firestoreDbId = firebaseConfig.databaseId;
-export const db = firestoreDbId && firestoreDbId !== '(default)' && firestoreDbId !== ''
-  ? getFirestore(app, firestoreDbId)
-  : getFirestore(app);
+// Use custom firestoreDatabaseId according to Firebase standard pattern
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || '(default)');
 
 export const storage = getStorage(app);
 export { isFirebaseConfigured };

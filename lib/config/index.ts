@@ -12,15 +12,16 @@
  */
 
 // 1. Firebase Core Configuration (Client & Server Public)
+// Sources values exclusively from environment variables (.env / process.env)
 const rawFirebaseApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '';
 const rawFirebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
-const rawFirebaseAuthDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '';
-const rawFirebaseStorageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '';
+const rawFirebaseAuthDomain = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || (rawFirebaseProjectId ? `${rawFirebaseProjectId}.firebaseapp.com` : '');
+const rawFirebaseStorageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || (rawFirebaseProjectId ? `${rawFirebaseProjectId}.firebasestorage.app` : '');
 const rawFirebaseSenderId = process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '';
 const rawFirebaseAppId = process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '';
 const rawFirebaseDbId = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || '(default)';
 
-export const isFirebaseConfigured = !!(rawFirebaseApiKey && rawFirebaseProjectId);
+export const isFirebaseConfigured = !!(rawFirebaseApiKey && rawFirebaseProjectId && rawFirebaseProjectId !== 'mock-civichero');
 
 export const mockFirebaseConfig = {
   apiKey: 'mock-api-key-civichero-placeholder',
@@ -40,6 +41,7 @@ export const firebaseConfig = {
   messagingSenderId: rawFirebaseSenderId || mockFirebaseConfig.messagingSenderId,
   appId: rawFirebaseAppId || mockFirebaseConfig.appId,
   databaseId: rawFirebaseDbId,
+  firestoreDatabaseId: rawFirebaseDbId,
   isConfigured: isFirebaseConfigured,
 };
 

@@ -22,9 +22,7 @@ function loadEnvFile(filePath) {
       if (idx > 0) {
         const key = trimmed.substring(0, idx).trim();
         const val = trimmed.substring(idx + 1).trim();
-        if (!process.env[key]) {
-          process.env[key] = val;
-        }
+        process.env[key] = val;
       }
     }
   }

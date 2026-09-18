@@ -51,14 +51,14 @@ export function validateEnvironment(): EnvironmentDiagnosticReport {
     return '';
   };
 
-  // 1. Firebase Variables
+  // 1. Firebase Variables (Exclusively from environment variables)
   const fbApiKey = getEnv('NEXT_PUBLIC_FIREBASE_API_KEY');
   const fbProjectId = getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
-  const fbAuthDomain = getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN');
-  const fbStorageBucket = getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET');
+  const fbAuthDomain = getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN') || (fbProjectId ? `${fbProjectId}.firebaseapp.com` : '');
+  const fbStorageBucket = getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET') || (fbProjectId ? `${fbProjectId}.firebasestorage.app` : '');
   const fbSenderId = getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID');
   const fbAppId = getEnv('NEXT_PUBLIC_FIREBASE_APP_ID');
-  const fbDbId = getEnv('NEXT_PUBLIC_FIREBASE_DATABASE_ID');
+  const fbDbId = getEnv('NEXT_PUBLIC_FIREBASE_DATABASE_ID') || '(default)';
 
   // 2. Maps Variables
   const mapsKey = getEnv('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY');
