@@ -15,8 +15,9 @@ import { Issue } from '@/lib/models';
 import { formatTimestamp } from '@/lib/helpers';
 import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import AISummaryCard from '@/components/AISummaryCard';
+import { DEFAULT_MAP_CENTER } from '@/lib/config';
 import { Skeleton } from '@/components/Skeleton';
-import { getPlaceholderImage, safeImageUrl } from '@/lib/utils';
+import { getPlaceholderImage } from '@/lib/utils';
 import { IssueRepository } from '@/lib/repositories/issueRepository';
 import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
 
@@ -366,7 +367,7 @@ export default function AdminIssueDetailPage() {
             {/* Visual Header Banner Stage */}
             <div className="relative aspect-[16/10] sm:aspect-[21/10] lg:aspect-[16/9] rounded-[32px] overflow-hidden bg-slate-950 border border-slate-200 shadow-sm group">
               <Image
-                src={(!issue.evidenceStatus || issue.evidenceStatus === 'AVAILABLE') ? safeImageUrl(issue.imageUrl, issue.category, issue.title, issue.description) : getPlaceholderImage(issue.category, issue.title, issue.description)}
+                src={(!issue.evidenceStatus || issue.evidenceStatus === 'AVAILABLE') ? (issue.imageUrl || getPlaceholderImage(issue.category, issue.title, issue.description)) : getPlaceholderImage(issue.category, issue.title, issue.description)}
                 alt={issue.title}
                 fill
                 priority
@@ -523,12 +524,13 @@ export default function AdminIssueDetailPage() {
                   categoryName={issue.category} 
                   interactive={true}
                   mapId={`ADMIN_MAP_${issue.id}`}
-                  latitude={issue.coordinates?.lat || 40.7128 + ((parseInt(issue.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05}
-                  longitude={issue.coordinates?.lng || -74.0060 + ((parseInt(issue.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05}
+                  latitude={issue.coordinates?.lat || DEFAULT_MAP_CENTER.lat + ((parseInt(issue.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05}
+                  longitude={issue.coordinates?.lng || DEFAULT_MAP_CENTER.lng + ((parseInt(issue.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05}
+                  showLocateMe={true}
                   markers={[{
                     id: issue.id,
-                    lat: issue.coordinates?.lat || 40.7128 + ((parseInt(issue.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
-                    lng: issue.coordinates?.lng || -74.0060 + ((parseInt(issue.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+                    lat: issue.coordinates?.lat || DEFAULT_MAP_CENTER.lat + ((parseInt(issue.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+                    lng: issue.coordinates?.lng || DEFAULT_MAP_CENTER.lng + ((parseInt(issue.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
                     title: issue.title,
                     urgency: issue.urgency,
                     status: issue.status

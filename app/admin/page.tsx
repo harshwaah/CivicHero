@@ -38,6 +38,7 @@ import IncidentsMapPreview from '../../components/IncidentsMapPreview';
 import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { CityAnalytics } from '../../lib/repositories/analyticsRepository';
 import { Skeleton } from '../../components/Skeleton';
+import { DEFAULT_MAP_CENTER } from '../../lib/config';
 import { CopilotInsights } from '../../lib/providers/ai/administratorCopilot';
 
 const CURRENT_TIME_VALUE = typeof window !== 'undefined' ? Date.now() : 1782729157000;
@@ -707,8 +708,8 @@ export default function AdminPage() {
             })) : []}
             markers={issues.map(i => ({
               id: i.id,
-              lat: i.coordinates?.lat || 40.7128 + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
-              lng: i.coordinates?.lng || -74.0060 + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+              lat: i.coordinates?.lat || DEFAULT_MAP_CENTER.lat + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+              lng: i.coordinates?.lng || DEFAULT_MAP_CENTER.lng + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
               title: i.title,
               urgency: i.urgency,
               status: i.status,

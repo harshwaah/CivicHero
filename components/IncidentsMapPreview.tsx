@@ -6,6 +6,7 @@ import { ShieldCheck, Heart, Users, Map, CheckCircle2, ChevronRight, Activity, A
 import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import { IssueService } from '@/lib/services/issueService';
 import { Issue } from '@/lib/models';
+import { DEFAULT_MAP_CENTER } from '@/lib/config';
 import { useRouter } from 'next/navigation';
 
 export default function IncidentsMapPreview() {
@@ -32,14 +33,15 @@ export default function IncidentsMapPreview() {
       <div className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-2 flex flex-col gap-2 h-64">
         <div className="flex-1 rounded-[24px] overflow-hidden">
           <CivicMap
-            locationName="Preview"
+            locationName="Mumbai Overview"
             categoryName="All"
             interactive={true}
             mapId="PREVIEW_MAP"
+            showLocateMe={true}
             markers={issues.map(i => ({
               id: i.id,
-              lat: i.coordinates?.lat || 40.7128 + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
-              lng: i.coordinates?.lng || -74.0060 + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+              lat: i.coordinates?.lat || DEFAULT_MAP_CENTER.lat + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+              lng: i.coordinates?.lng || DEFAULT_MAP_CENTER.lng + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
               title: i.title,
               urgency: i.urgency,
               status: i.status,

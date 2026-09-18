@@ -1,5 +1,4 @@
-// Auto-generated backup and persistence dataset extracted from the original database
-import { Issue, Citizen, Notification } from "./models";
+import { Issue, CivicUser, NotificationItem } from './models';
 
 export const allBackupIssues: Issue[] = [
   {
@@ -8,14 +7,14 @@ export const allBackupIssues: Issue[] = [
     "status": "Resolved",
     "description": "The public waste bins are overflowing with trash bags, loose plastics, and cardboard. Wind is spreading litter across the lawn and towards the storm drain.",
     "timestamp": "Just now",
-    "location": "Civic Plaza Boulevard",
+    "location": "Bandra Kurla Complex (BKC), Mumbai",
     "reporterBadge": "First-time Reporter",
     "upvotes": 0,
     "category": "Environment",
     "verifiedByCount": 1,
     "coordinates": {
-      "lat": 37.7749,
-      "lng": -122.4194
+      "lat": 19.0644,
+      "lng": 72.8696
     },
     "trustMetrics": {
       "verificationConfidence": 95,
@@ -132,11 +131,11 @@ export const allBackupIssues: Issue[] = [
     "category": "Sanitation and Waste Management",
     "description": "The public waste bins are overflowing with trash bags, loose plastics, and cardboard. Wind is spreading litter across the lawn and towards the storm drain.",
     "reporterBadge": "First-time Reporter",
-    "location": "Civic Plaza Boulevard",
+    "location": "Dadar TT Circle, Dadar, Mumbai",
     "reporterName": "Citizen Hero",
     "coordinates": {
-      "lng": -73.9932,
-      "lat": 40.6952
+      "lat": 19.0178,
+      "lng": 72.8481
     },
     "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
     "timestamp": "Just now",
@@ -201,8 +200,8 @@ export const allBackupIssues: Issue[] = [
     ],
     "reporterBadge": "First-time Reporter",
     "coordinates": {
-      "lat": 40.6952,
-      "lng": -73.9932
+      "lat": 19.1189,
+      "lng": 72.848
     },
     "upvotes": 0,
     "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
@@ -214,7 +213,7 @@ export const allBackupIssues: Issue[] = [
       "coSigningCount": 1
     },
     "title": "Overflowing park garbage bin",
-    "location": "Civic Plaza Boulevard",
+    "location": "SV Road, Andheri West, Mumbai",
     "commentsCount": 0,
     "reporterName": "Citizen Hero",
     "category": "Sanitation",
@@ -251,13 +250,13 @@ export const allBackupIssues: Issue[] = [
     "urgency": "Low",
     "reporterBadge": "First-time Reporter",
     "timestamp": "Just now",
-    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+    "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/7c842d3b-b171-4f24-afe4-292d7dfa81af",
     "coordinates": {
-      "lat": 40.7128,
-      "lng": -74.006
+      "lat": 18.9185,
+      "lng": 72.8318
     },
     "title": "garbage on road",
-    "location": "40.7128, -74.0060",
+    "location": "Colaba Causeway, South Mumbai",
     "reporterName": "Citizen Hero",
     "verifiedByCount": 1,
     "description": "No secondary details provided.",
@@ -303,8 +302,8 @@ export const allBackupIssues: Issue[] = [
       }
     ],
     "coordinates": {
-      "lng": -74.006,
-      "lat": 40.7128
+      "lat": 19.1212,
+      "lng": 72.9012
     },
     "verifiedByCount": 1,
     "comments": [],
@@ -320,7 +319,7 @@ export const allBackupIssues: Issue[] = [
     },
     "commentsCount": 0,
     "evidenceStatus": "UPLOADING",
-    "location": "40.7128, -74.0060",
+    "location": "Powai Lake Promenade, Powai, Mumbai",
     "timestamp": "Just now"
   },
   {
@@ -331,8 +330,8 @@ export const allBackupIssues: Issue[] = [
     "title": "broken road",
     "reporterBadge": "First-time Reporter",
     "coordinates": {
-      "lng": -74.006,
-      "lat": 40.7128
+      "lat": 19.0124,
+      "lng": 72.8129
     },
     "timeline": [
       {
@@ -370,8 +369,8 @@ export const allBackupIssues: Issue[] = [
       "isVerified": false,
       "accuracyRating": 100
     },
-    "location": "40.7128, -74.0060",
-    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+    "location": "Worli Sea Face, Worli, Mumbai",
+    "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/cd027536-acd3-42ac-b4fe-796d2db336c7",
     "timestamp": "Just now"
   },
   {
@@ -379,16 +378,16 @@ export const allBackupIssues: Issue[] = [
     "urgency": "Low",
     "category": "Sanitation",
     "reporterBadge": "First-time Reporter",
-    "location": "40.7128, -74.0060",
+    "location": "Western Express Highway, Goregaon, Mumbai",
     "status": "Reported",
-    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+    "imageUrl": "blob:https://ais-pre-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/684cc598-18c9-476e-a1cd-c8e8816e8382",
     "evidenceStatus": "AVAILABLE",
     "reporterName": "Citizen Hero",
     "title": "garbage on road",
     "upvotes": 0,
     "coordinates": {
-      "lat": 40.7128,
-      "lng": -74.006
+      "lat": 19.151,
+      "lng": 72.8456
     },
     "verifiedByCount": 1,
     "commentsCount": 0,
@@ -463,14 +462,14 @@ export const allBackupIssues: Issue[] = [
     "urgency": "Low",
     "reporterName": "Citizen Hero",
     "timestamp": "Just now",
-    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
+    "imageUrl": "blob:https://ais-pre-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/4d51aa46-8f0c-4166-b506-c09a74ff33f8",
     "status": "Reported",
     "coordinates": {
-      "lng": -74.006,
-      "lat": 40.7128
+      "lat": 19.0665,
+      "lng": 72.8702
     },
     "commentsCount": 0,
-    "location": "40.7128, -74.0060",
+    "location": "Bandra Kurla Complex (BKC), Mumbai",
     "verifiedByCount": 1,
     "title": "garbage on road",
     "upvotes": 0,
@@ -517,10 +516,10 @@ export const allBackupIssues: Issue[] = [
       "accuracyRating": 100,
       "coSigningCount": 1
     },
-    "location": "40.7128, -74.0060",
+    "location": "Linking Road, Bandra West, Mumbai",
     "coordinates": {
-      "lng": -74.006,
-      "lat": 40.7128
+      "lat": 19.0626,
+      "lng": 72.8316
     },
     "urgency": "Low",
     "timestamp": "Just now",
@@ -533,9 +532,9 @@ export const allBackupIssues: Issue[] = [
     "reporterBadge": "First-time Reporter",
     "title": "road",
     "category": "Roads",
-    "imageUrl": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80",
+    "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/778ce0ab-40aa-4200-8aef-aa69ecebf435",
     "urgency": "Low",
-    "location": "40.7128, -74.0060",
+    "location": "Dadar TT Circle, Dadar, Mumbai",
     "verifiedByCount": 1,
     "commentsCount": 0,
     "description": "",
@@ -549,8 +548,8 @@ export const allBackupIssues: Issue[] = [
     "status": "Resolved",
     "routingDepartment": "Public Works",
     "coordinates": {
-      "lat": 40.7128,
-      "lng": -74.006
+      "lat": 19.0137,
+      "lng": 72.8464
     },
     "comments": [],
     "timestamp": "Just now",
@@ -635,11 +634,11 @@ export const allBackupIssues: Issue[] = [
     "description": "",
     "reporterName": "Citizen Hero",
     "verifiedByCount": 1,
-    "location": "40.7128, -74.0060",
+    "location": "SV Road, Andheri West, Mumbai",
     "evidenceStatus": "UPLOADING",
     "coordinates": {
-      "lng": -74.006,
-      "lat": 40.7128
+      "lat": 19.1218,
+      "lng": 72.8429
     },
     "category": "Roads",
     "commentsCount": 0,
@@ -662,7 +661,7 @@ export const allBackupIssues: Issue[] = [
       "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80",
       "name": "Marcus J."
     },
-    "location": "5th Ave & Broadway",
+    "location": "Colaba Causeway, South Mumbai",
     "description": "Fire units responding to multiple reports of smoke on 12th floor. Citizens are advised to bypass Broadway. No injuries reported.",
     "aiSummary": {
       "summary": "Sensors and visual evidence confirm smoke plumes emanating from the mid-level floors. Platoon 4 dispatched. Traffic detours in place.",
@@ -754,6 +753,10 @@ export const allBackupIssues: Issue[] = [
       "confirmCount": 41,
       "spamCount": 0,
       "alreadyFixedCount": 0
+    },
+    "coordinates": {
+      "lat": 18.9227,
+      "lng": 72.8349
     }
   },
   {
@@ -822,6 +825,10 @@ export const allBackupIssues: Issue[] = [
       "alreadyFixedCount": 0,
       "confirmCount": 18,
       "notFoundCount": 0
+    },
+    "coordinates": {
+      "lat": 19.1282,
+      "lng": 72.9015
     }
   },
   {
@@ -956,7 +963,11 @@ export const allBackupIssues: Issue[] = [
       "name": "Alex Rivera",
       "badge": "Verified Citizen"
     },
-    "location": "Upper West Side"
+    "location": "Upper West Side",
+    "coordinates": {
+      "lat": 19.0133,
+      "lng": 72.8181
+    }
   },
   {
     "id": "report-4",
@@ -1062,7 +1073,11 @@ export const allBackupIssues: Issue[] = [
       "report-8"
     ],
     "category": "Roads",
-    "status": "In Progress"
+    "status": "In Progress",
+    "coordinates": {
+      "lat": 19.1527,
+      "lng": 72.8482
+    }
   },
   {
     "id": "report-5",
@@ -1097,7 +1112,7 @@ export const allBackupIssues: Issue[] = [
     "imageUrl": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=640&q=80",
     "timestamp": "2 hrs ago",
     "verifiedByCount": 4,
-    "location": "Pine Crest Dr.",
+    "location": "Bandra Kurla Complex (BKC), Mumbai",
     "description": "High-pressure stream spraying onto the main walkway, creating erosion and slippery hazards. Water valves being shut off by city teams.",
     "aiSummary": {
       "confidence": 91,
@@ -1130,7 +1145,11 @@ export const allBackupIssues: Issue[] = [
     "status": "Reported",
     "relatedIssues": [
       "report-1"
-    ]
+    ],
+    "coordinates": {
+      "lat": 19.0642,
+      "lng": 72.8735
+    }
   },
   {
     "id": "report-6",
@@ -1234,7 +1253,11 @@ export const allBackupIssues: Issue[] = [
       "summary": "Complete blackout of smart lighting terminal #903. Corresponds with substation grid line transient breaker trip."
     },
     "upvotes": 8,
-    "location": "Elm St & 4th"
+    "location": "Elm St & 4th",
+    "coordinates": {
+      "lat": 19.0615,
+      "lng": 72.8292
+    }
   },
   {
     "id": "report-7",
@@ -1300,7 +1323,11 @@ export const allBackupIssues: Issue[] = [
       }
     ],
     "description": "Multiple bins at capacity, waste spilling onto pedestrian boulevard. Route collector notified for expedited pickup.",
-    "location": "Civic Plaza Boulevard"
+    "location": "Dadar TT Circle, Dadar, Mumbai",
+    "coordinates": {
+      "lat": 19.0183,
+      "lng": 72.8491
+    }
   },
   {
     "id": "report-8",
@@ -1386,11 +1413,15 @@ export const allBackupIssues: Issue[] = [
     "timestamp": "12 hrs ago",
     "description": "Reflective crossing lights and paint significantly faded. Thermal painting machine in operation on-site to restore high-visibility borders.",
     "verifiedByCount": 15,
-    "category": "Roads"
+    "category": "Roads",
+    "coordinates": {
+      "lat": 19.1163,
+      "lng": 72.848
+    }
   }
 ];
 
-export const allBackupUsers: Citizen[] = [
+export const allBackupUsers: CivicUser[] = [
   {
     "id": "citizen-2",
     "verifiedReports": 22,
@@ -1429,7 +1460,7 @@ export const allBackupUsers: Citizen[] = [
   }
 ];
 
-export const allBackupNotifications: Notification[] = [
+export const allBackupNotifications: NotificationItem[] = [
   {
     "id": "notif-1782735079628-132",
     "title": "Report Received",

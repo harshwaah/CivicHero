@@ -2,6 +2,7 @@ import { IssueRepository } from '../repositories/issueRepository';
 import { Issue } from '../models';
 import { CommunityIntegrityAgent } from '../providers/ai/communityIntegrityAgent';
 import { CommunityIntelligenceAgent } from '../providers/ai/communityIntelligenceAgent';
+import { DEFAULT_MAP_CENTER } from '../config';
 
 export const ReportService = {
   /**
@@ -44,7 +45,7 @@ export const ReportService = {
       reporterBadge: reportData.reporterBadge || 'First-time Reporter',
       timeline: defaultTimeline,
       comments: [],
-      coordinates: reportData.coordinates || { lat: 37.7749, lng: -122.4194 },
+      coordinates: reportData.coordinates || { lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng },
       trustMetrics: {
         coSigningCount: 1,
         accuracyRating: 100,

@@ -30,6 +30,7 @@ import {
 import AISummaryCard from '@/components/AISummaryCard';
 import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import { PresetOption, PRESET_OPTIONS, CATEGORIES, URGENCY_LEVELS } from '@/lib/mockData';
+import { DEFAULT_MAP_CENTER } from '@/lib/config';
 
 // Import Real Firebase & Agent Repositories
 import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
@@ -137,33 +138,41 @@ export default function CitizenReportFlowPage() {
   // Auto-acquire current GPS position if none is specified
   useEffect(() => {
     if (!coordinates && typeof navigator !== 'undefined' && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setCoordinates({ lat, lng });
-          
-          // Reverse geocode on GPS acquire
-          if (window.google?.maps) {
-            const geocoder = new window.google.maps.Geocoder();
-            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-              if (status === 'OK' && results && results[0]) {
-                setLocationValue(results[0].formatted_address);
-              } else {
-                setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-              }
-            });
-          } else {
-            setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      try {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            setCoordinates({ lat, lng });
+            
+            // Reverse geocode on GPS acquire
+            if (window.google?.maps) {
+              const geocoder = new window.google.maps.Geocoder();
+              geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                if (status === 'OK' && results && results[0]) {
+                  setLocationValue(results[0].formatted_address);
+                } else {
+                  setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+                }
+              });
+            } else {
+              setLocationValue(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+            }
+          },
+          (_error) => {
+            // Silently fallback to Mumbai default center without console warnings
+            setCoordinates({ lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng });
+            setLocationValue(DEFAULT_MAP_CENTER.name);
+          },
+          {
+            timeout: 5000,
+            maximumAge: 60000,
           }
-        },
-        (error) => {
-          console.warn('GPS coordinates auto-retrieval bypassed:', error);
-          // Standard Brooklyn fallback center
-          setCoordinates({ lat: 40.7128, lng: -74.0060 });
-          setLocationValue('40.7128, -74.0060');
-        }
-      );
+        );
+      } catch {
+        setCoordinates({ lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng });
+        setLocationValue(DEFAULT_MAP_CENTER.name);
+      }
     }
   }, []);
 
@@ -295,35 +304,24 @@ export default function CitizenReportFlowPage() {
         let currentProgress = 0;
         updateBackgroundUploadStatus('uploading');
         
-        // Convert Blob to persistent Data URL
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          const interval = setInterval(() => {
-            currentProgress += Math.floor(Math.random() * 20) + 15;
-            if (currentProgress >= 100) {
-              currentProgress = 100;
-              clearInterval(interval);
-              
-              updateBackgroundUploadUrl(dataUrl);
-              updateBackgroundUploadStatus('complete');
-              updateBackgroundUploadProgress(100);
-              console.log('[BACKGROUND UPLOAD] Simulated completed with persistent Data URL');
-              resolvePromise(dataUrl);
-            } else {
-              updateBackgroundUploadProgress(currentProgress);
-              console.log(`[BACKGROUND UPLOAD] Simulated Progress: ${currentProgress}%`);
-            }
-          }, 150);
-        };
-        reader.onerror = () => {
-          const fallback = 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80';
-          updateBackgroundUploadUrl(fallback);
-          updateBackgroundUploadStatus('complete');
-          updateBackgroundUploadProgress(100);
-          resolvePromise(fallback);
-        };
-        reader.readAsDataURL(blob);
+        const interval = setInterval(() => {
+          currentProgress += Math.floor(Math.random() * 20) + 15;
+          if (currentProgress >= 100) {
+            currentProgress = 100;
+            clearInterval(interval);
+            
+            // Create local object URL as secure cloud URL fallback
+            const localUrl = URL.createObjectURL(blob);
+            updateBackgroundUploadUrl(localUrl);
+            updateBackgroundUploadStatus('complete');
+            updateBackgroundUploadProgress(100);
+            console.log('[BACKGROUND UPLOAD] Simulated completed. Local URL:', localUrl);
+            resolvePromise(localUrl);
+          } else {
+            updateBackgroundUploadProgress(currentProgress);
+            console.log(`[BACKGROUND UPLOAD] Simulated Progress: ${currentProgress}%`);
+          }
+        }, 150);
       };
 
       if (!isFirebaseConfigured) {
@@ -438,12 +436,12 @@ export default function CitizenReportFlowPage() {
 
   // Preset Selection / Autofill Handler with location coordinates
   const handleSelectPreset = (preset: PresetOption) => {
-    let presetCoords = { lat: 40.7128, lng: -74.0060 };
-    if (preset.id === 'preset-pothole') presetCoords = { lat: 40.6782, lng: -73.9442 };
-    else if (preset.id === 'preset-tree') presetCoords = { lat: 40.6892, lng: -73.9584 };
-    else if (preset.id === 'preset-water') presetCoords = { lat: 40.6742, lng: -73.9682 };
-    else if (preset.id === 'preset-streetlight') presetCoords = { lat: 40.6923, lng: -73.9851 };
-    else if (preset.id === 'preset-trash') presetCoords = { lat: 40.6952, lng: -73.9932 };
+    let presetCoords = { lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng };
+    if (preset.id === 'preset-pothole') presetCoords = { lat: 19.0596, lng: 72.8295 }; // Bandra West
+    else if (preset.id === 'preset-tree') presetCoords = { lat: 19.0178, lng: 72.8478 }; // Dadar
+    else if (preset.id === 'preset-water') presetCoords = { lat: 19.1257, lng: 72.9051 }; // Powai
+    else if (preset.id === 'preset-streetlight') presetCoords = { lat: 19.1197, lng: 72.8468 }; // Andheri West
+    else if (preset.id === 'preset-trash') presetCoords = { lat: 19.0666, lng: 72.8687 }; // BKC
 
     setSelectedImage(preset.imageUrl);
     setEvidenceFile(null); // No local file needed
@@ -643,7 +641,7 @@ export default function CitizenReportFlowPage() {
           }
         ],
         comments: [],
-        coordinates: coordinates || { lat: 40.7128, lng: -74.0060 },
+        coordinates: coordinates || { lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng },
         trustMetrics: {
           coSigningCount: 1,
           accuracyRating: 100,
@@ -1157,8 +1155,8 @@ export default function CitizenReportFlowPage() {
                         categoryName={category}
                         interactive={true}
                         showLocateMe={true}
-                        latitude={coordinates?.lat || 40.7128}
-                        longitude={coordinates?.lng || -74.0060}
+                        latitude={coordinates?.lat || DEFAULT_MAP_CENTER.lat}
+                        longitude={coordinates?.lng || DEFAULT_MAP_CENTER.lng}
                         markers={coordinates ? [{
                           id: 'new-report-marker',
                           lat: coordinates.lat,

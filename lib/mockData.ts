@@ -23,71 +23,71 @@ export const PRESET_OPTIONS: PresetOption[] = [
     id: 'preset-pothole',
     title: 'Large expanding pothole in center lane',
     description: 'A deep, widening pothole has formed in the middle of the road. It is causing vehicles to swerve suddenly, which is extremely dangerous, especially for bicycles and motorcycles.',
-    location: '842 Oak Ridge Drive, Site B',
+    location: 'Linking Road, Bandra West, Mumbai',
     category: 'Roads',
     urgency: 'High',
     imageUrl: 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80',
-    aiSummary: 'Computer vision analysis confirms road surface cavitation. Deep crater measures ~35cm in diameter posing a structural tire hazard. Proximity to Oakwood school bus lane increases risk.',
+    aiSummary: 'Computer vision analysis confirms road surface cavitation. Deep crater measures ~35cm in diameter posing a structural tire hazard. Proximity to Bandra school bus route increases risk.',
     confidence: 96,
     categoryMatch: 'Road Surface Defect',
     severityMatch: 'High Priority Response',
-    routingTo: 'Public Works - Road Maintenance'
+    routingTo: 'BMC - Road Maintenance Division'
   },
   {
     id: 'preset-tree',
     title: 'Collapsed tree limb blocking sidewalk',
-    description: 'A massive branch from an oak tree has broken off and is completely blocking the sidewalk and bike lane. Pedestrians have to step into the street to get around it.',
-    location: 'Cloverdale Road, near bridge',
+    description: 'A massive branch from an old banyan tree has broken off and is completely blocking the sidewalk and bike lane. Pedestrians have to step into the street to get around it.',
+    location: 'Dadar TT Circle, Dadar, Mumbai',
     category: 'Roads',
     urgency: 'Medium',
     imageUrl: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=640&q=80',
-    aiSummary: 'Large deciduous tree branch collapsed across sidewalk and bike lane. Blocks transit flow. Forwarded to forestry division.',
+    aiSummary: 'Large tree branch collapsed across pedestrian walkway. Blocks transit flow. Forwarded to municipal tree authority.',
     confidence: 92,
     categoryMatch: 'Debris & Tree Fall',
     severityMatch: 'Medium Priority Response',
-    routingTo: 'Forestry & Parks Division'
+    routingTo: 'BMC - Gardens & Trees Dept'
   },
   {
     id: 'preset-water',
     title: 'Water main spraying onto walkway',
-    description: 'Water is bubbling up rapidly from under the sidewalk pavement, creating a mini geyser and flooding the pedestrian walkway. Water is starting to flow into adjacent basements.',
-    location: '142 Pine Crest Dr.',
+    description: 'Water is bubbling up rapidly from under the sidewalk pavement, creating a mini geyser and flooding the pedestrian walkway. Water is starting to flow into adjacent shops.',
+    location: 'Powai Lake Promenade, Powai, Mumbai',
     category: 'Water',
     urgency: 'Critical',
     imageUrl: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=640&q=80',
-    aiSummary: 'High pressure hydraulic rupture creating sidewalk flooding. Liquid is clean water, indicative of potable water distribution line break. Critical priority dispatched.',
+    aiSummary: 'High pressure hydraulic rupture creating sidewalk flooding. Liquid is clean water, indicative of municipal water distribution line break. Critical priority dispatched.',
     confidence: 98,
     categoryMatch: 'Water Main Rupture',
     severityMatch: 'Critical Priority Response',
-    routingTo: 'Water Safety & Utilities Dept'
+    routingTo: 'Hydraulic Engineering Dept (Mumbai)'
   },
   {
     id: 'preset-streetlight',
     title: 'Broken streetlight lamp post',
-    description: 'The streetlight post at the corner of Elm Street is completely dead. The entire intersection is pitch black at night, making it very unsafe for students walking home.',
-    location: 'Elm St & 4th Avenue',
+    description: 'The streetlight post at the junction is completely dead. The entire intersection is pitch black at night, making it unsafe for pedestrians and commuters.',
+    location: 'SV Road, Andheri West, Mumbai',
     category: 'Utilities',
     urgency: 'Low',
     imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=640&q=80',
-    aiSummary: 'Complete blackout of smart lighting terminal. Corresponds with local utility node voltage diagnostic failure. Routed to grid operations for microcontroller replacement.',
+    aiSummary: 'Complete blackout of street lighting fixture. Corresponds with local utility node circuit failure. Routed to grid operations for repair.',
     confidence: 94,
     categoryMatch: 'Street Lighting Utility',
     severityMatch: 'Low Priority Response',
-    routingTo: 'Smart Grid & Utilities Office'
+    routingTo: 'Electrical & Power Supply Dept'
   },
   {
     id: 'preset-trash',
-    title: 'Overflowing park garbage bin',
-    description: 'The public waste bins are overflowing with trash bags, loose plastics, and cardboard. Wind is spreading litter across the lawn and towards the storm drain.',
-    location: 'Civic Plaza Boulevard',
+    title: 'Overflowing community garbage bin',
+    description: 'The public waste bins are overflowing with trash bags, loose plastics, and packaging. Wind is spreading litter across the footpath and towards the storm drain.',
+    location: 'Bandra Kurla Complex (BKC), Mumbai',
     category: 'Environment',
     urgency: 'Medium',
     imageUrl: 'https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80',
-    aiSummary: 'Public street waste receptacle overflow. Loose plastics spreading into public storm drain. Recommended sanitation route dynamic collector redirect.',
+    aiSummary: 'Public street waste receptacle overflow. Loose plastics spreading into public storm drain. Recommended solid waste management collector redirect.',
     confidence: 89,
     categoryMatch: 'Sanitation / Waste Management',
     severityMatch: 'Medium Priority Response',
-    routingTo: 'Sanitation & Waste Management'
+    routingTo: 'Solid Waste Management (SWM) Dept'
   }
 ];
 

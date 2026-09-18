@@ -26,6 +26,7 @@ import { getIssueDescription, getSortScore } from '../../lib/helpers';
 import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { IssueService } from '../../lib/services/issueService';
 import { Issue } from '../../lib/models';
+import { DEFAULT_MAP_CENTER } from '../../lib/config';
 
 export default function CitizenPage() {
   const router = useRouter();
@@ -93,8 +94,8 @@ export default function CitizenPage() {
                   showLocateMe={true}
                   markers={issues.map(i => ({
                     id: i.id,
-                    lat: i.coordinates?.lat || 40.7128 + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
-                    lng: i.coordinates?.lng || -74.0060 + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+                    lat: i.coordinates?.lat || DEFAULT_MAP_CENTER.lat + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+                    lng: i.coordinates?.lng || DEFAULT_MAP_CENTER.lng + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
                     title: i.title,
                     urgency: i.urgency,
                     status: i.status,

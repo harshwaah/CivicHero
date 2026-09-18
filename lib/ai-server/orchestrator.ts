@@ -1,5 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
-import { serverAiConfig } from '@/lib/config';
+import { serverAiConfig, DEFAULT_MAP_CENTER } from '@/lib/config';
 
 export interface AIMetrics {
   totalRequests: number;
@@ -114,9 +114,9 @@ function getGracefulFallback(prompt: string, schema: any): any {
       ],
       emergingHotspots: [
         {
-          location: "Central District",
-          latitude: 40.7128,
-          longitude: -74.0060,
+          location: "Bandra Kurla Complex (BKC), Mumbai",
+          latitude: DEFAULT_MAP_CENTER.lat,
+          longitude: DEFAULT_MAP_CENTER.lng,
           issueType: "Road Defects",
           description: "Multiple pothole and pavement cracks reported within a 200m radius.",
           reportCount: 4

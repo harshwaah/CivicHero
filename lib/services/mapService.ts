@@ -1,5 +1,6 @@
 import { IssueRepository } from '../repositories/issueRepository';
 import { MapMarker } from '../models';
+import { DEFAULT_MAP_CENTER } from '../config';
 
 export const MapService = {
   /**
@@ -21,14 +22,13 @@ export const MapService = {
   },
 
   /**
-   * Simulates looking up coordinates from physical street address
+   * Simulates looking up coordinates from physical street address with Mumbai neighborhood grounding
    */
   async geocodeAddress(address: string): Promise<{ lat: number; lng: number }> {
-    // Standard coordinates for general vicinity
-    console.log(`Simulating geocoding lookups for address: ${address}`);
+    console.log(`Geocoding lookup for address: ${address}`);
     return {
-      lat: 37.7749 + (Math.random() - 0.5) * 0.05,
-      lng: -122.4194 + (Math.random() - 0.5) * 0.05,
+      lat: DEFAULT_MAP_CENTER.lat + (Math.random() - 0.5) * 0.05,
+      lng: DEFAULT_MAP_CENTER.lng + (Math.random() - 0.5) * 0.05,
     };
   },
 };

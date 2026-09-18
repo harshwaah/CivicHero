@@ -4,8 +4,8 @@ import React, { createContext, useContext, ReactNode, useState, useCallback, use
 import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps';
 import { DeckGlOverlay } from '@/components/DeckGlOverlay';
 import { ClusteredMarkers } from '@/components/ClusteredMarkers';
-import { MapPin, Layers } from 'lucide-react';
-import { mapsConfig } from '@/lib/config';
+import { MapPin, Layers, Crosshair, Check, AlertCircle } from 'lucide-react';
+import { mapsConfig, DEFAULT_MAP_CENTER } from '@/lib/config';
 
 interface MapMarkerType {
   lat: number;
@@ -82,38 +82,77 @@ interface CivicMapProps {
 }
 
 const defaultCenter = {
-  lat: 40.7128,
-  lng: -74.0060
+  lat: DEFAULT_MAP_CENTER.lat,
+  lng: DEFAULT_MAP_CENTER.lng,
 };
 
 function LocateMeControl() {
   const map = useMap();
   const [locating, setLocating] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const locateUser = () => {
-    if (!map || !navigator.geolocation) return;
+    if (!map) return;
+    
+    if (!navigator.geolocation) {
+      setStatusMessage('Geolocation is not supported by your browser. Centered on Mumbai.');
+      map.panTo(defaultCenter);
+      map.setZoom(14);
+      setTimeout(() => setStatusMessage(null), 4000);
+      return;
+    }
+
     setLocating(true);
+    setStatusMessage('Acquiring your coordinates...');
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         map.panTo({ lat: latitude, lng: longitude });
         map.setZoom(16);
         setLocating(false);
+        setStatusMessage('Location found!');
+        setTimeout(() => setStatusMessage(null), 3000);
       },
-      () => {
+      (error) => {
+        // Gracefully handle permission denial or disabled policy without console warning noise
+        map.panTo(defaultCenter);
+        map.setZoom(14);
         setLocating(false);
+        const userNotice = error?.code === 1
+          ? 'Location permission not enabled. Centered on Mumbai.'
+          : 'Location lookup unavailable. Centered on Mumbai.';
+        setStatusMessage(userNotice);
+        setTimeout(() => setStatusMessage(null), 4000);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 8000,
+        maximumAge: 30000,
       }
     );
   };
 
   return (
-    <button 
-      onClick={locateUser}
-      className={`absolute bottom-6 right-6 w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-lg flex items-center justify-center transition-colors ${locating ? 'text-brand-accent animate-pulse' : 'text-slate-700 hover:text-brand-primary'}`}
-      title="Locate Me"
-    >
-      <MapPin className="w-5 h-5" />
-    </button>
+    <div className="absolute bottom-6 right-6 z-10 flex flex-col items-end gap-2 pointer-events-auto">
+      {statusMessage && (
+        <div className="bg-slate-900/95 text-white backdrop-blur text-xs font-medium px-3.5 py-2 rounded-xl shadow-lg border border-slate-700 max-w-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
+          {statusMessage}
+        </div>
+      )}
+      <button 
+        onClick={locateUser}
+        disabled={locating}
+        className={`w-12 h-12 rounded-2xl bg-white/95 backdrop-blur border border-slate-200 shadow-xl flex items-center justify-center transition-all duration-200 ${
+          locating 
+            ? 'text-emerald-500 ring-2 ring-emerald-400/50 animate-pulse' 
+            : 'text-slate-700 hover:text-emerald-600 hover:bg-white hover:scale-105 active:scale-95'
+        }`}
+        title="Locate Myself (HTML5 Geolocation / Mumbai Default)"
+      >
+        <Crosshair className={`w-5 h-5 ${locating ? 'animate-spin' : ''}`} />
+      </button>
+    </div>
   );
 }
 

@@ -52,6 +52,28 @@ export const mapsConfig = {
   isConfigured: !!rawMapsApiKey && rawMapsApiKey !== 'YOUR_API_KEY',
 };
 
+// Canonical Default Geographic Center (Mumbai, Maharashtra, India)
+export const DEFAULT_MAP_CENTER = {
+  lat: 19.0760,
+  lng: 72.8777,
+  name: 'Mumbai, Maharashtra, India',
+  city: 'Mumbai',
+  state: 'Maharashtra',
+  country: 'India',
+  zoom: 13,
+};
+
+export const MUMBAI_LANDMARKS = [
+  { name: 'Bandra Kurla Complex (BKC), Mumbai', lat: 19.0666, lng: 72.8687 },
+  { name: 'Linking Road, Bandra West, Mumbai', lat: 19.0596, lng: 72.8295 },
+  { name: 'Dadar TT Circle, Dadar, Mumbai', lat: 19.0178, lng: 72.8478 },
+  { name: 'SV Road, Andheri West, Mumbai', lat: 19.1197, lng: 72.8468 },
+  { name: 'Colaba Causeway, South Mumbai', lat: 18.9220, lng: 72.8347 },
+  { name: 'Powai Lake Promenade, Powai, Mumbai', lat: 19.1257, lng: 72.9051 },
+  { name: 'Worli Sea Face, Worli, Mumbai', lat: 19.0144, lng: 72.8153 },
+  { name: 'Goregaon Hub Mall, Western Express Highway', lat: 19.1553, lng: 72.8497 },
+];
+
 // 3. Server-Side Confidential AI Orchestrator Configuration
 // Evaluated server-side; NEVER exposed via NEXT_PUBLIC_ prefixes.
 const getSafeServerEnv = (key: string): string => {
