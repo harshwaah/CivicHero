@@ -16,7 +16,7 @@ import { formatTimestamp } from '@/lib/helpers';
 import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import AISummaryCard from '@/components/AISummaryCard';
 import { Skeleton } from '@/components/Skeleton';
-import { getPlaceholderImage } from '@/lib/utils';
+import { getPlaceholderImage, safeImageUrl } from '@/lib/utils';
 import { IssueRepository } from '@/lib/repositories/issueRepository';
 import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
 
@@ -366,7 +366,7 @@ export default function AdminIssueDetailPage() {
             {/* Visual Header Banner Stage */}
             <div className="relative aspect-[16/10] sm:aspect-[21/10] lg:aspect-[16/9] rounded-[32px] overflow-hidden bg-slate-950 border border-slate-200 shadow-sm group">
               <Image
-                src={(!issue.evidenceStatus || issue.evidenceStatus === 'AVAILABLE') ? (issue.imageUrl || getPlaceholderImage(issue.category, issue.title, issue.description)) : getPlaceholderImage(issue.category, issue.title, issue.description)}
+                src={(!issue.evidenceStatus || issue.evidenceStatus === 'AVAILABLE') ? safeImageUrl(issue.imageUrl, issue.category, issue.title, issue.description) : getPlaceholderImage(issue.category, issue.title, issue.description)}
                 alt={issue.title}
                 fill
                 priority

@@ -53,3 +53,18 @@ export function getPlaceholderImage(category?: string, title?: string, descripti
   return 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80';
 }
 
+export function safeImageUrl(imageUrl?: string | null, category?: string, title?: string, description?: string): string {
+  if (!imageUrl || typeof imageUrl !== 'string') {
+    return getPlaceholderImage(category, title, description);
+  }
+  const trimmed = imageUrl.trim();
+  // Discard cross-origin or expired blob: URIs
+  if (trimmed.startsWith('blob:')) {
+    return getPlaceholderImage(category, title, description);
+  }
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('data:') && !trimmed.startsWith('/')) {
+    return getPlaceholderImage(category, title, description);
+  }
+  return trimmed;
+}
+

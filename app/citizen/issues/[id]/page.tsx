@@ -30,7 +30,7 @@ import { CivicMap } from '@/lib/providers/maps/mapProvider';
 import AISummaryCard from '@/components/AISummaryCard';
 import VerificationBar from '@/components/VerificationBar';
 import { Skeleton } from '@/components/Skeleton';
-import { getPlaceholderImage } from '@/lib/utils';
+import { getPlaceholderImage, safeImageUrl } from '@/lib/utils';
 import { IssueRepository } from '@/lib/repositories/issueRepository';
 import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
 
@@ -455,7 +455,7 @@ export default function IssueDetailPage() {
             {/* Visual Header Banner Stage */}
             <div className="relative aspect-[16/10] sm:aspect-[21/10] lg:aspect-[16/9] rounded-[32px] overflow-hidden bg-slate-950 border border-slate-100 shadow-sm group">
               <Image
-                src={(!report.evidenceStatus || report.evidenceStatus === 'AVAILABLE') ? (report.imageUrl || getPlaceholderImage(report.category, report.title, report.description)) : getPlaceholderImage(report.category, report.title, report.description)}
+                src={(!report.evidenceStatus || report.evidenceStatus === 'AVAILABLE') ? safeImageUrl(report.imageUrl, report.category, report.title, report.description) : getPlaceholderImage(report.category, report.title, report.description)}
                 alt={report.title}
                 fill
                 priority

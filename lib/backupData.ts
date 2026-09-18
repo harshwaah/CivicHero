@@ -251,7 +251,7 @@ export const allBackupIssues: Issue[] = [
     "urgency": "Low",
     "reporterBadge": "First-time Reporter",
     "timestamp": "Just now",
-    "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/7c842d3b-b171-4f24-afe4-292d7dfa81af",
+    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
     "coordinates": {
       "lat": 40.7128,
       "lng": -74.006
@@ -371,7 +371,7 @@ export const allBackupIssues: Issue[] = [
       "accuracyRating": 100
     },
     "location": "40.7128, -74.0060",
-    "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/cd027536-acd3-42ac-b4fe-796d2db336c7",
+    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
     "timestamp": "Just now"
   },
   {
@@ -381,7 +381,7 @@ export const allBackupIssues: Issue[] = [
     "reporterBadge": "First-time Reporter",
     "location": "40.7128, -74.0060",
     "status": "Reported",
-    "imageUrl": "blob:https://ais-pre-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/684cc598-18c9-476e-a1cd-c8e8816e8382",
+    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
     "evidenceStatus": "AVAILABLE",
     "reporterName": "Citizen Hero",
     "title": "garbage on road",
@@ -463,7 +463,7 @@ export const allBackupIssues: Issue[] = [
     "urgency": "Low",
     "reporterName": "Citizen Hero",
     "timestamp": "Just now",
-    "imageUrl": "blob:https://ais-pre-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/4d51aa46-8f0c-4166-b506-c09a74ff33f8",
+    "imageUrl": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&w=640&q=80",
     "status": "Reported",
     "coordinates": {
       "lng": -74.006,
@@ -533,7 +533,7 @@ export const allBackupIssues: Issue[] = [
     "reporterBadge": "First-time Reporter",
     "title": "road",
     "category": "Roads",
-    "imageUrl": "blob:https://ais-dev-tj32ctiz6q22a2n3i44wtn-98532876696.asia-southeast1.run.app/778ce0ab-40aa-4200-8aef-aa69ecebf435",
+    "imageUrl": "https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80",
     "urgency": "Low",
     "location": "40.7128, -74.0060",
     "verifiedByCount": 1,

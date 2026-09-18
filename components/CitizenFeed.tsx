@@ -10,6 +10,7 @@ import { IssueService } from '../lib/services/issueService';
 import { Issue } from '../lib/models';
 import { Skeleton } from './Skeleton';
 import { getIssueDescription, getSortScore } from '@/lib/helpers';
+import { safeImageUrl } from '@/lib/utils';
 
 interface CitizenFeedProps {
   onOpenReportPlaceholder: () => void;
@@ -307,7 +308,7 @@ export default function CitizenFeed({ onOpenReportPlaceholder, onOpenMilestone }
               <Link href={`/citizen/issues/${featuredIssue.id}`} className="block w-full h-full">
                 {/* Hero background image */}
                 <Image
-                  src={featuredIssue.imageUrl || "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80"}
+                  src={safeImageUrl(featuredIssue.imageUrl, featuredIssue.category, featuredIssue.title, featuredIssue.description)}
                   alt={featuredIssue.title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1200px"

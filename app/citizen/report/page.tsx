@@ -295,24 +295,35 @@ export default function CitizenReportFlowPage() {
         let currentProgress = 0;
         updateBackgroundUploadStatus('uploading');
         
-        const interval = setInterval(() => {
-          currentProgress += Math.floor(Math.random() * 20) + 15;
-          if (currentProgress >= 100) {
-            currentProgress = 100;
-            clearInterval(interval);
-            
-            // Create local object URL as secure cloud URL fallback
-            const localUrl = URL.createObjectURL(blob);
-            updateBackgroundUploadUrl(localUrl);
-            updateBackgroundUploadStatus('complete');
-            updateBackgroundUploadProgress(100);
-            console.log('[BACKGROUND UPLOAD] Simulated completed. Local URL:', localUrl);
-            resolvePromise(localUrl);
-          } else {
-            updateBackgroundUploadProgress(currentProgress);
-            console.log(`[BACKGROUND UPLOAD] Simulated Progress: ${currentProgress}%`);
-          }
-        }, 150);
+        // Convert Blob to persistent Data URL
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const interval = setInterval(() => {
+            currentProgress += Math.floor(Math.random() * 20) + 15;
+            if (currentProgress >= 100) {
+              currentProgress = 100;
+              clearInterval(interval);
+              
+              updateBackgroundUploadUrl(dataUrl);
+              updateBackgroundUploadStatus('complete');
+              updateBackgroundUploadProgress(100);
+              console.log('[BACKGROUND UPLOAD] Simulated completed with persistent Data URL');
+              resolvePromise(dataUrl);
+            } else {
+              updateBackgroundUploadProgress(currentProgress);
+              console.log(`[BACKGROUND UPLOAD] Simulated Progress: ${currentProgress}%`);
+            }
+          }, 150);
+        };
+        reader.onerror = () => {
+          const fallback = 'https://images.unsplash.com/photo-1515162305285-0293e4767cc2?auto=format&fit=crop&w=640&q=80';
+          updateBackgroundUploadUrl(fallback);
+          updateBackgroundUploadStatus('complete');
+          updateBackgroundUploadProgress(100);
+          resolvePromise(fallback);
+        };
+        reader.readAsDataURL(blob);
       };
 
       if (!isFirebaseConfigured) {

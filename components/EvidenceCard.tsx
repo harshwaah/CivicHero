@@ -7,7 +7,7 @@ import { MapPin, ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { DESIGN_TOKENS } from '@/lib/designTokens';
 import { getPriorityClasses, getStatusClasses, formatTimestamp, getIssueDescription } from '@/lib/helpers';
 import { Issue } from '@/lib/models';
-import { getPlaceholderImage } from '@/lib/utils';
+import { getPlaceholderImage, safeImageUrl } from '@/lib/utils';
 
 interface EvidenceCardProps {
   report: Issue;
@@ -53,7 +53,7 @@ export default function EvidenceCard({ report }: EvidenceCardProps) {
   // Handle media decoupling fallback
   const isEvidenceAvailable = !report.evidenceStatus || report.evidenceStatus === 'AVAILABLE';
   const displayImage = isEvidenceAvailable 
-    ? (report.imageUrl || getPlaceholderImage(report.category, report.title, report.description)) 
+    ? safeImageUrl(report.imageUrl, report.category, report.title, report.description) 
     : getPlaceholderImage(report.category, report.title, report.description);
 
   return (

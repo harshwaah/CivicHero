@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, 
@@ -17,6 +18,7 @@ import {
 import { IssueRepository } from '../lib/repositories/issueRepository';
 import { Issue } from '../lib/models';
 import { Skeleton } from './Skeleton';
+import { safeImageUrl } from '@/lib/utils';
 
 export default function GlobalSearch() {
   const [query, setQuery] = useState('');
@@ -342,10 +344,12 @@ export default function GlobalSearch() {
                 {/* Media Image if available */}
                 {selectedIssue.imageUrl && (
                   <div className="relative w-full h-48 rounded-2xl overflow-hidden shadow-inner border border-slate-100 shrink-0">
-                    <img
-                      src={selectedIssue.imageUrl}
+                    <Image
+                      src={safeImageUrl(selectedIssue.imageUrl, selectedIssue.category, selectedIssue.title, selectedIssue.description)}
                       alt={selectedIssue.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 400px"
+                      className="object-cover"
                       referrerPolicy="no-referrer"
                     />
                   </div>
