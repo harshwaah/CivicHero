@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { LayoutDashboard, ListTodo, Activity, Bot, MapIcon } from 'lucide-react';
+import CivicLogo from './CivicLogo';
 
 interface AdminNavProps {
   activeTab: string;
@@ -66,16 +67,11 @@ export default function AdminNav({ activeTab, onTabChange }: AdminNavProps) {
         <div className="bg-slate-900 rounded-[28px] border border-slate-800 shadow-xl p-6 flex flex-col justify-between flex-1">
           <div className="flex flex-col gap-6">
             {/* Minimal Brand Profile Section */}
-            <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-              <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 font-bold font-sans text-white">
-                MC
-              </div>
-              <div>
-                <h4 className="font-sans font-bold text-sm text-white">Mission Control</h4>
-                <div className="flex items-center gap-1 text-[10px] font-mono text-brand-accent font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>SYSTEM ONLINE</span>
-                </div>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <CivicLogo href="/" size="sm" theme="dark" showTagline={false} />
+              <div className="flex items-center gap-1.5 text-[9px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full font-bold border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>ROOT</span>
               </div>
             </div>
 

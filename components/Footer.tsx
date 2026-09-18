@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Landmark, Globe, Twitter, Github } from 'lucide-react';
+import { Globe, Twitter, Github } from 'lucide-react';
+import CivicLogo from './CivicLogo';
 
 export default function Footer() {
   return (
@@ -9,13 +10,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
         {/* Company Info */}
         <div className="md:col-span-2">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center text-white">
-              <Landmark className="w-4 h-4" />
-            </div>
-            <span className="font-sans font-bold text-lg tracking-tight text-brand-primary">
-              Civic<span className="text-brand-secondary">Hero</span>
-            </span>
+          <div className="mb-4">
+            <CivicLogo href="/" size="md" showTagline={true} />
           </div>
           <p className="font-body text-xs text-brand-muted leading-relaxed max-w-sm mb-6">
             Pioneering the next generation of civic participation. We believe that transparent infrastructure is the prerequisite of durable community trust.

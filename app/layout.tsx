@@ -24,6 +24,21 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'CivicHero - Trust Through Transparency',
   description: 'A transparent civic operating system where citizens, communities, and local administrations collaborate to identify, verify, prioritize and resolve hyperlocal civic issues.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon', type: 'image/png' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
+  manifest: '/site.webmanifest',
+  openGraph: {
+    title: 'CivicHero - Trust Through Transparency',
+    description: 'A transparent civic operating system where citizens, communities, and local administrations collaborate to identify, verify, prioritize and resolve hyperlocal civic issues.',
+    siteName: 'CivicHero',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {

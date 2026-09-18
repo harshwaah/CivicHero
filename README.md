@@ -1,5 +1,15 @@
 # CivicHero - Civic Engagement & Neighborhood Verification Portal
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/0f03f26f-2826-4407-a647-e734b0b5251f/deploy-status)](https://app.netlify.com/projects/civic-hero-mvp/deploys)
+![Next.js 15](https://img.shields.io/badge/Next.js-15.5-black?style=flat&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178c6?style=flat&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-38bdf8?style=flat&logo=tailwindcss&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-Firestore_%26_Auth-FFCA28?style=flat&logo=firebase&logoColor=black)
+![Google Maps Platform](https://img.shields.io/badge/Google_Maps_Platform-4285F4?style=flat&logo=googlemaps&logoColor=white)
+![Google GenAI](https://img.shields.io/badge/Google_GenAI-Gemini_Flash-8E75B2?style=flat&logo=googlegemini&logoColor=white)
+![NVIDIA Nemotron](https://img.shields.io/badge/NVIDIA-Nemotron_LLM-76B900?style=flat&logo=nvidia&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-10b981?style=flat)
+
 CivicHero is a high-fidelity, highly polished, next-generation civic engagement portal where citizens can capture, verify, and track neighborhood infrastructure concerns. This application empowers local agency by mapping local crowd-vetted reports directly into municipal public works queues.
 
 This workspace represents the completion of **Phase 8.2 (Configuration Migration & Secret Hardening)**, establishing a centralized configuration single source of truth, isolating server-side secrets, and eliminating legacy configuration artifacts.

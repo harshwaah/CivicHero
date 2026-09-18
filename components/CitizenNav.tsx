@@ -14,6 +14,7 @@ import {
   Sparkles 
 } from 'lucide-react';
 import { NotificationRepository } from '../lib/repositories/notificationRepository';
+import CivicLogo from './CivicLogo';
 
 interface CitizenNavProps {
   activeTab: string;
@@ -99,16 +100,11 @@ export default function CitizenNav({ activeTab, onTabChange }: CitizenNavProps) 
         <div className="bg-white rounded-[28px] border border-slate-100 shadow-sm p-6 flex flex-col justify-between flex-1">
           <div className="flex flex-col gap-6">
             {/* Minimal Brand Profile Section */}
-            <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-              <div className="w-10 h-10 rounded-full bg-brand-primary/5 flex items-center justify-center border border-brand-primary/10 font-bold font-sans text-brand-primary">
-                CH
-              </div>
-              <div>
-                <h4 className="font-sans font-bold text-sm text-brand-primary">Citizen Hub</h4>
-                <div className="flex items-center gap-1 text-[10px] font-mono text-brand-secondary font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>SECURE NODE ACTIVE</span>
-                </div>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <CivicLogo href="/" size="sm" showTagline={false} />
+              <div className="flex items-center gap-1.5 text-[9px] font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-bold border border-emerald-100/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>ONLINE</span>
               </div>
             </div>
 

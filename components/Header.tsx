@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, Globe, Menu, X, Landmark, User } from 'lucide-react';
+import { Bell, Globe, Menu, X, User } from 'lucide-react';
+import CivicLogo from './CivicLogo';
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -33,19 +34,13 @@ export default function Header() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Logo and Icon */}
+        {/* Logo and Wordmark */}
         <motion.div
-          className="flex items-center gap-2 cursor-pointer group"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center text-white shadow-md shadow-brand-primary/20 group-hover:bg-brand-secondary transition-colors duration-300">
-            <Landmark className="w-5 h-5" />
-          </div>
-          <span className="font-sans font-bold text-xl tracking-tight text-brand-primary">
-            Civic<span className="text-brand-secondary">Hero</span>
-          </span>
+          <CivicLogo href="/" size="md" showTagline={true} />
         </motion.div>
 
         {/* Central Nav Links */}
