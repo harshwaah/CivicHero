@@ -1,6 +1,32 @@
 import type {NextConfig} from 'next';
+import fs from 'fs';
+import path from 'path';
+
+function loadDotEnvVariables(): Record<string, string> {
+  const envMap: Record<string, string> = {};
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, 'utf8');
+    for (const line of content.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx > 0) {
+        const key = trimmed.substring(0, idx).trim();
+        const val = trimmed.substring(idx + 1).trim();
+        if (val) {
+          envMap[key] = val;
+        }
+      }
+    }
+  }
+  return envMap;
+}
+
+const customEnv = loadDotEnvVariables();
 
 const nextConfig: NextConfig = {
+  env: customEnv,
   reactStrictMode: true,
   eslint: {
     ignoreDuringBuilds: true,
