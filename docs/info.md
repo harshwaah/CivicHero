@@ -200,3 +200,29 @@ As implemented in Phase 8.2, CivicHero enforces strict boundaries between public
 3.  **Graceful Non-Crashing Fallbacks**: In the absence of live cloud credentials, all data repositories and AI routers activate deterministic simulation modes with clear diagnostic warnings.
 4.  **Audit Reference**: For the complete credential mapping and hardening audit, consult `docs/security.md`.
 
+---
+
+## 9. Product Polish, Accessibility, and Reliability Architecture (Phase 8.3)
+
+Phase 8.3 hardens runtime resilience, user recovery, accessibility compliance, and visual fidelity without changing business models or Firestore schemas.
+
+### 9.1 Error Boundary Subsystem (`components/ErrorBoundary.tsx`)
+- **Granular Feature Isolation**: Instead of a global error page that unmounts the entire application upon unexpected UI crashes, error boundaries are wrapped around individual tabs and functional modules (`CitizenFeed`, `CitizenNav`, `AdminOverview`, `AdminAnalytics`, `DiagnosticsGrid`, and dynamic detail views).
+- **Subsystem Reset Mechanisms**: Provides users with inline "Retry" capabilities that reset local component state without requiring a full browser reload.
+
+### 9.2 Friendly Service Recovery States (`components/RecoveryState.tsx`)
+- **Subsystem-Specific Contexts**: Pre-configured recovery views for `firestore`, `storage`, `maps`, `ai`, and `general` services.
+- **Actionable Diagnostics**: Displays plain-language operational guidance alongside non-destructive retry handlers and links to the system diagnostics console.
+
+### 9.3 Category-Specific Placeholder Engine (`lib/placeholders.ts`)
+- **Deterministic Offline Visuals**: Generates high-fidelity SVG data URIs tailored to specific municipal infrastructure categories (Roads, Water, Sanitation, Electrical, Safety, Parks, and Structures).
+- **Zero-Network Fallback**: When external images fail to load or devices operate offline, placeholders render instantaneously without external network requests or broken image badges.
+
+### 9.4 Global Offline Detection (`components/OfflineStatusBanner.tsx`)
+- **Real-Time Network Telemetry**: Mounts top-level `online` and `offline` event listeners in `app/layout.tsx`.
+- **User Continuity Feedback**: Warns users immediately when network connectivity is disrupted, confirming that pending actions are queued locally. Automatically displays a temporary positive confirmation when reconnected.
+
+### 9.5 Safe Curated Demo State Reset (`components/SettingsPanel.tsx`)
+- **Deterministic Environment Reset**: Allows developers and testers to clear tutorial flags, cached search queries, drafts, and UI preferences in a single action.
+- **Production Isolation Invariant**: The reset routine explicitly targets browser `localStorage` and strictly avoids calling Firestore `deleteDoc` or mutating live database collections.
+

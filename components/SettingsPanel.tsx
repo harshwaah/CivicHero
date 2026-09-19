@@ -16,7 +16,8 @@ import {
   ShieldCheck,
   Check,
   Database,
-  RefreshCw
+  RefreshCw,
+  RotateCcw
 } from 'lucide-react';
 import { Skeleton } from './Skeleton';
 import { firebaseConfig } from '@/lib/config';
@@ -81,6 +82,54 @@ export default function SettingsPanel() {
   const [dbWrites] = useState(38);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
+  const [resetFeedback, setResetFeedback] = useState<string | null>(null);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [maintenanceNotice, setMaintenanceNotice] = useState<string | null>(null);
+
+  const confirmAndResetDemoState = () => {
+    setShowResetConfirm(false);
+    if (typeof window === 'undefined') return;
+
+    // Keys to clear without deleting Firestore database data
+    const keysToReset = [
+      'civichero_onboarding_completed',
+      'civichero_onboarding',
+      'civichero_recent_searches',
+      'civichero_high_contrast',
+      'civichero_large_text',
+      'civichero_reduced_motion',
+      'civichero_sms_alerts',
+      'civichero_email_summaries',
+      'civichero_push_notifs',
+      'civichero_anonymous_reports',
+      'civichero_precise_location',
+      'civichero_theme_preset',
+      'civichero_language_selection',
+      'dev_artificial_delay',
+      'copilot_briefing_invalidated',
+      'civichero_draft_report'
+    ];
+
+    keysToReset.forEach(k => localStorage.removeItem(k));
+
+    // Reset local states to default
+    setHighContrast(false);
+    setLargeText(false);
+    setReducedMotion(false);
+    setSmsAlerts(true);
+    setEmailSummaries(false);
+    setPushNotifs(true);
+    setAnonymousReports(false);
+    setPreciseLocation(true);
+    setActiveTheme('slate');
+    setActiveLang('en');
+    document.body.classList.remove('high-contrast');
+
+    setResetFeedback('Demo state reset successfully. Onboarding, caches, search history, and preferences have been restored to defaults. Cloud database records remain preserved.');
+    setTimeout(() => {
+      setResetFeedback(null);
+    }, 6000);
+  };
 
   const handleSyncDatabase = async () => {
     setIsSyncing(true);
@@ -154,7 +203,10 @@ export default function SettingsPanel() {
 
   // Onboarding replay
   const handleReplayOnboarding = () => {
-    alert('Onboarding tips re-initialized! Return to the Home feed to see welcome tooltips.');
+    localStorage.removeItem('civichero_onboarding_completed');
+    localStorage.removeItem('civichero_onboarding');
+    setMaintenanceNotice('Onboarding tips re-initialized! Return to the Home feed to view welcome tooltips.');
+    setTimeout(() => setMaintenanceNotice(null), 5000);
   };
 
   const themes = [
@@ -225,7 +277,7 @@ export default function SettingsPanel() {
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col gap-1.5">
               <span className="text-[10px] text-slate-400 font-bold uppercase">Dev Delay Overhead</span>
-              <span className="font-sans font-extrabold text-lg text-brand-primary">150ms synthetic</span>
+              <span className="font-sans font-extrabold text-lg text-brand-primary">150ms simulated</span>
             </div>
 
             {/* Target Firestore Database Connection */}
@@ -258,6 +310,86 @@ export default function SettingsPanel() {
                 <span>{isSyncing ? 'Syncing...' : 'Push Data to New DB'}</span>
               </button>
             </div>
+
+            {/* Curated Demo State Reset */}
+            <div className="md:col-span-3 bg-slate-50 p-4 rounded-xl border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-700 shrink-0 mt-0.5">
+                  <RotateCcw className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans font-bold text-xs text-brand-primary">Reset Demo State</span>
+                    <span className="text-[10px] bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded border border-emerald-200 font-sans font-medium">Safe Local Reset</span>
+                  </div>
+                  <p className="font-body text-[11px] text-slate-500 mt-0.5 max-w-xl leading-relaxed">
+                    Resets tutorial onboarding flags, local storage caches, search history, and UI preferences. Firestore database records remain untouched and preserved.
+                  </p>
+                  {resetFeedback && (
+                    <p className="font-sans text-xs text-emerald-800 font-semibold mt-2 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+                      {resetFeedback}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-900 text-white text-xs font-sans font-bold rounded-xl hover:bg-slate-800 transition-colors shrink-0 shadow-sm"
+                aria-haspopup="dialog"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset Demo State</span>
+              </button>
+            </div>
+
+            {/* Confirmation Dialog */}
+            {showResetConfirm && (
+              <div 
+                className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="reset-dialog-title"
+              >
+                <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                      <RotateCcw className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 id="reset-dialog-title" className="font-sans font-bold text-base text-slate-900">
+                        Reset Local Demo State?
+                      </h3>
+                      <p className="font-body text-xs text-slate-600 mt-1 leading-relaxed">
+                        This action will restore default tutorial onboarding, clear cached search queries, and reset local accessibility preferences.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-[11px] text-emerald-800 font-medium">
+                    Cloud Invariant: All municipal reports, users, and audit logs stored in Google Cloud Firestore remain untouched.
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowResetConfirm(false)}
+                      className="px-4 py-2 text-xs font-sans font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={confirmAndResetDemoState}
+                      className="px-4 py-2 text-xs font-sans font-bold bg-amber-700 hover:bg-amber-800 text-white rounded-xl transition-colors shadow-sm"
+                    >
+                      Confirm &amp; Reset
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
       </div>
@@ -461,6 +593,12 @@ export default function SettingsPanel() {
           <span>System Maintenance & Guidance</span>
         </h3>
         
+        {maintenanceNotice && (
+          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-semibold text-emerald-800">
+            {maintenanceNotice}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={handleReplayOnboarding}
@@ -489,7 +627,7 @@ export default function SettingsPanel() {
         </div>
         <div>
           <h4 className="font-sans font-extrabold text-sm text-brand-primary tracking-tight">CivicHero Enterprise</h4>
-          <p className="font-mono text-[9px] text-slate-400 font-bold uppercase mt-1">Version 1.10.0-PRO • Node Active</p>
+          <p className="font-mono text-[9px] text-slate-400 font-bold uppercase mt-1">Version 1.10.0 • Connected to Civic Services</p>
         </div>
         <p className="font-body text-xs text-brand-muted max-w-md mx-auto leading-relaxed">
           Driving municipal accountability, transparent dispatch flows, and crowd-verified neighborhood stabilization systems globally. Licensed under the Open Civic Alliance.

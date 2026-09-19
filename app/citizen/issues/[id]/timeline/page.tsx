@@ -28,6 +28,7 @@ import { ALL_STAGES_MOCK } from '@/lib/mockData';
 import { formatTimestamp } from '@/lib/helpers';
 import { DESIGN_TOKENS } from '@/lib/designTokens';
 import { Skeleton } from '@/components/Skeleton';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   AlertCircle,
@@ -146,7 +147,7 @@ export default function PublicTimelinePage() {
       const displayActor = isCompleted ? matchedEvent.actor : 'Pending assignment';
       const displayDesc = isCompleted 
         ? matchedEvent.description 
-        : `This stage is queued in the CivicHero system. Once the prerequisite engineering and crowd-verification thresholds are satisfied, this phase will be locked dynamically onto the ledger.`;
+        : `This stage is queued in the CivicHero system. Once prerequisite municipal review and community verification are satisfied, this update will be recorded in the public record.`;
 
       // Assign some rich visual media to specific completed events to resemble real evidence attachments
       let mediaUrl = '';
@@ -207,7 +208,7 @@ export default function PublicTimelinePage() {
                 {isCompleted && (
                   <span className="flex items-center gap-1 text-[9px] font-mono font-bold text-emerald-600 uppercase">
                     <ShieldCheck className="w-3 h-3" />
-                    Ledger Locked
+                    Activity Verified
                   </span>
                 )}
               </div>
@@ -276,9 +277,9 @@ export default function PublicTimelinePage() {
               <ArrowLeft className="w-4 h-4" />
             </button>
             <div className="flex flex-col">
-              <span className="font-mono text-[9px] font-extrabold text-slate-400 tracking-wider">IMMUTABLE ARCHIVE</span>
+              <span className="font-mono text-[9px] font-extrabold text-slate-400 tracking-wider">CIVIC CASE RECORD</span>
               <h1 className="font-sans font-extrabold text-sm text-brand-primary tracking-tight">
-                Case Ledger: #{report.id.toUpperCase()}
+                Case Record: #{report.id.toUpperCase()}
               </h1>
             </div>
           </div>
@@ -293,15 +294,16 @@ export default function PublicTimelinePage() {
       </header>
 
       {/* TIMELINE VIEW BODY */}
+      <ErrorBoundary sectionName="Public Timeline">
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
         
         {/* Upper metadata card */}
         <div className="bg-white rounded-[28px] border border-slate-100 p-6 md:p-8 mb-10 shadow-sm">
           <span className="font-mono text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
-            IMMUTABLE CIVIC TIMELINE LOGS
+            VERIFIED CIVIC TIMELINE LOGS
           </span>
           <h2 className="font-sans font-extrabold text-xl md:text-2xl text-brand-primary tracking-tight mt-1 leading-tight">
-            Lifecycle Ledger for &ldquo;{report.title}&rdquo;
+            Case Progress for &ldquo;{report.title}&rdquo;
           </h2>
           
           <div className="flex items-center gap-2 mt-4 flex-wrap">
@@ -332,7 +334,7 @@ export default function PublicTimelinePage() {
         {/* Footer info message */}
         <div className="mt-12 text-center max-w-sm mx-auto">
           <p className="font-mono text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed">
-            Ledger certified under standard encryption protocol.
+            Case history verified under municipal record standards.
           </p>
           <button 
             onClick={() => router.back()}
@@ -343,6 +345,7 @@ export default function PublicTimelinePage() {
         </div>
 
       </main>
+      </ErrorBoundary>
 
     </div>
   );

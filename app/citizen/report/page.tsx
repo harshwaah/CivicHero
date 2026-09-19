@@ -170,8 +170,10 @@ export default function CitizenReportFlowPage() {
           }
         );
       } catch {
-        setCoordinates({ lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng });
-        setLocationValue(DEFAULT_MAP_CENTER.name);
+        setTimeout(() => {
+          setCoordinates({ lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng });
+          setLocationValue(DEFAULT_MAP_CENTER.name);
+        }, 0);
       }
     }
   }, []);

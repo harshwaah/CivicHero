@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { getPlaceholderImage } from '@/lib/utils';
 import { IssueRepository } from '@/lib/repositories/issueRepository';
 import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function AdminIssueDetailPage() {
   const params = useParams();
@@ -310,10 +311,11 @@ export default function AdminIssueDetailPage() {
 
       {/* MAIN CONTAINER */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
-          
-          {/* LEFT COLUMN: PRIMARY NARRATIVE & MAP */}
-          <section className="lg:col-span-7 flex flex-col gap-6 md:gap-8">
+        <ErrorBoundary sectionName="Administrative Case File Details">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
+            
+            {/* LEFT COLUMN: PRIMARY NARRATIVE & MAP */}
+            <section className="lg:col-span-7 flex flex-col gap-6 md:gap-8">
             
             {/* Hidden Retry Input */}
             <input 
@@ -643,6 +645,7 @@ export default function AdminIssueDetailPage() {
 
           </aside>
         </div>
+        </ErrorBoundary>
       </main>
     </div>
   );

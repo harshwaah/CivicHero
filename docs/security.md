@@ -165,3 +165,15 @@ Phase 8.2 has successfully implemented all findings from the Phase 8.1 audit:
    - `next.config.ts`: Removed redundant `env: { GOOGLE_MAPS_PLATFORM_KEY }` block.
    - `.gitignore`: Added `firebase-applet-config.json`.
    - Added `firebase-applet-config.template.json` for developer reference.
+
+---
+
+## 9. Phase 8.3 Reliability & Data Safety Verification
+
+### 9.1 Blast Radius Containment
+- **Error Boundaries**: Client-side component crashes are strictly quarantined within localized tabs/views using `components/ErrorBoundary.tsx`. Unhandled runtime errors in presentation layers do not unmount parent navigations, state managers, or session contexts.
+- **Service Degraded States**: Subsystem outages (e.g. Firebase offline, Maps quota limits, Gemini rate limiting) invoke non-blocking `RecoveryState` components rather than throwing unhandled rejections that trigger browser whitescreens.
+
+### 9.2 Zero Production Data Destruction Invariant
+- **Demo State Reset Audit**: The "Reset Demo State" control in `components/SettingsPanel.tsx` strictly purges client-side `localStorage` keys (`civichero_onboarding_*`, search query histories, cached filters, UI preferences).
+- **Audit Finding**: Confirmed that `handleResetDemoState` makes zero network requests and executes zero Firestore delete/batch mutate operations. Live collections (`issues`, `users`, `notifications`, `audit_logs`) in Google Cloud Firestore remain untouched.

@@ -24,6 +24,7 @@ import { collection, addDoc, getDocs, onSnapshot, doc, getDoc, updateDoc, delete
 import { IssueRepository } from '@/lib/repositories/issueRepository';
 import { IssueService } from '@/lib/services/issueService';
 import { GeminiProvider } from '@/lib/providers/ai/geminiProvider';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface SubsystemState {
   id: string;
@@ -468,7 +469,8 @@ export default function DiagnosticsPage() {
         </div>
 
         {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <ErrorBoundary sectionName="System Diagnostics">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Left Column: Subsystem Cards */}
           <div className="lg:col-span-7 flex flex-col gap-4">
@@ -861,6 +863,7 @@ export default function DiagnosticsPage() {
           </div>
 
         </div>
+        </ErrorBoundary>
       </div>
     </div>
   );

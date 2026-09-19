@@ -12,7 +12,7 @@
 
 CivicHero is a high-fidelity, highly polished, next-generation civic engagement portal where citizens can capture, verify, and track neighborhood infrastructure concerns. This application empowers local agency by mapping local crowd-vetted reports directly into municipal public works queues.
 
-This workspace represents the completion of **Phase 8.2 (Configuration Migration & Secret Hardening)**, establishing a centralized configuration single source of truth, isolating server-side secrets, and eliminating legacy configuration artifacts.
+This workspace represents the completion of **Phase 8.3 (Product Polish, Accessibility, and Reliability)**, establishing feature-level error boundaries, category-specific offline placeholders, friendly service recovery states, global offline status tracking, a non-destructive demo reset flow, and full accessibility hardening.
 
 ---
 
@@ -148,10 +148,11 @@ Hosts central context bindings for maps and AI agents:
 
 ---
 
-## 5. Upcoming Implementation Roadmaps
+## 5. Implementation Roadmap Status
 
+*   **Phase 8.3 (Product Polish, Accessibility, and Reliability) [COMPLETED]**: Implemented resilient error boundaries across all citizen and administrative portals, category-specific offline SVG placeholders, friendly subsystem recovery states, real-time offline connection banner, safe local demo state reset flow, and full-spectrum accessibility audit (contrast, focus, ARIA, and reduced motion).
+*   **Phase 8.2 (Configuration Migration & Secret Hardening) [COMPLETED]**: Centralized all environment parameters into `lib/config/index.ts`, decoupled client code from SDK secrets, removed inline configuration redundancies, and sanitized console outputs.
 *   **Phase 8.1 (Secret & Configuration Audit) [COMPLETED]**: Comprehensive read-only audit of all secrets, environment parameters, duplicate initialization logic, and git-exposure surfaces. Documented in `docs/security.md` and `CHANGELOG.md`.
-*   **Phase 8.2 (Configuration Migration & Secret Hardening) [PLANNED]**: Centralize all environment parameters, decouple client code from SDK secrets, remove inline configuration redundancies, and sanitize console output.
 *   **Phase 6 (AI-Native Integration) [COMPLETED]**: Replaced generic AI stubs with fully autonomous AI agents (Community Intelligence, Administrator Copilot, Community Integrity) leveraging the server-side `@google/genai` SDK and Gemini 3.5. Automated urgency classification, department routing, and heatmap generation are now driven by AI.
 *   **Phase 5 (Google Maps Platform Integration) [COMPLETED]**: Replaced all map placeholder components with fully interactive, unified Google Maps, supporting user geolocations, real-time spatial heatmaps via deck.gl, clustered markers, custom priority styling, and interactive report point selection.
 *   **Phase 2.3 (Cloud Persistence) [COMPLETED]**: Hooked all Repository methods directly into live Firestore collections and set up real-time `onSnapshot` collections synchronization.

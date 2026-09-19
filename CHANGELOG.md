@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2026-09-18
+
+### Added
+- **Phase 8.3: Product Polish, Accessibility, and Reliability**:
+  - **Category-Specific Placeholder Engine (`lib/placeholders.ts`)**:
+    - Centralized category and keyword-aware SVG illustrations for Roads, Water, Sanitation, Electrical, Safety, Parks, and Structures.
+    - Zero network dependency fallbacks for offline or missing evidence photos.
+  - **Error Boundary Architecture (`components/ErrorBoundary.tsx`)**:
+    - Feature-level crash containment with isolated error boundaries preventing full-page unmounts.
+    - Integrated across Citizen Feed, Map view, Activity, Profile, Admin Overview, Dispatch, Analytics, Incident Details, and System Diagnostics.
+  - **Friendly Service Recovery States (`components/RecoveryState.tsx`)**:
+    - Context-aware recovery views with retry triggers for Firestore, Firebase Storage, Google Maps Platform, and AI Services.
+  - **Real-Time Offline Status Banner (`components/OfflineStatusBanner.tsx`)**:
+    - Global network status monitoring with graceful offline notification and reconnection alerts.
+  - **Curated Demo State Reset (`components/SettingsPanel.tsx`)**:
+    - One-click "Reset Demo State" flow in Developer Settings resetting local onboarding flags, caches, search histories, and preferences without altering cloud Firestore records.
+  - **Accessibility & Contrast Enhancements**:
+    - High contrast visual mode, text scaling preference hooks, visible focus rings, ARIA landmark labels, and reduced-motion respect across all animated components.
+  - **Copywriting Pass**:
+    - Replaced internal developer terminology with clear, human-centered civic language across all interfaces.
+
+---
+
 ## [0.3.0] - 2026-09-17
 
 ### Added

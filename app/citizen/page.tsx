@@ -27,10 +27,13 @@ import { CivicMap } from '../../lib/providers/maps/mapProvider';
 import { IssueService } from '../../lib/services/issueService';
 import { Issue } from '../../lib/models';
 import { DEFAULT_MAP_CENTER } from '../../lib/config';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 export default function CitizenPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('home');
+  const [subscribedNotice, setSubscribedNotice] = useState<string | null>(null);
+  const [zipInput, setZipInput] = useState('');
   const [selectedMilestone, setSelectedMilestone] = useState<{
     title: string;
     phase: string;
@@ -59,59 +62,63 @@ export default function CitizenPage() {
     switch (activeTab) {
       case 'home':
         return (
-          <CitizenFeed 
-            onOpenReportPlaceholder={handleOpenReportPlaceholder}
-            onOpenMilestone={handleOpenMilestone}
-          />
+          <ErrorBoundary sectionName="Community Feed">
+            <CitizenFeed 
+              onOpenReportPlaceholder={handleOpenReportPlaceholder}
+              onOpenMilestone={handleOpenMilestone}
+            />
+          </ErrorBoundary>
         );
       case 'map':
         return (
-          <motion.div 
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            className="flex-1 flex flex-col gap-6 h-[calc(100vh-160px)]"
-          >
-            <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-2 flex flex-col h-full">
-              <div className="flex items-center justify-between p-4 pb-2 border-b border-slate-100">
-                <h2 className="font-sans font-extrabold text-2xl text-brand-primary tracking-tight">
-                  Civic Hub Map
-                </h2>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => router.push('/citizen/report')}
-                    className="px-4 py-2 bg-brand-primary text-white font-mono text-[10px] font-bold uppercase rounded-xl hover:bg-brand-primary/90 transition-colors"
-                  >
-                    Report Issue Here
-                  </button>
+          <ErrorBoundary sectionName="Civic Hub Map">
+            <motion.div 
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              className="flex-1 flex flex-col gap-6 h-[calc(100vh-160px)]"
+            >
+              <div className="bg-white rounded-[28px] border border-slate-200 shadow-sm p-2 flex flex-col h-full">
+                <div className="flex items-center justify-between p-4 pb-2 border-b border-slate-100">
+                  <h2 className="font-sans font-extrabold text-2xl text-brand-primary tracking-tight">
+                    Civic Hub Map
+                  </h2>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => router.push('/citizen/report')}
+                      className="px-4 py-2 bg-brand-primary text-white font-mono text-[10px] font-bold uppercase rounded-xl hover:bg-brand-primary/90 transition-colors"
+                    >
+                      Report Issue Here
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 rounded-[24px] overflow-hidden m-2">
+                  <CivicMap
+                    locationName="Citizen View"
+                    categoryName="All"
+                    interactive={true}
+                    showLocateMe={true}
+                    markers={issues.map(i => ({
+                      id: i.id,
+                      lat: i.coordinates?.lat || DEFAULT_MAP_CENTER.lat + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
+                      lng: i.coordinates?.lng || DEFAULT_MAP_CENTER.lng + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
+                      title: i.title,
+                      urgency: i.urgency,
+                      status: i.status,
+                      onClick: () => router.push(`/citizen/issues/${i.id}`)
+                    }))}
+                    onClick={(e) => {
+                      const lat = e.detail?.latLng?.lat;
+                      const lng = e.detail?.latLng?.lng;
+                      if (lat && lng) {
+                        router.push(`/citizen/report?lat=${lat}&lng=${lng}`);
+                      }
+                    }}
+                  />
                 </div>
               </div>
-              <div className="flex-1 rounded-[24px] overflow-hidden m-2">
-                <CivicMap
-                  locationName="Citizen View"
-                  categoryName="All"
-                  interactive={true}
-                  showLocateMe={true}
-                  markers={issues.map(i => ({
-                    id: i.id,
-                    lat: i.coordinates?.lat || DEFAULT_MAP_CENTER.lat + ((parseInt(i.id.split('-')[1] || '0') % 100) / 100 - 0.5) * 0.05,
-                    lng: i.coordinates?.lng || DEFAULT_MAP_CENTER.lng + ((parseInt(i.id.split('-')[1] || '0') % 50) / 50 - 0.5) * 0.05,
-                    title: i.title,
-                    urgency: i.urgency,
-                    status: i.status,
-                    onClick: () => router.push(`/citizen/issues/${i.id}`)
-                  }))}
-                  onClick={(e) => {
-                    const lat = e.detail?.latLng?.lat;
-                    const lng = e.detail?.latLng?.lng;
-                    if (lat && lng) {
-                      router.push(`/citizen/report?lat=${lat}&lng=${lng}`);
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </ErrorBoundary>
         );
       case 'safety':
         const criticalSafetyIssues = [...issues]
@@ -312,13 +319,29 @@ export default function CitizenPage() {
           </motion.div>
         );
       case 'search':
-        return <GlobalSearch />;
+        return (
+          <ErrorBoundary sectionName="Search & Discovery">
+            <GlobalSearch />
+          </ErrorBoundary>
+        );
       case 'notifications':
-        return <NotificationCenter />;
+        return (
+          <ErrorBoundary sectionName="Notifications Center">
+            <NotificationCenter />
+          </ErrorBoundary>
+        );
       case 'passport':
-        return <CivicPassport />;
+        return (
+          <ErrorBoundary sectionName="Civic Passport">
+            <CivicPassport />
+          </ErrorBoundary>
+        );
       case 'settings':
-        return <SettingsPanel />;
+        return (
+          <ErrorBoundary sectionName="System Settings">
+            <SettingsPanel />
+          </ErrorBoundary>
+        );
       default:
         return null;
     }

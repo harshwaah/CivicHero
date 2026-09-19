@@ -40,6 +40,7 @@ import { CityAnalytics } from '../../lib/repositories/analyticsRepository';
 import { Skeleton } from '../../components/Skeleton';
 import { DEFAULT_MAP_CENTER } from '../../lib/config';
 import { CopilotInsights } from '../../lib/providers/ai/administratorCopilot';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 const CURRENT_TIME_VALUE = typeof window !== 'undefined' ? Date.now() : 1782729157000;
 
@@ -768,11 +769,31 @@ export default function AdminPage() {
             </div>
           ) : (
             <AnimatePresence mode="wait">
-              {activeTab === 'dashboard' && renderDashboard()}
-              {activeTab === 'map' && renderMap()}
-              {activeTab === 'queue' && renderQueue()}
-              {activeTab === 'copilot' && renderCopilot()}
-              {activeTab === 'analytics' && renderAnalytics()}
+              {activeTab === 'dashboard' && (
+                <ErrorBoundary key="dashboard" sectionName="Mission Control Dashboard">
+                  {renderDashboard()}
+                </ErrorBoundary>
+              )}
+              {activeTab === 'map' && (
+                <ErrorBoundary key="map" sectionName="Mission Control Spatial Map">
+                  {renderMap()}
+                </ErrorBoundary>
+              )}
+              {activeTab === 'queue' && (
+                <ErrorBoundary key="queue" sectionName="Mission Control Work Queue">
+                  {renderQueue()}
+                </ErrorBoundary>
+              )}
+              {activeTab === 'copilot' && (
+                <ErrorBoundary key="copilot" sectionName="Administrative Copilot">
+                  {renderCopilot()}
+                </ErrorBoundary>
+              )}
+              {activeTab === 'analytics' && (
+                <ErrorBoundary key="analytics" sectionName="Civic Analytics Engine">
+                  {renderAnalytics()}
+                </ErrorBoundary>
+              )}
             </AnimatePresence>
           )}
         </div>
@@ -780,7 +801,9 @@ export default function AdminPage() {
         {/* Map on Dashboard */}
         {activeTab === 'dashboard' && (
           <div className="hidden xl:block w-80">
-            <IncidentsMapPreview />
+            <ErrorBoundary sectionName="Incident Map Preview">
+              <IncidentsMapPreview />
+            </ErrorBoundary>
           </div>
         )}
       </main>

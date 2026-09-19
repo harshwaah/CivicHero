@@ -34,6 +34,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { getPlaceholderImage } from '@/lib/utils';
 import { IssueRepository } from '@/lib/repositories/issueRepository';
 import { storage, ref, uploadBytesResumable, getDownloadURL, isFirebaseConfigured } from '@/lib/firebase/storage';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 export default function IssueDetailPage() {
   const params = useParams();
@@ -398,7 +399,8 @@ export default function IssueDetailPage() {
       </header>
 
       {/* MAIN CONTAINER */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-10">
+      <ErrorBoundary sectionName="Incident Details">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 md:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12">
           
           {/* LEFT COLUMN: PRIMARY NARRATIVE & MAP (8 Cols on Desktop) */}
@@ -675,7 +677,7 @@ export default function IssueDetailPage() {
                   href={`/citizen/issues/${report.id}/timeline`}
                   className="w-full py-3.5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center gap-2 text-brand-primary font-sans font-bold text-xs uppercase tracking-wider hover:bg-slate-100 hover:border-slate-200 transition-all text-center"
                 >
-                  <span>Verify Full Lifecycle Ledger ({report.timeline?.length || 0} events)</span>
+                  <span>View Full Progress Timeline ({report.timeline?.length || 0} updates)</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -781,6 +783,7 @@ export default function IssueDetailPage() {
 
         </div>
       </main>
+      </ErrorBoundary>
 
     </div>
   );

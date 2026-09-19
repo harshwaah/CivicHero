@@ -100,7 +100,11 @@ export function DeckGlOverlay({ heatmapData }: DeckGlOverlayProps) {
         interleaved: false,
       });
       overlayRef.current = instance;
-      setOverlay(instance);
+      requestAnimationFrame(() => {
+        if (isMounted) {
+          setOverlay(instance);
+        }
+      });
 
       const attachWhenReady = () => {
         if (!isMounted || !overlayRef.current) return;
